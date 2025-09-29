@@ -7,7 +7,6 @@ import Profile from "../pages/profile/Profile";
 import Users from "../pages/users/Users";
 import PrivateRouter from "./PrivateRouter";
 import Settings from "../pages/settings/Settings";
-import Packages from "../pages/packages/Packages";
 import Staffs from "../pages/staffs/Staffs";
 import AddPromoForm from "../pages/forms/AddPromoForm";
 import UpdatePromoForm from "../pages/forms/UpdatePromoForm";
@@ -15,8 +14,6 @@ import AddStaffForm from "../pages/forms/AddStaffForm";
 import UpdateStaffForm from "../pages/forms/UpdateStaffForm";
 import AddSellerForm from "../pages/forms/AddSellerForm";
 import UpdateSellerForm from "../pages/forms/UpdateSellerForm";
-import AddPackageForm from "../pages/forms/AddPackageForm";
-import UpdatePackageForm from "../pages/forms/UpdatePackageForm";
 import AddRegionForm from "../pages/forms/AddRegionForm";
 import UpdateRegionForm from "../pages/forms/UpdateRegionForm";
 import Region from "../pages/packageRegion/Region";
@@ -27,9 +24,9 @@ import Promo from "../pages/promos/Promos";
 import ForgotPassword from "../pages/authentication/ForgotPassword";
 import Revenue from "../pages/revenues/Revenues";
 import Notification from "../pages/notifications/Notification";
-import AddKeepgoPackageForm from "../pages/forms/AddKeepgoPackageForm";
-import UpdateKeepgoPackageForm from "../pages/forms/UpdateKeepgoPackageForm";
-import PackageKeepGo from "../pages/packages-keepgo/PackagesKeepgo";
+import AddPackageForm from "../pages/forms/AddPackageForm";
+import UpdatePackageForm from "../pages/forms/UpdatePackageForm";
+import PackageKeepGo from "../pages/packages/Packages";
 import PopularCountry from "../pages/popularCountry/PopularCountry";
 import PopularCountrySub from "../pages/popularCountry/PopularCountrySub";
 import UpdatePopularCountryForm from "../pages/forms/UpdatePopularCountryForm";
@@ -95,30 +92,6 @@ export const routes = createBrowserRouter([
         element: (
           <PrivateRouter allowedRoles={["manager", "sales-manager", "admin"]}>
             <UserDetails />
-          </PrivateRouter>
-        ),
-      },
-      {
-        path: "/packages",
-        element: (
-          <PrivateRouter allowedRoles={["manager", "sales-manager", "admin"]}>
-            <Packages />
-          </PrivateRouter>
-        ),
-      },
-      {
-        path: "/package-add",
-        element: (
-          <PrivateRouter allowedRoles={["manager", "sales-manager", "admin"]}>
-            <AddPackageForm />
-          </PrivateRouter>
-        ),
-      },
-      {
-        path: "/package-edit",
-        element: (
-          <PrivateRouter allowedRoles={["manager", "sales-manager", "admin"]}>
-            <UpdatePackageForm />
           </PrivateRouter>
         ),
       },
@@ -204,7 +177,7 @@ export const routes = createBrowserRouter([
         ),
       },
       {
-        path: "/keepgo-packages",
+        path: "/packages",
         element: (
           <PrivateRouter allowedRoles={["manager", "sales-manager", "admin"]}>
             <PackageKeepGo />
@@ -212,18 +185,18 @@ export const routes = createBrowserRouter([
         ),
       },
       {
-        path: "/keepgo-package-add",
+        path: "/package-add",
         element: (
           <PrivateRouter allowedRoles={["manager", "sales-manager", "admin"]}>
-            <AddKeepgoPackageForm />
+            <AddPackageForm />
           </PrivateRouter>
         ),
       },
       {
-        path: "/keepgo-package-edit",
+        path: "/package-edit",
         element: (
           <PrivateRouter allowedRoles={["manager", "sales-manager", "admin"]}>
-            <UpdateKeepgoPackageForm />
+            <UpdatePackageForm />
           </PrivateRouter>
         ),
       },

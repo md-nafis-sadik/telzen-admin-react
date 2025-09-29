@@ -1,10 +1,11 @@
 import { Select } from "antd";
 import BackToPrev from "../../components/shared/back/BackToPrev";
 import SuccessModal from "../../components/modals/SuccessModal";
-import { useUpdatePackage } from "../../hooks/features/usePackages";
 import NotifyContainer from "../../utils/notify";
 import ReactCountryFlag from "react-country-flag";
 import SkeletonBox from "../../shared/custom/CustomSkeletonBox";
+import { useUpdatePackage } from "../../hooks/features/usePackages";
+import { currency, getSymbol } from "../../utils/currency";
 
 function UpdatePackageForm() {
   const {
@@ -21,6 +22,10 @@ function UpdatePackageForm() {
     sortedCountries,
     tagRender,
     dropdownRender,
+    selectedData,
+    isRegionLoading,
+    sortedRegions,
+    finalPrice,
   } = useUpdatePackage();
 
   return (
@@ -40,6 +45,7 @@ function UpdatePackageForm() {
                 } text-blackLow rounded-lg outline-none py-3 px-4`}
                 value={formData.name}
                 onChange={(e) => handleChange("name", e.target.value)}
+                disabled={true}
               />
               {errors.name && (
                 <span className="text-red-500 text-sm">{errors.name}</span>
@@ -47,7 +53,7 @@ function UpdatePackageForm() {
             </div>
 
             {/* Package Type */}
-            <div className="flex flex-col gap-1">
+            {/* <div className="flex flex-col gap-1">
               <span className="text-black-700">Package Type</span>
               <Select
                 className={`w-full border ${
@@ -68,58 +74,119 @@ function UpdatePackageForm() {
               {errors.type && (
                 <span className="text-red-500 text-sm">{errors.type}</span>
               )}
-            </div>
+            </div> */}
 
             {/* Coverage */}
-            <div className="flex flex-col gap-1">
-              <span className="text-black-700">Coverage Countries</span>
-              {isCountryLoading ? (
-                <SkeletonBox className="w-full h-12" />
-              ) : (
-                <Select
-                  mode="multiple"
-                  className={`w-full border ${
-                    errors.coverage_countries
-                      ? "!border-red-500"
-                      : "border-natural-400"
-                  } rounded-lg [&_.ant-select-selector]:!h-12 [&_.ant-select-selection-placeholder]:!px-2 [&_.ant-select-selector]:!px-3 [&_.ant-select-selector]:!flex [&_.ant-select-selector]:!items-center [&_.ant-select-selector]:!leading-[3.5rem]`}
-                  placeholder="Select Countries"
-                  value={formData.coverage_countries}
-                  onChange={(value) =>
-                    handleChange("coverage_countries", value)
-                  }
-                  status={errors.coverage_countries ? "error" : ""}
-                  tagRender={tagRender}
-                  maxTagCount={2}
-                  showSearch
-                  optionFilterProp="label"
-                  dropdownRender={dropdownRender}
-                  loading={isCountryLoading}
-                >
-                  {sortedCountries.map((country) => (
-                    <Select.Option
-                      key={country._id}
-                      value={country._id}
-                      label={country.name}
-                    >
-                      <div className="flex items-center gap-3">
-                        <ReactCountryFlag
-                          countryCode={country.code}
-                          svg
-                          style={{ width: "20px", height: "15px" }}
-                        />
-                        <span>{country.name}</span>
-                      </div>
-                    </Select.Option>
-                  ))}
-                </Select>
-              )}
-              {errors.coverage_countries && (
-                <span className="text-red-500 text-sm">
-                  {errors.coverage_countries}
-                </span>
-              )}
-            </div>
+            {selectedData?.keep_go_bundle_type === "country" && (
+              <div className="flex flex-col gap-1">
+                <span className="text-black-700">Coverage Countries</span>
+                {isCountryLoading ? (
+                  <SkeletonBox className="w-full h-12" />
+                ) : (
+                  <Select
+                    mode="multiple"
+                    className={`w-full border ${
+                      errors.coverage_countries
+                        ? "!border-red-500"
+                        : "border-natural-400"
+                    } rounded-lg [&_.ant-select-selector]:!h-12 [&_.ant-select-selection-placeholder]:!px-2 [&_.ant-select-selector]:!px-3 [&_.ant-select-selector]:!flex [&_.ant-select-selector]:!items-center [&_.ant-select-selector]:!leading-[3.5rem]`}
+                    placeholder="Select Countries"
+                    value={formData.coverage_countries}
+                    onChange={(value) =>
+                      handleChange("coverage_countries", value)
+                    }
+                    status={errors.coverage_countries ? "error" : ""}
+                    tagRender={tagRender}
+                    maxTagCount={2}
+                    showSearch
+                    optionFilterProp="label"
+                    dropdownRender={dropdownRender}
+                    loading={isCountryLoading}
+                  >
+                    {sortedCountries.map((country) => (
+                      <Select.Option
+                        key={country._id}
+                        value={country._id}
+                        label={country.name}
+                      >
+                        <div className="flex items-center gap-3">
+                          <ReactCountryFlag
+                            countryCode={country.code}
+                            svg
+                            style={{ width: "20px", height: "15px" }}
+                          />
+                          <span>{country.name}</span>
+                        </div>
+                      </Select.Option>
+                    ))}
+                  </Select>
+                )}
+                {errors.coverage_countries && (
+                  <span className="text-red-500 text-sm">
+                    {errors.coverage_countries}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {selectedData?.keep_go_bundle_type === "regional" && (
+              <div className="flex flex-col gap-1">
+                <span className="text-black-700">Coverage Regions</span>
+                {isRegionLoading ? (
+                  <SkeletonBox className="w-full h-[49px] !rounded-lg" />
+                ) : (
+                  <Select
+                    mode="multiple"
+                    className={`w-full border ${
+                      errors.coverage_regions
+                        ? "!border-red-500"
+                        : "border-natural-400"
+                    } rounded-lg [&_.ant-select-selector]:!h-12 [&_.ant-select-selection-placeholder]:!px-2 [&_.ant-select-selector]:!px-3 [&_.ant-select-selector]:!flex [&_.ant-select-selector]:!items-center [&_.ant-select-selector]:!leading-[3.5rem]`}
+                    placeholder="Select Regions"
+                    value={formData.coverage_regions}
+                    onChange={(value) =>
+                      handleChange("coverage_regions", value)
+                    }
+                    status={errors.coverage_regions ? "error" : ""}
+                    tagRender={tagRender}
+                    maxTagCount={2}
+                    showSearch
+                    optionFilterProp="label"
+                    dropdownRender={dropdownRender}
+                  >
+                    {sortedRegions.map((region) => (
+                      <Select.Option
+                        key={region._id}
+                        value={region._id}
+                        label={region.name}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span>{region.name}</span>
+                        </div>
+                      </Select.Option>
+                    ))}
+                  </Select>
+                )}
+
+                {/* {selectedPackage && (
+                              <div className="col-span-2 text-xs p-2 border border-neutral-300 rounded-lg mt-1">
+                                {packageCountries &&
+                                  packageCountries.map((country, index) => (
+                                    <span className="text-xs" key={country.code || index}>
+                                      {country}
+                                      {index < packageCountries.length - 1 ? ", " : ""}
+                                    </span>
+                                  ))}
+                              </div>
+                            )} */}
+
+                {(errors.coverage_countries || errors.coverage_regions) && (
+                  <span className="text-red-500 text-sm col-span-2">
+                    {errors.coverage_countries || errors.coverage_regions}
+                  </span>
+                )}
+              </div>
+            )}
 
             {/* Data Plan */}
             <div className="flex flex-col gap-1">
@@ -137,6 +204,7 @@ function UpdatePackageForm() {
                   handleChange("data_plan_in_mb", e.target.value)
                 }
                 onWheel={(e) => e.target.blur()}
+                disabled={true}
               />
               {errors.data_plan_in_mb && (
                 <span className="text-red-500 text-sm">
@@ -146,7 +214,7 @@ function UpdatePackageForm() {
             </div>
 
             {/* Bonus Data */}
-            <div className="flex flex-col gap-1">
+            {/* <div className="flex flex-col gap-1">
               <span className="text-black-700">
                 Bonus Data in MB (Optional)
               </span>
@@ -160,11 +228,11 @@ function UpdatePackageForm() {
                 }
                 onWheel={(e) => e.target.blur()}
               />
-            </div>
+            </div> */}
 
             {/* Validity Amount */}
             <div className="flex flex-col gap-1">
-              <span className="text-black-700">Validity Amount</span>
+              <span className="text-black-700">Validity Amount in Days</span>
               <input
                 type="number"
                 placeholder="Enter validity amount"
@@ -176,6 +244,7 @@ function UpdatePackageForm() {
                   handleChange("validity.amount", e.target.value)
                 }
                 onWheel={(e) => e.target.blur()}
+                disabled={true}
               />
               {errors.validity && (
                 <span className="text-red-500 text-sm">{errors.validity}</span>
@@ -183,7 +252,7 @@ function UpdatePackageForm() {
             </div>
 
             {/* Validity Type */}
-            <div className="flex flex-col gap-1">
+            {/* <div className="flex flex-col gap-1">
               <span className="text-black-700">Validity Type</span>
               <Select
                 className={`w-full border rounded-lg
@@ -198,10 +267,10 @@ function UpdatePackageForm() {
                 <Select.Option value="day">Day</Select.Option>
                 <Select.Option value="month">Month</Select.Option>
               </Select>
-            </div>
+            </div> */}
 
             {/* Original Price - USD */}
-            <div className="flex flex-col gap-1">
+            {/* <div className="flex flex-col gap-1">
               <span className="text-black-700">Original Price (USD)</span>
               <input
                 type="number"
@@ -222,24 +291,25 @@ function UpdatePackageForm() {
                   {errors.original_price}
                 </span>
               )}
-            </div>
+            </div> */}
 
             {/* Original Price - EUR */}
             <div className="flex flex-col gap-1">
-              <span className="text-black-700">Original Price (EUR)</span>
+              <span className="text-black-700">Original Price (USD)</span>
               <input
                 type="number"
-                placeholder="Enter original price in EUR"
+                placeholder="Enter original price in USD"
                 className={`w-full border placeholder:text-disabled ${
                   errors.original_price
                     ? "border-red-500"
                     : "border-natural-400"
                 } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-                value={formData.original_price.EUR}
+                value={formData.original_price.USD}
                 onChange={(e) =>
-                  handleChange("original_price.EUR", e.target.value)
+                  handleChange("original_price.USD", e.target.value)
                 }
                 onWheel={(e) => e.target.blur()}
+                disabled={true}
               />
               {errors.original_price && (
                 <span className="text-red-500 text-sm">
@@ -306,7 +376,7 @@ function UpdatePackageForm() {
             </div>
 
             {/* VAT */}
-            <div className="flex flex-col gap-1">
+            {/* <div className="flex flex-col gap-1">
               <span className="text-black-700">VAT Amount (%)</span>
               <input
                 type="number"
@@ -321,10 +391,10 @@ function UpdatePackageForm() {
                 }}
                 onWheel={(e) => e.target.blur()}
               />
-            </div>
+            </div> */}
 
             {/* Auto Renew */}
-            <div className="flex flex-col gap-1">
+            {/* <div className="flex flex-col gap-1">
               <span className="text-black-700">Auto Renews</span>
               <Select
                 className={`w-full border rounded-lg
@@ -341,7 +411,7 @@ function UpdatePackageForm() {
                 <Select.Option value={true}>Yes</Select.Option>
                 <Select.Option value={false}>No</Select.Option>
               </Select>
-            </div>
+            </div> */}
 
             {/* Status */}
             <div className="flex flex-col gap-1">
@@ -376,6 +446,31 @@ function UpdatePackageForm() {
                 onChange={(e) => handleChange("note", e.target.value)}
               />
             </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {formData.price.USD && (
+              <div
+                className={`font-medium mt-4 text-neutral-600 pr-3 ${
+                  formData.price.EUR ? "border-r border-neutral-400" : ""
+                }`}
+              >
+                Final Price (USD):{" "}
+                <span className="text-blue-900">
+                  {getSymbol("USD")}
+                  {finalPrice.finalUSD}
+                </span>
+              </div>
+            )}
+            {formData.price.EUR && (
+              <div className="font-medium mt-4 text-neutral-600">
+                Final Price (EUR):{" "}
+                <span className="text-blue-900">
+                  {getSymbol("USD")}
+                  {finalPrice.finalEUR}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Action Buttons */}

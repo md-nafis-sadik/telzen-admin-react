@@ -35,7 +35,7 @@ function Sidebar({ showSidebar, setShowSidebar }) {
     const path = window.location.pathname.split("/").filter(Boolean)[0] || "/";
     const isPackagesOpen = [
       "packages",
-      "keepgo-packages",
+      "packages",
       "package-regions",
       "package-countries",
       "popular-country",
@@ -45,28 +45,31 @@ function Sidebar({ showSidebar, setShowSidebar }) {
   });
   const activePath = location.pathname.split("/").filter(Boolean)[0] || "/";
   const isPackagesActive = [
-      "packages",
-      "keepgo-packages",
-      "package-regions",
-      "package-countries",
-      "popular-country",
-    ].includes(activePath);
-    
+    "packages",
+    "packages",
+    "package-regions",
+    "package-countries",
+    "popular-country",
+  ].includes(activePath);
+
   const submenuStyle = {
     maxHeight: isSubmenuOpen["packages"] && showSidebar ? "1000px" : "0",
     transition: "max-height 300ms ease-in-out",
     overflow: "hidden",
-    willChange: "max-height"
+    willChange: "max-height",
   };
 
-  const handleDropdown = useCallback((menu) => {
-    setIsSubmenuOpen(prev => ({
-      ...prev,
-      [menu]: !prev[menu]
-    }));
+  const handleDropdown = useCallback(
+    (menu) => {
+      setIsSubmenuOpen((prev) => ({
+        ...prev,
+        [menu]: !prev[menu],
+      }));
 
-    if (!showSidebar) setShowSidebar(true);
-  }, [showSidebar]);
+      if (!showSidebar) setShowSidebar(true);
+    },
+    [showSidebar]
+  );
 
   const handleLogout = () => {
     dispatch(logout());
@@ -75,41 +78,46 @@ function Sidebar({ showSidebar, setShowSidebar }) {
   return (
     <div
       className={`sidebar bg-white h-full overflow-auto flex flex-col justify-between border-r border-border-color transition-all duration-500 ease-in-out fixed !z-[60] top-0 xl:relative 
-    ${showSidebar
-          ? "left-0 xl:left-auto xl:w-[270px]"
-          : "-left-[100%] xl:left-auto xl:w-[88px]"
-        }`}
+    ${
+      showSidebar
+        ? "left-0 xl:left-auto xl:w-[270px]"
+        : "-left-[100%] xl:left-auto xl:w-[88px]"
+    }`}
     >
       <div className="w-full px-4 py-4 whitespace-nowrap shrink-0 font-medium">
         <div
-          className={`flex items-center sticky top-0 py-3 bg-white transition-all duration-300 ease-in-out ${showSidebar ? "justify-start" : "justify-center"
-            }`}
+          className={`flex items-center sticky top-0 py-3 bg-white transition-all duration-300 ease-in-out ${
+            showSidebar ? "justify-start" : "justify-center"
+          }`}
         >
           {/* Replace both images with this */}
-          <div className={`relative h-[32px] ${showSidebar
-            ? "w-[144px]"
-            : "w-[32px]"
-            }`}>
+          <div
+            className={`relative h-[32px] ${
+              showSidebar ? "w-[144px]" : "w-[32px]"
+            }`}
+          >
             <img
               src={logo}
-              className={`absolute inset-0 transition-all duration-300 ${showSidebar
-                ? "opacity-100 scale-100"
-                : "opacity-0 scale-90 pointer-events-none"
-                }`}
+              className={`absolute inset-0 transition-all duration-300 ${
+                showSidebar
+                  ? "opacity-100 scale-100"
+                  : "opacity-0 scale-90 pointer-events-none"
+              }`}
               style={{
-                transformOrigin: 'left center',
-                willChange: 'transform, opacity' // GPU acceleration
+                transformOrigin: "left center",
+                willChange: "transform, opacity", // GPU acceleration
               }}
             />
             <img
               src={favicon}
-              className={`absolute inset-0 transition-all duration-300 ${!showSidebar
-                ? "opacity-100 scale-100"
-                : "opacity-0 scale-90 pointer-events-none"
-                }`}
+              className={`absolute inset-0 transition-all duration-300 ${
+                !showSidebar
+                  ? "opacity-100 scale-100"
+                  : "opacity-0 scale-90 pointer-events-none"
+              }`}
               style={{
-                transformOrigin: 'center',
-                willChange: 'transform, opacity'
+                transformOrigin: "center",
+                willChange: "transform, opacity",
               }}
             />
           </div>
@@ -123,8 +131,9 @@ function Sidebar({ showSidebar, setShowSidebar }) {
           <li>
             <Link
               to="/"
-              className={`${activePath === "/" ? "active py-3 pr-4" : "p-4 pl-5"
-                } flex items-center gap-4 w-full rounded-lg`}
+              className={`${
+                activePath === "/" ? "active py-3 pr-4" : "p-4 pl-5"
+              } flex items-center gap-4 w-full rounded-lg`}
               onClick={() => {
                 dispatch(setActivePath("/"));
                 setIsSubmenuOpen((prev) => !prev);
@@ -149,8 +158,9 @@ function Sidebar({ showSidebar, setShowSidebar }) {
           <li>
             <Link
               to="/users"
-              className={`${activePath === "users" ? "active py-3 pr-4" : "p-4 pl-5"
-                } flex items-center gap-4 w-full rounded-lg`}
+              className={`${
+                activePath === "users" ? "active py-3 pr-4" : "p-4 pl-5"
+              } flex items-center gap-4 w-full rounded-lg`}
               onClick={() => {
                 dispatch(setActivePath("users"));
                 setIsSubmenuOpen((prev) => !prev);
@@ -177,102 +187,108 @@ function Sidebar({ showSidebar, setShowSidebar }) {
           {(auth.role === "manager" ||
             auth.role === "sales-manager" ||
             auth.role === "admin") && (
-              <li>
-                {/* Changed from Link to div */}
-                <div
-                  className={`${isPackagesActive ? "active py-3 pr-4" : "p-4 pl-5"
-                    } flex items-center gap-4 w-full rounded-lg cursor-pointer`}
-                  onClick={() => {
-                    if (!showSidebar) {
-                      setShowSidebar(true);
-                    }
-                    handleDropdown("packages");
-                  }}
+            <li>
+              {/* Changed from Link to div */}
+              <div
+                className={`${
+                  isPackagesActive ? "active py-3 pr-4" : "p-4 pl-5"
+                } flex items-center gap-4 w-full rounded-lg cursor-pointer`}
+                onClick={() => {
+                  if (!showSidebar) {
+                    setShowSidebar(true);
+                  }
+                  handleDropdown("packages");
+                }}
+              >
+                {isPackagesActive && (
+                  <div className="border-2 rounded-full border-main-500 w-1 h-[24px] bg-main-500"></div>
+                )}
+                {isPackagesActive ? (
+                  <ActivePackageIcon className="shrink-0" />
+                ) : (
+                  <InactivePackageIcon className="shrink-0" />
+                )}
+
+                <span className={`duration-300 ${showSidebar ? "" : "hidden"}`}>
+                  Packages
+                </span>
+
+                {/* Dropdown icon */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={`ml-auto transform transition-transform ${
+                    isSubmenuOpen["packages"] ? "rotate-180" : ""
+                  }`}
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
                 >
-                  {isPackagesActive && (
-                    <div className="border-2 rounded-full border-main-500 w-1 h-[24px] bg-main-500"></div>
-                  )}
-                  {isPackagesActive ? (
-                    <ActivePackageIcon className="shrink-0" />
-                  ) : (
-                    <InactivePackageIcon className="shrink-0" />
-                  )}
+                  <path
+                    d="M19 9L12 16L5 9"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
 
-                  <span className={`duration-300 ${showSidebar ? "" : "hidden"}`}>
-                    Packages
-                  </span>
-
-                  {/* Dropdown icon */}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className={`ml-auto transform transition-transform ${isSubmenuOpen["packages"] ? "rotate-180" : ""
-                      }`}
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                  >
-                    <path
-                      d="M19 9L12 16L5 9"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-
-                {/* Submenu */}
-                <div
-                  ref={(ref) => (submenuRef.current["packages"] = ref)}
-                  className="flex flex-col ml-8"
-                  style={submenuStyle}
-                >
-                  {/* Regions */}
-                  {auth.role === "admin" && (
-                    <div>
-                      <Link
-                        to="/package-regions"
-                        className={`${activePath === "package-regions"
+              {/* Submenu */}
+              <div
+                ref={(ref) => (submenuRef.current["packages"] = ref)}
+                className="flex flex-col ml-8"
+                style={submenuStyle}
+              >
+                {/* Regions */}
+                {auth.role === "admin" && (
+                  <div>
+                    <Link
+                      to="/package-regions"
+                      className={`${
+                        activePath === "package-regions"
                           ? "py-3 pl-6 font-medium text-main-500"
                           : "py-3 pl-6"
-                          } flex items-center gap-4 w-full rounded-lg`}
-                        onClick={() => dispatch(setActivePath("package-regions"))}
+                      } flex items-center gap-4 w-full rounded-lg`}
+                      onClick={() => dispatch(setActivePath("package-regions"))}
+                    >
+                      <span
+                        className={`duration-300 ${
+                          showSidebar ? "" : "hidden"
+                        }`}
                       >
-                        <span
-                          className={`duration-300 ${showSidebar ? "" : "hidden"
-                            }`}
-                        >
-                          Region
-                        </span>
-                      </Link>
-                    </div>
-                  )}
+                        Region
+                      </span>
+                    </Link>
+                  </div>
+                )}
 
-                  {/* Countries */}
-                  {auth.role === "admin" && (
-                    <div>
-                      <Link
-                        to="/package-countries"
-                        className={`${activePath === "package-countries"
+                {/* Countries */}
+                {auth.role === "admin" && (
+                  <div>
+                    <Link
+                      to="/package-countries"
+                      className={`${
+                        activePath === "package-countries"
                           ? "py-3 pl-6 font-medium text-main-500"
                           : "py-3 pl-6"
-                          } flex items-center gap-4 w-full rounded-lg`}
-                        onClick={() =>
-                          dispatch(setActivePath("package-countries"))
-                        }
+                      } flex items-center gap-4 w-full rounded-lg`}
+                      onClick={() =>
+                        dispatch(setActivePath("package-countries"))
+                      }
+                    >
+                      <span
+                        className={`duration-300 ${
+                          showSidebar ? "" : "hidden"
+                        }`}
                       >
-                        <span
-                          className={`duration-300 ${showSidebar ? "" : "hidden"
-                            }`}
-                        >
-                          Country
-                        </span>
-                      </Link>
-                    </div>
-                  )}
-                  {/* Popular Country */}
-                  {/* <div>
+                        Country
+                      </span>
+                    </Link>
+                  </div>
+                )}
+                {/* Popular Country */}
+                {/* <div>
                     <Link
                       to="/popular-country"
                       className={`${activePath === "popular-country"
@@ -289,8 +305,8 @@ function Sidebar({ showSidebar, setShowSidebar }) {
                     </Link>
                   </div> */}
 
-                  {/* Packages Old */}
-                  {/* <div>
+                {/* Packages Old */}
+                {/* <div>
                   <Link
                     to="/packages"
                     className={`${
@@ -308,26 +324,27 @@ function Sidebar({ showSidebar, setShowSidebar }) {
                   </Link>
                 </div> */}
 
-                  {/* Packages Keepgo */}
-                  <div>
-                    <Link
-                      to="/keepgo-packages"
-                      className={`${activePath === "keepgo-packages"
+                {/* Packages Keepgo */}
+                <div>
+                  <Link
+                    to="/packages"
+                    className={`${
+                      activePath === "packages"
                         ? "py-3 pl-6 font-medium text-main-500"
                         : "py-3 pl-6"
-                        } flex items-center gap-4 w-full rounded-lg`}
-                      onClick={() => dispatch(setActivePath("keepgo-packages"))}
+                    } flex items-center gap-4 w-full rounded-lg`}
+                    onClick={() => dispatch(setActivePath("packages"))}
+                  >
+                    <span
+                      className={`duration-300 ${showSidebar ? "" : "hidden"}`}
                     >
-                      <span
-                        className={`duration-300 ${showSidebar ? "" : "hidden"}`}
-                      >
-                        Packages(Keepgo)
-                      </span>
-                    </Link>
-                  </div>
+                      Packages
+                    </span>
+                  </Link>
                 </div>
-              </li>
-            )}
+              </div>
+            </li>
+          )}
 
           {/* Sellers Setup */}
           {/* {(auth.role === "manager" ||
@@ -399,8 +416,9 @@ function Sidebar({ showSidebar, setShowSidebar }) {
             <li>
               <Link
                 to="/revenue"
-                className={`${activePath === "revenue" ? "active py-3 pr-4" : "p-4 pl-5"
-                  } flex items-center gap-4 w-full rounded-lg`}
+                className={`${
+                  activePath === "revenue" ? "active py-3 pr-4" : "p-4 pl-5"
+                } flex items-center gap-4 w-full rounded-lg`}
                 onClick={() => {
                   dispatch(setActivePath("revenue"));
                   setIsSubmenuOpen((prev) => !prev);
@@ -426,45 +444,47 @@ function Sidebar({ showSidebar, setShowSidebar }) {
           {(auth.role === "manager" ||
             auth.role === "sales-manager" ||
             auth.role === "admin") && (
-              <li>
-                <div>
-                  <Link
-                    to="/notification"
-                    className={`${activePath === "notification"
+            <li>
+              <div>
+                <Link
+                  to="/notification"
+                  className={`${
+                    activePath === "notification"
                       ? "active py-3 pr-4"
                       : "p-4 pl-5"
-                      } flex items-center gap-4 w-full rounded-lg`}
-                    onClick={() => {
-                      dispatch(setActivePath("notification"));
-                      setIsSubmenuOpen((prev) => !prev);
-                    }}
-                  >
-                    {activePath === "notification" && (
-                      <div className="border-2 rounded-full border-main-500 w-1 h-[24px] bg-main-500"></div>
-                    )}
-                    {activePath === "notification" ? (
-                      <ActiveNotificationIcon className="shrink-0" />
-                    ) : (
-                      <InactiveNotificationIcon className="shrink-0" />
-                    )}
+                  } flex items-center gap-4 w-full rounded-lg`}
+                  onClick={() => {
+                    dispatch(setActivePath("notification"));
+                    setIsSubmenuOpen((prev) => !prev);
+                  }}
+                >
+                  {activePath === "notification" && (
+                    <div className="border-2 rounded-full border-main-500 w-1 h-[24px] bg-main-500"></div>
+                  )}
+                  {activePath === "notification" ? (
+                    <ActiveNotificationIcon className="shrink-0" />
+                  ) : (
+                    <InactiveNotificationIcon className="shrink-0" />
+                  )}
 
-                    <span
-                      className={`duration-300 ${showSidebar ? "" : "hidden"}`}
-                    >
-                      Notifications
-                    </span>
-                  </Link>
-                </div>
-              </li>
-            )}
+                  <span
+                    className={`duration-300 ${showSidebar ? "" : "hidden"}`}
+                  >
+                    Notifications
+                  </span>
+                </Link>
+              </div>
+            </li>
+          )}
 
           {/* Header Setup  */}
           {auth.role === "admin" && (
             <li>
               <Link
                 to="/staffs"
-                className={`${activePath === "staffs" ? "active py-3 pr-4" : "p-4 pl-5"
-                  } flex items-center gap-4 w-full rounded-lg`}
+                className={`${
+                  activePath === "staffs" ? "active py-3 pr-4" : "p-4 pl-5"
+                } flex items-center gap-4 w-full rounded-lg`}
                 onClick={() => {
                   dispatch(setActivePath("staffs"));
                   setIsSubmenuOpen((prev) => !prev);
@@ -492,8 +512,9 @@ function Sidebar({ showSidebar, setShowSidebar }) {
             <div>
               <Link
                 to="/settings"
-                className={`${activePath === "settings" ? "active py-3 pr-4" : "p-4 pl-5"
-                  } flex items-center gap-4 w-full rounded-lg`}
+                className={`${
+                  activePath === "settings" ? "active py-3 pr-4" : "p-4 pl-5"
+                } flex items-center gap-4 w-full rounded-lg`}
                 onClick={() => {
                   dispatch(setActivePath("settings"));
                   setIsSubmenuOpen((prev) => !prev);
@@ -540,8 +561,9 @@ function Sidebar({ showSidebar, setShowSidebar }) {
             </svg>
           </span>
           <span
-            className={`duration-300 whitespace-nowrap ${showSidebar ? "" : "hidden"
-              }`}
+            className={`duration-300 whitespace-nowrap ${
+              showSidebar ? "" : "hidden"
+            }`}
           >
             Log Out
           </span>

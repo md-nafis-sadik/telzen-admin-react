@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { errorNotify, successNotify } from "../../utils/notify";
 import {
@@ -7,13 +7,13 @@ import {
   setPackageMetaData,
   updatePackageInList,
   addNewPackageToList,
-  clearSelectedPackageData,
 } from "../../features/packages/package/packageSlice";
 import {
   useGetAllPackagesQuery,
   useDeletePackageMutation,
   useUpdatePackageMutation,
   useAddPackageMutation,
+  useLazyGetAllKeepgoOriginalPackagesQuery,
 } from "../../features/packages/package/packageApi";
 import { useNavigate } from "react-router-dom";
 import { Select, Tag } from "antd";
@@ -60,28 +60,28 @@ export const useGetPackages = () => {
   const isRegionLoading = isRegionsLoading || isRegionsFetching;
   const regions = regionsData?.data || [];
 
+  const isInitialRender = useRef(true);
+  const prevSearchRef = useRef(debouncedSearch);
+  const [forceRefetchTrigger, setForceRefetchTrigger] = useState(0);
   const apiParams = {
     page: current_page,
     limit: page_size,
     search: debouncedSearch,
     ...(filterKey !== undefined && { status: filterKey || null }),
     ...(regionFilter !== undefined && { region: regionFilter || null }),
+    forceRefetch: forceRefetchTrigger,
   };
-  const isInitialRender = useRef(true);
   const { isLoading, isFetching, isError, error } = useGetAllPackagesQuery(
     apiParams,
     {
-      refetchOnMountOrArgChange: true,
-      skip: isInitialRender.current && dataList.length > 0,
+      refetchOnMountOrArgChange: false,
+      skip:
+        isInitialRender.current &&
+        dataList.length > 0 &&
+        debouncedSearch === "",
     }
   );
-  useEffect(() => {
-    if (isInitialRender.current) {
-      isInitialRender.current = false;
-      return;
-    }
-    dispatch(setPackageMetaData({ ...meta, current_page: 1 }));
-  }, [debouncedSearch, filterKey]);
+
   const [packageId, setPackageId] = useState(null);
   const updatePageMeta = (value) => dispatch(setPackageMetaData(value));
   const handleSetSelectedPackage = (data) =>
@@ -91,7 +91,27 @@ export const useGetPackages = () => {
   const [updatingPackages, setUpdatingPackages] = useState({});
   const [updatePackagePackage] = useUpdatePackageMutation();
 
-  const { Option } = Select;
+  useEffect(() => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      prevSearchRef.current = debouncedSearch;
+      return;
+    }
+    setForceRefetchTrigger((prev) => prev + 1);
+    // dispatch(setPackageMetaData({ ...meta, current_page: 1 }));
+  }, [debouncedSearch, filterKey, regionFilter]);
+
+  useEffect(() => {
+    if (
+      prevSearchRef.current !== "" &&
+      debouncedSearch === "" &&
+      dataList.length > 0
+    ) {
+      setForceRefetchTrigger((prev) => prev + 1);
+    }
+
+    prevSearchRef.current = debouncedSearch;
+  }, [debouncedSearch, dataList.length]);
 
   // handle delete package
   const handleDelete = async () => {
@@ -139,7 +159,7 @@ export const useGetPackages = () => {
       }).unwrap();
       dispatch(updatePackageInList({ ...result?.data, _id: result?.data._id }));
     } catch (error) {
-      errorNotify(err?.data?.message || "Failed to delete package");
+      errorNotify(error?.data?.message || "Failed to change status");
     } finally {
       setUpdatingPackages((prev) => {
         const newState = { ...prev };
@@ -181,61 +201,263 @@ export const useGetPackages = () => {
 export const useAddPackage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    name: "",
-    type: "data",
-    data_plan_in_mb: "",
-    bonus_data_plan_in_mb: "",
-    validity: {
-      amount: "",
-      type: "day",
-    },
-    status: "active",
-    coverage_countries: [],
-    original_price: {
-      USD: "",
-      EUR: "",
-    },
-    price: {
-      USD: "",
-      EUR: "",
-    },
-    vat: {
-      amount: "",
-    },
-    is_auto_renew_available: true,
-    discount: {
-      amount: "",
-    },
-    vendor_type: "telnyx",
-    note: "",
-  });
+
+  // Initial form state
+  const initialFormState = useMemo(
+    () => ({
+      name: "",
+      type: "data",
+      data_plan_in_mb: "",
+      bonus_data_plan_in_mb: 0,
+      validity: { amount: "", type: "day" },
+      status: "active",
+      coverage_countries: [],
+      coverage_regions: [],
+      original_price: { USD: "" },
+      price: { USD: "", EUR: "" },
+      vat: { amount: "" },
+      is_auto_renew_available: false,
+      discount: { amount: "" },
+      vendor_type: "keep-go",
+      note: "",
+      keep_go_bundle_id: "",
+      keep_go_bundle_type: "country",
+    }),
+    []
+  );
+
+  const [formData, setFormData] = useState(initialFormState);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [addPackage] = useAddPackageMutation();
-  // Fetch countries
+  const [packageType, setPackageType] = useState("country");
+  const [selectedRegion, setSelectedRegion] = useState(null);
+  const [selectedCountry, setSelectedCountry] = useState(null);
+  const [selectedPackage, setSelectedPackage] = useState(null);
+  const [availableRegions, setAvailableRegions] = useState([]);
+  const [availableCountries, setAvailableCountries] = useState([]);
+  const [packageCountries, setPackageCountries] = useState([]);
+  const [availablePackages, setAvailablePackages] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedPackageData, setSelectedPackageData] = useState(null);
+  const [coverageError, setCoverageError] = useState(null);
+
+  // API queries
   const {
     data: countriesResponse,
     isLoading: isCountrysLoading,
     isFetching: isCountrysFetching,
   } = useGetAllActiveCountrysQuery();
+
+  const {
+    data: regionsResponse,
+    isLoading: isRegionsLoading,
+    isFetching: isRegionsFetching,
+  } = useGetAllActiveRegionsQuery();
+
+  const [fetchPackages] = useLazyGetAllKeepgoOriginalPackagesQuery();
+
+  // Derived state
   const isCountryLoading = isCountrysLoading || isCountrysFetching;
   const countries = countriesResponse?.data || [];
-  const [sortedCountries, setSortedCountries] = useState([]);
+  const isRegionLoading = isRegionsLoading || isRegionsFetching;
+  const regions = regionsResponse?.data || [];
 
-  useEffect(() => {
-    if (countries.length > 0) {
-      // Sort countries so selected ones appear first
-      const sorted = [...countries].sort((a, b) => {
+  // Memoized sorted countries and regions
+  // Combine related memoized values
+  const [sortedCountries, sortedRegions] = useMemo(() => {
+    const countriesCopy = countries.length ? [...countries] : [];
+    const regionsCopy = regions?.length ? [...regions] : [];
+
+    return [
+      countriesCopy.sort((a, b) => {
         const aSelected = formData.coverage_countries.includes(a._id);
         const bSelected = formData.coverage_countries.includes(b._id);
-        return bSelected - aSelected; // Selected items come first
-      });
-      setSortedCountries(sorted);
-    }
-  }, [countries, formData.coverage_countries]);
+        return bSelected - aSelected;
+      }),
+      regionsCopy.sort((a, b) => {
+        const aSelected = formData.coverage_regions.includes(a._id);
+        const bSelected = formData.coverage_regions.includes(b._id);
+        return bSelected - aSelected;
+      }),
+    ];
+  }, [
+    countries,
+    regions,
+    formData.coverage_countries,
+    formData.coverage_regions,
+  ]);
 
+  // Final price calculation
+  const finalPrice = useMemo(() => {
+    const baseEUR = parseFloat(formData.price.EUR || 0);
+    const baseUSD = parseFloat(formData.price.USD || 0);
+    const vat = parseFloat(formData.vat.amount || 0);
+    const discount = parseFloat(formData.discount.amount || 0);
+
+    const priceAfterDiscountUSD = baseUSD - (baseUSD * discount) / 100;
+    const finalUSD =
+      priceAfterDiscountUSD + (priceAfterDiscountUSD * vat) / 100;
+
+    const priceAfterDiscountEUR = baseEUR - (baseEUR * discount) / 100;
+    const finalEUR =
+      priceAfterDiscountEUR + (priceAfterDiscountEUR * vat) / 100;
+
+    return {
+      finalUSD: finalUSD.toFixed(2),
+      finalEUR: finalEUR.toFixed(2),
+    };
+  }, [
+    formData.price.EUR,
+    formData.price.USD,
+    formData.vat.amount,
+    formData.discount.amount,
+  ]);
+
+  // Available refills derived from selected package
+  const availableRefills = useMemo(() => {
+    if (!selectedPackageData) return [];
+
+    return selectedPackageData.refills.map((refill) => ({
+      value: refill.title,
+      label: `${refill.title} (${refill.price_usd} USD) ${
+        refill.amount_days ? "" : "Unlimited"
+      }`,
+    }));
+  }, [selectedPackageData]);
+
+  // Available package options
+  const availablePackageOptions = useMemo(() => {
+    if (availablePackages.length > 1) {
+      return availablePackages.map((pkg) => ({
+        value: pkg.id,
+        label: pkg.name,
+        data: pkg,
+      }));
+    }
+    return [];
+  }, [availablePackages]);
+
+  // Combined effect for form validation and package type changes
+  useEffect(() => {
+    // Form validation
+    const result = AddPackageSchema.safeParse(formData);
+    if (result.success) {
+      setErrors({});
+    }
+
+    // Reset form when package type changes
+    if (!packageType) return;
+
+    const resetFormAndFetchData = async () => {
+      setFormData((prev) => ({
+        ...initialFormState,
+        keep_go_bundle_type: packageType,
+      }));
+      setSelectedPackage(null);
+      setSelectedRegion(null);
+      setSelectedCountry(null);
+      setSelectedPackageData(null);
+
+      // Fetch data based on package type
+      setIsLoading(true);
+      try {
+        const response = await fetchPackages({
+          bundle_type: packageType,
+        }).unwrap();
+        const packages = response.data || [];
+        setAvailablePackages(packages);
+
+        if (packageType === "country") {
+          const uniqueCountries = [
+            ...new Set(packages.flatMap((pkg) => pkg.coverage)),
+          ].map((name) => ({ name }));
+          setAvailableCountries(uniqueCountries);
+        } else {
+          const uniqueRegions = packages.map((pkg) => ({
+            id: pkg.id,
+            name: pkg.name,
+            coverage: pkg.coverage,
+          }));
+          setAvailableRegions(uniqueRegions);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    resetFormAndFetchData();
+  }, [packageType, fetchPackages]);
+
+  // Effect for handling selected package changes
+  useEffect(() => {
+    if (!selectedPackage || availablePackages.length === 0) return;
+
+    const selectedPkg = selectedPackageData;
+    if (selectedPkg) {
+      const selectedRefill = selectedPkg.refills.find(
+        (refill) => refill.title === selectedPackage
+      );
+
+      if (selectedRefill) {
+        const coverageCountryIds = selectedPkg.coverage.map((countryName) => {
+          const country = countries.find((c) => c.name === countryName);
+          return country?.name || countryName;
+        });
+        setPackageCountries(coverageCountryIds);
+        setFormData((prev) => ({
+          ...prev,
+          name: selectedRefill.title,
+          data_plan_in_mb: selectedRefill.amount_mb,
+          validity: {
+            amount: selectedRefill.amount_days || 0,
+            type: "day",
+          },
+          original_price: { USD: selectedRefill.price_usd },
+          keep_go_bundle_id: String(selectedPkg.id),
+        }));
+      }
+    }
+  }, [selectedPackage, availablePackages, countries]);
+
+  // Effect for handling region/country selection changes
+  useEffect(() => {
+    if (!selectedRegion && !selectedCountry) return;
+
+    const fetchPackagesForSelection = async () => {
+      setIsLoading(true);
+      try {
+        setFormData((prev) => ({
+          ...initialFormState,
+          keep_go_bundle_type: packageType,
+        }));
+        setSelectedPackage(null);
+        setSelectedPackageData(null);
+
+        const searchTerm =
+          packageType === "country" ? selectedCountry : selectedRegion;
+        const response = await fetchPackages({
+          bundle_type: packageType,
+          search: searchTerm,
+        }).unwrap();
+
+        const packages = response.data || [];
+        setAvailablePackages(packages);
+
+        // If there's only one package, select it automatically
+        if (packages.length === 1) {
+          setSelectedPackageData(packages[0]);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPackagesForSelection();
+  }, [selectedRegion, selectedCountry, packageType]);
+
+  // Form change handler
   const handleChange = useCallback(
     (name, value) => {
       if (name.includes(".")) {
@@ -264,35 +486,30 @@ export const useAddPackage = () => {
     [errors]
   );
 
-  // In both useAddPackage and useUpdatePackage hooks
-  const validateForm = () => {
-    const validationData = {
+  // Form validation
+  const validateForm = useCallback(() => {
+    const dataToValidate = {
       ...formData,
       data_plan_in_mb:
-        formData.data_plan_in_mb === "" ? "" : Number(formData.data_plan_in_mb),
-      bonus_data_plan_in_mb: formData.bonus_data_plan_in_mb
-        ? Number(formData.bonus_data_plan_in_mb)
-        : 0,
-      validity: {
-        amount:
-          formData.validity.amount === ""
-            ? ""
-            : Number(formData.validity.amount),
-        type: formData.validity.type || "day",
-      },
+        formData.data_plan_in_mb === ""
+          ? NaN
+          : Number(formData.data_plan_in_mb),
       original_price: {
         USD:
           formData.original_price.USD === ""
-            ? ""
+            ? NaN
             : Number(formData.original_price.USD),
-        EUR:
-          formData.original_price.EUR === ""
-            ? ""
-            : Number(formData.original_price.EUR),
       },
       price: {
-        USD: formData.price.USD === "" ? "" : Number(formData.price.USD),
-        EUR: formData.price.EUR === "" ? "" : Number(formData.price.EUR),
+        USD: formData.price.USD === "" ? NaN : Number(formData.price.USD),
+        EUR: formData.price.EUR === "" ? NaN : Number(formData.price.EUR),
+      },
+      validity: {
+        amount:
+          formData.validity.amount === ""
+            ? NaN
+            : Number(formData.validity.amount),
+        type: formData.validity.type || "day",
       },
       vat: {
         amount: formData.vat.amount ? Number(formData.vat.amount) : 0,
@@ -300,33 +517,97 @@ export const useAddPackage = () => {
       discount: {
         amount: formData.discount.amount ? Number(formData.discount.amount) : 0,
       },
+      keep_go_bundle_id: formData.keep_go_bundle_id,
     };
 
-    const result = AddPackageSchema.safeParse(validationData);
-
+    // First validate with schema
+    const result = AddPackageSchema.safeParse(dataToValidate);
     if (!result.success) {
-      console.log("Validation errors:", result.error.issues); // Detailed error logging
       const newErrors = {};
       result.error.issues.forEach((issue) => {
         const path = issue.path.join(".");
-        newErrors[path] = issue.message;
-        console.log(`Error at ${path}:`, issue.message); // Per-error logging
+        if (path === "coverage") {
+          newErrors.coverage_countries = issue.message;
+          newErrors.coverage_regions = issue.message;
+        } else if (formData[path] !== undefined && formData[path] !== "") {
+          newErrors[path] = issue.message;
+        }
       });
       setErrors(newErrors);
       return false;
     }
 
+    // Then validate coverage based on package type
+    let isValid = true;
+    if (packageType === "country" && formData.coverage_countries.length === 0) {
+      setCoverageError("At least one country must be selected");
+      isValid = false;
+    } else if (
+      packageType === "regional" &&
+      formData.coverage_regions.length === 0
+    ) {
+      setCoverageError("At least one region must be selected");
+      isValid = false;
+    } else {
+      setCoverageError(null);
+    }
+
+    if (!isValid) {
+      return false;
+    }
+
     setErrors({});
     return true;
-  };
+  }, [formData, packageType]);
 
-  useEffect(() => {
-    const result = UpdatePackageSchema.safeParse(formData);
-    if (result.success) {
-      setErrors({});
+  // Update isFormValid to use the same logic as validateForm
+  const isFormValid = useMemo(() => {
+    const dataToValidate = {
+      ...formData,
+      data_plan_in_mb:
+        formData.data_plan_in_mb === ""
+          ? NaN
+          : Number(formData.data_plan_in_mb),
+      original_price: {
+        USD:
+          formData.original_price.USD === ""
+            ? NaN
+            : Number(formData.original_price.USD),
+      },
+      price: {
+        USD: formData.price.USD === "" ? NaN : Number(formData.price.USD),
+        EUR: formData.price.EUR === "" ? NaN : Number(formData.price.EUR),
+      },
+      validity: {
+        amount:
+          formData.validity.amount === ""
+            ? NaN
+            : Number(formData.validity.amount),
+        type: formData.validity.type || "day",
+      },
+      vat: {
+        amount: formData.vat.amount ? Number(formData.vat.amount) : 0,
+      },
+      discount: {
+        amount: formData.discount.amount ? Number(formData.discount.amount) : 0,
+      },
+      keep_go_bundle_id: formData.keep_go_bundle_id,
+    };
+
+    const result = AddPackageSchema.safeParse(dataToValidate);
+    if (!result.success) return false;
+
+    if (packageType === "country" && formData.coverage_countries.length === 0) {
+      return false;
     }
-  }, [formData]);
+    if (packageType === "regional" && formData.coverage_regions.length === 0) {
+      return false;
+    }
 
+    return true;
+  }, [formData, packageType]);
+
+  // Form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -334,25 +615,22 @@ export const useAddPackage = () => {
       errorNotify("Please fix the errors in the form");
       return;
     }
-
     setIsSubmitting(true);
 
     try {
       const validatedData = AddPackageSchema.parse({
         ...formData,
         data_plan_in_mb: Number(formData.data_plan_in_mb),
-        bonus_data_plan_in_mb: Number(formData.bonus_data_plan_in_mb) || 0,
         validity: {
           amount: Number(formData.validity.amount),
           type: formData.validity.type,
         },
         original_price: {
-          USD: Number(formData.original_price.USD),
-          EUR: Number(formData.original_price.EUR),
+          USD: Number(formData.original_price.USD) || 0,
         },
         price: {
-          USD: Number(formData.price.USD),
-          EUR: Number(formData.price.EUR),
+          USD: Number(formData.price.USD) || 0,
+          EUR: Number(formData.price.EUR) || 0,
         },
         vat: {
           amount: Number(formData.vat.amount) || 0,
@@ -360,6 +638,7 @@ export const useAddPackage = () => {
         discount: {
           amount: Number(formData.discount.amount) || 0,
         },
+        keep_go_bundle_type: packageType,
       });
 
       const response = await addPackage({ data: validatedData }).unwrap();
@@ -370,47 +649,323 @@ export const useAddPackage = () => {
       }
     } catch (error) {
       console.error("Error creating package:", error);
-
-      // Handle Zod validation errors
-      if (error.errors) {
-        setErrors(
-          error.errors.reduce(
-            (acc, err) => ({
-              ...acc,
-              [err.path.join(".")]: err.message,
-            }),
-            {}
-          )
-        );
-        return;
-      }
-
-      // Handle API errors
-      if (error.data?.errorMessages) {
-        const apiErrors = error.data.errorMessages.reduce(
-          (acc, err) => ({
-            ...acc,
-            [err.path.split(".")[0]]: err.message,
-          }),
-          {}
-        );
-
-        setErrors(apiErrors);
-        error.data.errorMessages.forEach((err) =>
-          errorNotify(`${err.path}: ${err.message}`)
-        );
-        return;
-      }
-
-      // Fallback for other errors
       errorNotify(error.data?.message || "Failed to create package");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const isFormValid = (() => {
-    const validationData = {
+  const handleModalOk = useCallback(() => {
+    setIsModalVisible(false);
+    navigate("/packages");
+  }, [navigate]);
+
+  const tagRender = useCallback(
+    (props) => {
+      const { label, value, closable, onClose } = props;
+      const country = countries.find((c) => c._id === value) || {
+        code: "",
+        name: label,
+      };
+
+      return (
+        <Tag
+          closable={closable}
+          onClose={onClose}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "4px",
+            margin: 0,
+            padding: "0 6px",
+          }}
+        >
+          <span>{label}</span>
+        </Tag>
+      );
+    },
+    [countries]
+  );
+
+  const dropdownRender = useCallback(
+    (menu) => {
+      return (
+        <>
+          {formData.coverage_countries.length > 0 && (
+            <div className="p-2 border-b border-neutral-200">
+              <div className="text-xs font-medium text-neutral-500 mb-1">
+                Selected Countries
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {formData.coverage_countries.map((countryId) => {
+                  const country = countries.find((c) => c._id === countryId);
+                  if (!country) return null;
+                  return (
+                    <Tag
+                      key={country._id}
+                      closable
+                      onClose={(e) => {
+                        e.stopPropagation();
+                        handleChange(
+                          "coverage_countries",
+                          formData.coverage_countries.filter(
+                            (id) => id !== country._id
+                          )
+                        );
+                      }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px",
+                        margin: 0,
+                        padding: "0 6px",
+                      }}
+                    >
+                      <ReactCountryFlag
+                        countryCode={country.code}
+                        svg
+                        style={{ width: "16px", height: "12px" }}
+                      />
+                      <span>{country.name}</span>
+                    </Tag>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          {menu}
+        </>
+      );
+    },
+    [formData.coverage_countries, countries, handleChange]
+  );
+
+  return {
+    isModalVisible,
+    isCountryLoading,
+    handleChange,
+    handleSubmit,
+    handleModalOk,
+    isFormValid,
+    errors,
+    formData,
+    navigate,
+    isSubmitting,
+    sortedCountries,
+    tagRender,
+    dropdownRender,
+    packageType,
+    setPackageType,
+    selectedRegion,
+    setSelectedRegion,
+    selectedCountry,
+    setSelectedCountry,
+    selectedPackage,
+    setSelectedPackage,
+    availableRegions,
+    availableCountries,
+    availableRefills,
+    isLoading,
+    packageCountries,
+    availablePackageOptions,
+    selectedPackageData,
+    setSelectedPackageData,
+    availablePackages,
+    isRegionLoading,
+    regions,
+    sortedRegions,
+    finalPrice,
+    coverageError,
+  };
+};
+
+export const useUpdatePackage = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { selectedData } = useSelector((state) => state.package);
+
+  // Initial form state
+  const initialFormState = useMemo(
+    () => ({
+      id: "",
+      name: "",
+      type: "data",
+      data_plan_in_mb: 0,
+      bonus_data_plan_in_mb: 0,
+      validity: { amount: 0, type: "day" },
+      status: "active",
+      coverage_countries: [],
+      coverage_regions: [],
+      original_price: { USD: 0, EUR: 0 },
+      price: { USD: 0, EUR: 0 },
+      vat: { amount: 0 },
+      is_auto_renew_available: true,
+      discount: { amount: 0 },
+      vendor_type: "keep-go",
+      note: "",
+    }),
+    []
+  );
+  const [coverageValidation, setCoverageValidation] = useState(false);
+  const [formData, setFormData] = useState(initialFormState);
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [updatePackage] = useUpdatePackageMutation();
+
+  // API queries
+  const {
+    data: countriesResponse,
+    isLoading: isCountrysLoading,
+    isFetching: isCountrysFetching,
+  } = useGetAllActiveCountrysQuery();
+
+  const {
+    data: regionsResponse,
+    isLoading: isRegionsLoading,
+    isFetching: isRegionsFetching,
+  } = useGetAllActiveRegionsQuery();
+
+  // Derived state
+  const isCountryLoading = isCountrysLoading || isCountrysFetching;
+  const countries = countriesResponse?.data || [];
+  const isRegionLoading = isRegionsLoading || isRegionsFetching;
+  const regions = regionsResponse?.data || [];
+
+  // Final price calculation
+  const finalPrice = useMemo(() => {
+    const baseEUR = parseFloat(formData.price.EUR || 0);
+    const baseUSD = parseFloat(formData.price.USD || 0);
+    const vat = parseFloat(formData.vat.amount || 0);
+    const discount = parseFloat(formData.discount.amount || 0);
+
+    const priceAfterDiscountUSD = baseUSD - (baseUSD * discount) / 100;
+    const finalUSD =
+      priceAfterDiscountUSD + (priceAfterDiscountUSD * vat) / 100;
+
+    const priceAfterDiscountEUR = baseEUR - (baseEUR * discount) / 100;
+    const finalEUR =
+      priceAfterDiscountEUR + (priceAfterDiscountEUR * vat) / 100;
+
+    return {
+      finalUSD: finalUSD.toFixed(2),
+      finalEUR: finalEUR.toFixed(2),
+    };
+  }, [
+    formData.price.EUR,
+    formData.price.USD,
+    formData.vat.amount,
+    formData.discount.amount,
+  ]);
+
+  // Sorted countries and regions
+  const sortedCountries = useMemo(() => {
+    if (!countries.length) return [];
+    const countriesCopy = [...countries];
+    return countriesCopy.sort((a, b) => {
+      const aSelected = formData.coverage_countries.includes(a._id);
+      const bSelected = formData.coverage_countries.includes(b._id);
+      return bSelected - aSelected;
+    });
+  }, [countries, formData.coverage_countries]);
+
+  const sortedRegions = useMemo(() => {
+    if (!regions || !Array.isArray(regions)) return [];
+    if (
+      !formData.coverage_regions ||
+      !Array.isArray(formData.coverage_regions)
+    ) {
+      return [...regions];
+    }
+    return [...regions].sort((a, b) => {
+      const aSelected = formData.coverage_regions.includes(a._id);
+      const bSelected = formData.coverage_regions.includes(b._id);
+      return bSelected - aSelected;
+    });
+  }, [regions, formData.coverage_regions]);
+
+  // Combined effect for form validation and data initialization
+  useEffect(() => {
+    // Form validation
+    const result = UpdatePackageSchema.safeParse(formData);
+    if (result.success) {
+      setErrors({});
+    }
+
+    // Initialize form data when selectedData changes
+    if (selectedData) {
+      setFormData({
+        id: selectedData._id || selectedData.id || "",
+        name: selectedData.name || "",
+        type: selectedData.type || "data",
+        data_plan_in_mb: selectedData.data_plan_in_mb?.toString() || "",
+        bonus_data_plan_in_mb:
+          selectedData.bonus_data_plan_in_mb?.toString() || "",
+        validity: {
+          amount: selectedData.validity?.amount?.toString() || "",
+          type: selectedData.validity?.type || "day",
+        },
+        status: selectedData.status || "active",
+        coverage_countries:
+          selectedData.coverage_countries?.map((country) =>
+            typeof country === "object" ? country._id : country
+          ) || [],
+        coverage_regions:
+          selectedData.coverage_regions?.map((region) =>
+            typeof region === "object" ? region._id : region
+          ) || [],
+        original_price: {
+          USD: selectedData.original_price?.USD?.toString() || "",
+          EUR: selectedData.original_price?.EUR?.toString() || "",
+        },
+        price: {
+          USD: selectedData.price?.USD?.toString() || "",
+          EUR: selectedData.price?.EUR?.toString() || "",
+        },
+        vat: {
+          amount: selectedData.vat?.amount?.toString() || "",
+        },
+        is_auto_renew_available: selectedData.is_auto_renew_available ?? true,
+        discount: {
+          amount: selectedData.discount?.amount?.toString() || "",
+        },
+        vendor_type: selectedData.vendor_type || "telnyx",
+        note: selectedData.note || "",
+      });
+    }
+  }, [selectedData]);
+  // Form change handler
+  const handleChange = useCallback(
+    (name, value) => {
+      if (name.includes(".")) {
+        const [parent, child] = name.split(".");
+        setFormData((prev) => ({
+          ...prev,
+          [parent]: {
+            ...prev[parent],
+            [child]: value,
+          },
+        }));
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          [name]: value,
+        }));
+      }
+
+      if (errors[name]) {
+        setErrors((prev) => ({
+          ...prev,
+          [name]: null,
+        }));
+      }
+    },
+    [errors]
+  );
+
+  // Form validation
+  const validateForm = useCallback(() => {
+    const numericData = {
       ...formData,
       data_plan_in_mb:
         formData.data_plan_in_mb === "" ? "" : Number(formData.data_plan_in_mb),
@@ -443,289 +998,10 @@ export const useAddPackage = () => {
         amount: Number(formData.discount.amount) || 0,
       },
     };
-    const result = AddPackageSchema.safeParse(validationData);
-    return result.success;
-  })();
-
-  const handleModalOk = () => {
-    setIsModalVisible(false);
-    navigate("/packages");
-  };
-
-  const tagRender = (props) => {
-    const { label, value, closable, onClose } = props;
-
-    return (
-      <Tag
-        closable={closable}
-        onClose={onClose}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "4px",
-          margin: 0,
-          padding: "0 6px",
-        }}
-      >
-        <ReactCountryFlag
-          countryCode={label} // Use the label directly
-          svg
-          style={{ width: "16px", height: "12px" }}
-        />
-        <span>{label}</span>
-      </Tag>
-    );
-  };
-
-  // Custom dropdown render function
-  const dropdownRender = (menu) => (
-    <>
-      {/* Selected countries section */}
-      {formData.coverage_countries.length > 0 && (
-        <div className="p-2 border-b border-neutral-200">
-          <div className="text-xs font-medium text-neutral-500 mb-1">
-            Selected Countries
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {formData.coverage_countries.map((countryId) => {
-              const country = countries.find((c) => c._id === countryId);
-              if (!country) return null;
-              return (
-                <Tag
-                  key={country._id}
-                  closable
-                  onClose={(e) => {
-                    e.stopPropagation();
-                    handleChange(
-                      "coverage_countries",
-                      formData.coverage_countries.filter(
-                        (id) => id !== country._id
-                      )
-                    );
-                  }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "4px",
-                    margin: 0,
-                    padding: "0 6px",
-                  }}
-                >
-                  <ReactCountryFlag
-                    countryCode={country.code}
-                    svg
-                    style={{ width: "16px", height: "12px" }}
-                  />
-                  <span>{country.name}</span>
-                </Tag>
-              );
-            })}
-          </div>
-        </div>
-      )}
-      {/* Regular dropdown menu */}
-      {menu}
-    </>
-  );
-
-  return {
-    isModalVisible,
-    isCountryLoading,
-    handleChange,
-    handleSubmit,
-    handleModalOk,
-    isFormValid,
-    errors,
-    formData,
-    navigate,
-    isSubmitting,
-    sortedCountries,
-    tagRender,
-    dropdownRender,
-  };
-};
-
-export const useUpdatePackage = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { selectedData } = useSelector((state) => state.package);
-  const [formData, setFormData] = useState({
-    id: "",
-    name: "",
-    type: "data",
-    data_plan_in_mb: 0,
-    bonus_data_plan_in_mb: 0,
-    validity: {
-      amount: 0,
-      type: "day",
-    },
-    status: "active",
-    coverage_countries: [],
-    original_price: {
-      USD: 0,
-      EUR: 0,
-    },
-    price: {
-      USD: 0,
-      EUR: 0,
-    },
-    vat: {
-      amount: 0,
-    },
-    is_auto_renew_available: true,
-    discount: {
-      amount: 0,
-    },
-    vendor_type: "telnyx",
-    note: "",
-  });
-
-  useEffect(() => {
-    const result = UpdatePackageSchema.safeParse(formData);
-    if (result.success) {
-      setErrors({});
-    }
-  }, [formData]);
-
-  useEffect(() => {
-    if (selectedData) {
-      setFormData({
-        id: selectedData._id || selectedData.id || "",
-        name: selectedData.name || "",
-        type: selectedData.type || "data",
-        data_plan_in_mb: selectedData.data_plan_in_mb?.toString() || "",
-        bonus_data_plan_in_mb:
-          selectedData.bonus_data_plan_in_mb?.toString() || "",
-        validity: {
-          amount: selectedData.validity?.amount?.toString() || "",
-          type: selectedData.validity?.type || "day",
-        },
-        status: selectedData.status || "active",
-        coverage_countries:
-          selectedData.coverage_countries?.map((country) =>
-            typeof country === "object" ? country._id : country
-          ) || [],
-        original_price: {
-          USD: selectedData.original_price?.USD?.toString() || "",
-          EUR: selectedData.original_price?.EUR?.toString() || "",
-        },
-        price: {
-          USD: selectedData.price?.USD?.toString() || "",
-          EUR: selectedData.price?.EUR?.toString() || "",
-        },
-        vat: {
-          amount: selectedData.vat?.amount?.toString() || "",
-        },
-        is_auto_renew_available: selectedData.is_auto_renew_available ?? true,
-        discount: {
-          amount: selectedData.discount?.amount?.toString() || "",
-        },
-        vendor_type: selectedData.vendor_type || "telnyx",
-        note: selectedData.note || "",
-      });
-    }
-  }, [selectedData]);
-
-  useEffect(() => {
-    return () => {
-      dispatch(clearSelectedPackageData());
-    };
-  }, [dispatch]);
-
-  const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [updatePackage] = useUpdatePackageMutation();
-  // Fetch countries
-  const {
-    data: countriesResponse,
-    isLoading: isCountrysLoading,
-    isFetching: isCountrysFetching,
-  } = useGetAllActiveCountrysQuery();
-  const isCountryLoading = isCountrysLoading || isCountrysFetching;
-  const countries = countriesResponse?.data || [];
-  const [sortedCountries, setSortedCountries] = useState([]);
-
-  useEffect(() => {
-    if (countries.length > 0) {
-      const sorted = [...countries].sort((a, b) => {
-        const aSelected = formData.coverage_countries.includes(a._id);
-        const bSelected = formData.coverage_countries.includes(b._id);
-        return bSelected - aSelected; // Selected items come first
-      });
-      setSortedCountries(sorted);
-    }
-  }, [countries, formData.coverage_countries]);
-
-  const handleChange = useCallback(
-    (name, value) => {
-      if (name.includes(".")) {
-        const [parent, child] = name.split(".");
-        setFormData((prev) => ({
-          ...prev,
-          [parent]: {
-            ...prev[parent],
-            [child]: value,
-          },
-        }));
-      } else {
-        setFormData((prev) => ({
-          ...prev,
-          [name]: value,
-        }));
-      }
-
-      if (errors[name]) {
-        setErrors((prev) => ({
-          ...prev,
-          [name]: null,
-        }));
-      }
-    },
-    [errors]
-  );
-
-  const validateForm = () => {
-    const numericData = {
-      ...formData,
-      data_plan_in_mb:
-        formData.data_plan_in_mb === "" ? "" : Number(formData.data_plan_in_mb),
-      bonus_data_plan_in_mb: formData.bonus_data_plan_in_mb
-        ? Number(formData.bonus_data_plan_in_mb)
-        : 0,
-      validity: {
-        amount:
-          formData.validity.amount === ""
-            ? ""
-            : Number(formData.validity.amount),
-        type: formData.validity.type || "day",
-      },
-      original_price: {
-        USD:
-          formData.original_price.USD === ""
-            ? ""
-            : Number(formData.original_price.USD),
-        EUR:
-          formData.original_price.EUR === ""
-            ? ""
-            : Number(formData.original_price.EUR),
-      },
-      price: {
-        USD: formData.price.USD === "" ? "" : Number(formData.price.USD),
-        EUR: formData.price.EUR === "" ? "" : Number(formData.price.EUR),
-      },
-      vat: {
-        amount: formData.vat.amount ? Number(formData.vat.amount) : 0,
-      },
-      discount: {
-        amount: formData.discount.amount ? Number(formData.discount.amount) : 0,
-      },
-    };
 
     const result = UpdatePackageSchema.safeParse(numericData);
 
     if (!result.success) {
-      console.log("Validation errors:", result.error.issues); // Debug log
       const newErrors = {};
       result.error.issues.forEach((issue) => {
         const path = issue.path.join(".");
@@ -736,10 +1012,10 @@ export const useUpdatePackage = () => {
     }
     setErrors({});
     return true;
-  };
+  }, [formData]);
 
-  const isFormValid = (() => {
-    // Skip validation if form hasn't been initialized yet
+  // Form validity check
+  const isFormValid = useMemo(() => {
     if (!formData.id) return false;
 
     const numericData = {
@@ -777,9 +1053,19 @@ export const useUpdatePackage = () => {
     };
 
     const result = UpdatePackageSchema.safeParse(numericData);
-    return result.success;
-  })();
 
+    // Check coverage based on bundle type
+    let coverageValid = false;
+    if (selectedData?.keep_go_bundle_type === "regional") {
+      coverageValid = formData.coverage_regions.length > 0;
+    } else if (selectedData?.keep_go_bundle_type === "country") {
+      coverageValid = formData.coverage_countries.length > 0;
+    }
+
+    return result.success && coverageValid;
+  }, [formData, selectedData?.keep_go_bundle_type]);
+
+  // Form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -823,7 +1109,10 @@ export const useUpdatePackage = () => {
       if (response.success) {
         setIsModalVisible(true);
         dispatch(
-          updatePackageInList({ ...response?.data, _id: response?.data._id })
+          updatePackageInList({
+            ...response?.data,
+            _id: response?.data._id,
+          })
         );
       } else {
         errorNotify(response.message || "Failed to update package");
@@ -851,14 +1140,13 @@ export const useUpdatePackage = () => {
     }
   };
 
-  const handleModalOk = () => {
+  const handleModalOk = useCallback(() => {
     setIsModalVisible(false);
     navigate("/packages");
-  };
+  }, [navigate]);
 
-  const tagRender = (props) => {
+  const tagRender = useCallback((props) => {
     const { label, value, closable, onClose } = props;
-
     return (
       <Tag
         closable={closable}
@@ -872,60 +1160,66 @@ export const useUpdatePackage = () => {
         }}
       >
         <ReactCountryFlag
-          countryCode={label} // Use the label directly
+          countryCode={label}
           svg
           style={{ width: "16px", height: "12px" }}
         />
         <span>{label}</span>
       </Tag>
     );
-  };
-  const dropdownRender = (menu) => (
-    <>
-      {formData.coverage_countries.length > 0 && (
-        <div className="p-2 border-b border-neutral-200">
-          <div className="text-xs font-medium text-neutral-500 mb-1">
-            Selected Countries
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {formData.coverage_countries.map((countryId) => {
-              const country = countries.find((c) => c._id === countryId);
-              if (!country) return null;
-              return (
-                <Tag
-                  key={country._id}
-                  closable
-                  onClose={(e) => {
-                    e.stopPropagation();
-                    handleChange(
-                      "coverage_countries",
-                      formData.coverage_countries.filter(
-                        (id) => id !== country._id
-                      )
-                    );
-                  }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "4px",
-                    margin: 0,
-                    padding: "0 6px",
-                  }}
-                >
-                  <ReactCountryFlag
-                    countryCode={country.code}
-                    svg
-                    style={{ width: "16px", height: "12px" }}
-                  />
-                  <span>{country.name}</span>
-                </Tag>
-              );
-            })}
-          </div>
-        </div>
-      )}
-      {menu}
-    </>
+  }, []);
+
+  const dropdownRender = useCallback(
+    (menu) => {
+      return (
+        <>
+          {formData.coverage_countries.length > 0 && (
+            <div className="p-2 border-b border-neutral-200">
+              <div className="text-xs font-medium text-neutral-500 mb-1">
+                Selected Countries
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {formData.coverage_countries.map((countryId) => {
+                  const country = countries.find((c) => c._id === countryId);
+                  if (!country) return null;
+                  return (
+                    <Tag
+                      key={country._id}
+                      closable
+                      onClose={(e) => {
+                        e.stopPropagation();
+                        handleChange(
+                          "coverage_countries",
+                          formData.coverage_countries.filter(
+                            (id) => id !== country._id
+                          )
+                        );
+                      }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px",
+                        margin: 0,
+                        padding: "0 6px",
+                      }}
+                    >
+                      <ReactCountryFlag
+                        countryCode={country.code}
+                        svg
+                        style={{ width: "16px", height: "12px" }}
+                      />
+                      <span>{country.name}</span>
+                    </Tag>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          {menu}
+        </>
+      );
+    },
+    [formData.coverage_countries, countries, handleChange]
   );
 
   return {
@@ -942,5 +1236,9 @@ export const useUpdatePackage = () => {
     sortedCountries,
     tagRender,
     dropdownRender,
+    selectedData,
+    isRegionLoading,
+    sortedRegions,
+    finalPrice,
   };
 };

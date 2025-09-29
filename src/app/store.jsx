@@ -6,7 +6,6 @@ import settingsSlice from "../features/settings/settingsSlice";
 import regionSlice from "../features/packages/packageRegion/regionSlice";
 import countrySlice from "../features/packages/packageCountry/countrySlice";
 import packageSlice from "../features/packages/package/packageSlice";
-import packageKeepgoSlice from "../features/packages/package-keepgo/packageKeepgoSlice";
 import staffSlice from "../features/staffs/staffSlice";
 import promoSlice from "../features/promos/promoSlice";
 import userSlice from "../features/users/userSlice";
@@ -25,7 +24,6 @@ export const store = configureStore({
     region: regionSlice,
     country: countrySlice,
     package: packageSlice,
-    packageKeepgo: packageKeepgoSlice,
     staff: staffSlice,
     promo: promoSlice,
     user: userSlice,

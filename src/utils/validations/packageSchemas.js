@@ -1,11 +1,7 @@
 import { z } from "zod";
 
-const PriceSchema = z.object({
-  USD: z.number().min(0, "USD price must be positive"),
-  EUR: z.number().min(0, "EUR price must be positive"),
-});
-
-export const PackageSchema = z.object({
+// 1. First create the base schema
+const BasePackageSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters"),
   type: z.enum(["data", "voice"], {
     errorMap: () => ({ message: "Invalid package type" }),
@@ -17,17 +13,21 @@ export const PackageSchema = z.object({
     type: z.enum(["day", "week", "month", "year"]),
   }),
   status: z.enum(["active", "inactive"]),
-  coverage_countries: z
-    .array(z.string())
-    .min(1, "At least one country must be selected"),
-  original_price: PriceSchema,
-  price: PriceSchema,
+  coverage_countries: z.array(z.string()).optional(),
+  coverage_regions: z.array(z.string()).optional(),
+  original_price: z.object({
+    USD: z.number().min(0, "Original price must be positive"),
+  }),
+  price: z.object({
+    USD: z.number().min(0, "Price must be positive"),
+    EUR: z.number().min(0, "Price must be positive").optional(),
+  }),
   vat: z
     .object({
       amount: z.number().min(0).max(100).default(0),
     })
     .optional(),
-  is_auto_renew_available: z.boolean().default(true),
+  is_auto_renew_available: z.boolean().default(false),
   discount: z
     .object({
       amount: z
@@ -37,10 +37,55 @@ export const PackageSchema = z.object({
         .default(0),
     })
     .optional(),
-  vendor_type: z.string().min(0, "Vendor type is required").default("telnyx"),
+  vendor_type: z.string().min(1, "Vendor type is required").default("keep-go"),
   note: z.string().optional(),
-  id: z.string().optional(),
+  keep_go_bundle_id: z.string().nonempty("Bundle ID is required"),
+  id: z.string(),
+  keep_go_bundle_type: z.string(),
 });
 
-export const AddPackageSchema = PackageSchema.omit({ id: true });
-export const UpdatePackageSchema = PackageSchema.required({ id: true });
+const BasePackageUpKeepgoSchema = z.object({
+  name: z.string().min(3, "Name must be at least 3 characters"),
+  type: z.enum(["data", "voice"], {
+    errorMap: () => ({ message: "Invalid package type" }),
+  }),
+  data_plan_in_mb: z.number().min(0, "Data plan must be at least 1MB"),
+  bonus_data_plan_in_mb: z.number().min(0).default(0),
+  validity: z.object({
+    amount: z.number().min(0, "Validity must be at least 1"),
+    type: z.enum(["day", "week", "month", "year"]),
+  }),
+  status: z.enum(["active", "inactive"]),
+  coverage_countries: z.array(z.string()).optional(),
+  coverage_regions: z.array(z.string()).optional(),
+  original_price: z.object({
+    USD: z.number().min(0, "Original price must be positive"),
+  }),
+  price: z.object({
+    USD: z.number().min(0, "Price must be positive"),
+    EUR: z.number().min(0, "Price must be positive").optional(),
+  }),
+  vat: z
+    .object({
+      amount: z.number().min(0).max(100).default(0),
+    })
+    .optional(),
+  is_auto_renew_available: z.boolean().default(false),
+  discount: z
+    .object({
+      amount: z
+        .number()
+        .min(0)
+        .max(100, "Discount cannot exceed 100%")
+        .default(0),
+    })
+    .optional(),
+  vendor_type: z.string().min(1, "Vendor type is required").default("keep-go"),
+  note: z.string().optional(),
+  id: z.string(),
+});
+
+export const AddPackageSchema = BasePackageSchema.omit({ id: true });
+export const UpdatePackageSchema = BasePackageUpKeepgoSchema.required({
+  id: true,
+});

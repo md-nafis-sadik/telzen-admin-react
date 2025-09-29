@@ -9,7 +9,7 @@ import { formatStatusStr } from "../../utils/helper";
 import SkeletonBox from "../../shared/custom/CustomSkeletonBox";
 import { getSymbol } from "../../utils/currency";
 
-const Package = () => {
+const PackageKeepGo = () => {
   const {
     isLoading,
     isError,
@@ -40,9 +40,7 @@ const Package = () => {
       <section className="h-full w-full max-h-[95%] px-4 md:px-6 py-6">
         <div className="bg-white shadow-sm w-full rounded-2xl flex flex-col p-4">
           <div className="flex flex-col lg:flex-row md:items-center justify-between gap-4 mb-4">
-            <h2 className="title-cmn text-[18px] font-semibold">
-              Old Packages
-            </h2>
+            <h2 className="title-cmn text-[18px] font-semibold">Packages</h2>
 
             <div className="flex flex-col lg:flex-row items-center gap-4">
               <div className="flex items-center gap-3 flex-wrap">
@@ -139,23 +137,18 @@ const Package = () => {
             isLoading={isLoading}
             isError={isError}
             status={status}
-            currentPage={meta?.currentPage || 1}
-            pageSize={meta?.pageSize || 1}
-            totalPages={meta?.totalPages || 1}
+            current_page={meta?.current_page || 1}
+            page_size={meta?.page_size || 1}
+            total_pages={meta?.total_pages || 1}
             total_items={meta?.total_items || 0}
             updatePageMeta={updatePageMeta}
             columns={[
               "Package ID",
               "Name",
-              "Type",
               "Plan",
-              "Bonus",
               "Validity",
               "Coverage",
-              "Price ($)",
-              "Price (€)",
-              "Selling Price ($)",
-              "Selling Price (€)",
+              "Final Price ($)",
               "Discount",
               "Status",
               "Action",
@@ -174,22 +167,16 @@ const Package = () => {
                 <td>{singlePackage?.package_id}</td>
                 <td className="py-3">{singlePackage?.name || "-"}</td>
                 <td className="py-3">
-                  {formatStatusStr(singlePackage?.type) || "-"}
-                </td>
-                <td className="py-3">
                   {singlePackage?.data_plan_in_mb || "-"} MB
                 </td>
                 <td className="py-3">
-                  {singlePackage?.bonus_data_plan_in_mb
-                    ? `${singlePackage?.bonus_data_plan_in_mb} MB`
-                    : "-"}
-                </td>
-                <td className="py-3">
-                  {singlePackage?.validity
-                    ? `${singlePackage.validity.amount} ${
-                        singlePackage.validity.type
-                      }${singlePackage.validity.amount > 1 ? "s" : ""}`
-                    : "-"}
+                  {singlePackage?.validity?.amount !== 0
+                    ? singlePackage?.validity
+                      ? `${singlePackage.validity.amount} ${
+                          singlePackage.validity.type
+                        }${singlePackage.validity.amount > 1 ? "s" : ""}`
+                      : "-"
+                    : "Unlimited"}
                 </td>
                 <td className="py-3">
                   {singlePackage?.coverage_countries?.length ? (
@@ -214,30 +201,39 @@ const Package = () => {
                         </span>
                       </>
                     )
+                  ) : singlePackage.coverage_regions.length <= 2 ? (
+                    singlePackage.coverage_regions.map((c) => c.name).join(", ")
                   ) : (
-                    "-"
+                    <>
+                      {singlePackage.coverage_regions
+                        .slice(0, 2)
+                        .map((c) => c.name)
+                        .join(", ")}
+                      <span
+                        className="text-neutral-500 ml-1"
+                        title={singlePackage.coverage_regions
+                          .slice(2)
+                          .map((c) => c.name)
+                          .join(", ")}
+                      >
+                        +{singlePackage.coverage_regions.length - 2} more
+                      </span>
+                    </>
                   )}
                 </td>
-                <td className="py-3 text-center">
-                  {getSymbol("USD")}
-                  {singlePackage?.original_price.USD}
-                </td>
-                <td className="py-3 text-center">
-                  {getSymbol("USD")}
-                  {singlePackage?.original_price.EUR}
-                </td>
-                <td className="py-3 text-center">
+                {/* <td className="py-3 text-center">
                   {getSymbol("USD")}
                   {singlePackage?.price.USD}
-                </td>
+                </td> */}
                 <td className="py-3 text-center">
                   {getSymbol("USD")}
-                  {singlePackage?.price.EUR}
+                  {singlePackage?.grand_total_selling_price?.USD}
                 </td>
                 <td className="py-3 text-center">
-                  {singlePackage?.discount != null ||
-                  (singlePackage?.discount != 0 && singlePackage?.discount)
-                    ? `${singlePackage?.discount?.amount}%`
+                  {singlePackage?.discount_on_selling_price != null ||
+                  (singlePackage?.discount_on_selling_price != 0 &&
+                    singlePackage?.discount_on_selling_price)
+                    ? `${singlePackage?.discount_on_selling_price?.amount}%`
                     : "-"}
                 </td>
                 <td className="py-3">
@@ -297,4 +293,4 @@ const Package = () => {
   );
 };
 
-export default Package;
+export default PackageKeepGo;
