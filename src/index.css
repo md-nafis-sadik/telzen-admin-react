@@ -1,0 +1,93 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+
+/* Define custom font classes */
+@layer base {
+  .font-inter {
+    font-family: "Inter", sans-serif;
+  }
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-white font-inter cursor-default;
+}
+
+.f-center {
+  @apply flex justify-center items-center;
+}
+
+.trans {
+  @apply transition-all duration-300 ease-in-out;
+}
+
+.card-cmn {
+  @apply rounded-2xl border border-main-200 px-6 py-7 bg-white;
+}
+
+.transition-max-height {
+  transition: max-height 0.5s ease-in-out;
+}
+
+.ellipsis {
+  @apply overflow-hidden text-ellipsis whitespace-nowrap;
+}
+
+.react-tel-input .selected-flag:hover,
+.react-tel-input .selected-flag:focus {
+  background-color: transparent !important;
+}
+.react-tel-input .flag-dropdown.open .selected-flag {
+  background: transparent !important;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .printable-content,
+  .printable-content * {
+    visibility: visible;
+  }
+  .printable-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+
+  /* Table specific print styles */
+  table {
+    width: 100% !important;
+    font-size: 10px !important; /* Reduce font size to fit more content */
+    border-collapse: collapse;
+  }
+
+  th,
+  td {
+    padding: 4px !important; /* Reduce padding */
+    white-space: nowrap;
+  }
+
+  /* Force landscape orientation for better fit */
+  @page {
+    size: landscape;
+    margin: 0.5cm;
+  }
+}
+
+@media (min-width: 1024px) {
+    .table :where(.lg\:table-pin-cols thead tr th) {
+      background-color: #F9F9F9 !important;
+    }
+}
+
+html {
+  scroll-behavior: smooth;
+  text-rendering: optimizeSpeed;
+  image-rendering: -webkit-optimize-contrast;
+}

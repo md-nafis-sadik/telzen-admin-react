@@ -1,0 +1,15 @@
+import classNames from "classnames";
+
+export const cx = classNames;
+
+
+// Format status string to capitalize each word
+export const formatStatusStr = (str) => {
+  if (!str) return ""; 
+
+  return str
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};
+

@@ -1,0 +1,41 @@
+.sidebar {
+  transition: width 0.4s ease-in-out;
+}
+
+.sidebar .active {
+  background-color: #fff0f2;
+  color: #4f4f4f;
+  font-weight: 500 !important;
+}
+
+.dropdown-menu {
+  background-color: #f7f7f7;
+}
+
+.dropdown-text {
+  color: #ef5777;
+}
+
+/* * {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+} */
+
+::-webkit-scrollbar {
+  display: none;
+  width: 0;
+}
+
+.yes-scrollbar::-webkit-scrollbar {
+  display: block;
+  width: 6px;
+}
+
+/* .sidebar .active svg,
+.sidebar .active svg path {
+  fill: #ef5777 !important;
+}
+
+.sidebar .active .stoke {
+  stroke: #ef5777;
+} */
