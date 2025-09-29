@@ -34,9 +34,9 @@ export const useHome = () => {
   const data = [
     {
       id: 1,
-      title: "Total Sales (EUR)",
+      title: "Total Sales",
       currency: getSymbol(),
-      number: dashboardStats?.data?.total_sales_EUR || 0,
+      number: dashboardStats?.data?.total_sales?.USD || 0,
       link: "/revenue",
       background: "bg-pinkLight",
       svgBg: "bg-pinkColor",
@@ -44,9 +44,9 @@ export const useHome = () => {
     },
     {
       id: 2,
-      title: "Total Revenue (EUR)",
+      title: "Total Revenue",
       currency: getSymbol(),
-      number: dashboardStats?.data?.total_revenue_EUR || 0,
+      number: dashboardStats?.data?.total_revenue?.USD || 0,
       link: "/revenue",
       background: "bg-violetLight",
       svgBg: "bg-violetColor",

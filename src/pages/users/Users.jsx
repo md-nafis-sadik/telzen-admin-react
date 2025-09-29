@@ -105,7 +105,6 @@ const User = ({ isHome }) => {
             columns={[
               "ID",
               "Country",
-              "Name",
               "Mobile No.",
               "Email",
               "Join Date",
@@ -127,9 +126,7 @@ const User = ({ isHome }) => {
                 <td className="py-4">
                   <div className="flex items-center gap-2">
                     <ReactCountryFlag
-                      countryCode={
-                        dialCodeToCountryCode[user?.country?.dial_code] || "US"
-                      } // Fallback to US if not found
+                      countryCode={user?.country?.code || "US"} // Fallback to US if not found
                       svg
                       style={{
                         display: "block",
@@ -144,8 +141,8 @@ const User = ({ isHome }) => {
                     <span className="truncate">{user?.country?.name}</span>
                   </div>
                 </td>
-                <td className="py-4">{user?.full_name}</td>
-                <td className="py-4">{user?.phone}</td>
+                <td className="py-4">{user?.name}</td>
+                {/* <td className="py-4">{user?.phone}</td> */}
                 <td className="py-4">{user?.email}</td>
                 <td className="py-4">
                   {dayjs.unix(user?.created_at).format("DD/MM/YYYY")}

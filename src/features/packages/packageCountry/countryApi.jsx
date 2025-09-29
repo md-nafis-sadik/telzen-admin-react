@@ -24,13 +24,15 @@ export const countryApi = apiSlice.injectEndpoints({
     }),
 
     getAllActiveCountrys: builder.query({
-      query: (params = { page: 1, limit: "", search: "", status: "active" }) => {
+      query: (
+        params = { page: 1, limit: "", search: "", status: "active" }
+      ) => {
         const queryString = new URLSearchParams(params).toString();
         return {
           url: `country?${queryString}`,
           method: "GET",
         };
-      }
+      },
     }),
 
     getAllApiCountrys: builder.query({
@@ -40,14 +42,10 @@ export const countryApi = apiSlice.injectEndpoints({
           method: "GET",
         };
       },
-    
     }),
     // ADD A NEW ADMIN
     addCountry: builder.mutation({
-      query: ({ data }) => {
-        const formData = new FormData();
-        formData.append("data", JSON.stringify(data));
-
+      query: (formData) => {
         return {
           url: "/country/create",
           method: "POST",

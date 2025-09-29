@@ -241,7 +241,7 @@ export const useAddNotification = () => {
       const validationData = {
         title: formData.title.trim(),
         message: formData.message.trim(),
-        notification_recipient_type: formData.recipientType,
+        recipient_type: formData.recipientType,
         userIds: formData.userIds,
         file: formData.file,
       };
@@ -252,9 +252,7 @@ export const useAddNotification = () => {
         const newErrors = Object.fromEntries(
           result.error.errors.map((err) => {
             const fieldName =
-              err.path[0] === "notification_recipient_type"
-                ? "recipientType"
-                : err.path[0];
+              err.path[0] === "recipient_type" ? "recipientType" : err.path[0];
             return [fieldName, err.message];
           })
         );
@@ -270,9 +268,7 @@ export const useAddNotification = () => {
         const newErrors = Object.fromEntries(
           error.errors.map((err) => {
             const fieldName =
-              err.path[0] === "notification_recipient_type"
-                ? "recipientType"
-                : err.path[0];
+              err.path[0] === "recipient_type" ? "recipientType" : err.path[0];
             return [fieldName, err.message];
           })
         );
@@ -302,7 +298,7 @@ export const useAddNotification = () => {
         JSON.stringify({
           title: formData.title,
           message: formData.message,
-          notification_recipient_type: formData.recipientType,
+          recipient_type: formData.recipientType,
           userIds: userIds,
         })
       );

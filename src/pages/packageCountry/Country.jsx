@@ -26,8 +26,6 @@ const Country = () => {
     handleOpenAddCountryModal,
     handleStatusChange,
     updatingCountrys,
-    isPopularFilter,
-    setIsPopularFilter,
   } = useGetCountries();
   const { Option } = Select;
 
@@ -71,40 +69,6 @@ const Country = () => {
                       <Select.Option key="Inactive" value="inactive">
                         Inactive
                       </Select.Option>
-                    </Select>
-                  </div>
-                  {/* Popular Filter */}
-                  <div className="flex items-center gap-2">
-                    Popularity:
-                    <Select
-                      value={
-                        isPopularFilter === undefined ? "" : isPopularFilter
-                      }
-                      onChange={(value) =>
-                        setIsPopularFilter(value === "" ? undefined : value)
-                      }
-                      placeholder="Popularity"
-                      popupMatchSelectWidth={false}
-                      className={`
-                      w-[130px] text-sm
-                      rounded-md
-                      [&_.ant-select-selector]:!text-sm
-                      [&_.ant-select-selector]:!h-7
-                      [&_.ant-select-selector]:!px-2
-                      [&_.ant-select-selector]:!flex
-                      [&_.ant-select-selector]:!items-center
-                      [&_.ant-select-selection-item]:!font-bold
-                    `}
-                    >
-                      <Option key="All" value="">
-                        All
-                      </Option>
-                      <Option key="Popular" value="true">
-                        Popular
-                      </Option>
-                      <Option key="Non-Popular" value="false">
-                        Non-Popular
-                      </Option>
                     </Select>
                   </div>
                 </div>

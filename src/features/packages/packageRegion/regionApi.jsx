@@ -38,10 +38,7 @@ export const regionApi = apiSlice.injectEndpoints({
     }),
     // ADD A NEW ADMIN
     addRegion: builder.mutation({
-      query: ({ data }) => {
-        const formData = new FormData();
-        formData.append("data", JSON.stringify(data));
-
+      query: (formData) => {
         return {
           url: "/region/create",
           method: "POST",
@@ -52,10 +49,7 @@ export const regionApi = apiSlice.injectEndpoints({
 
     // UPDATE A ADMIN
     updateRegion: builder.mutation({
-      query: ({ data, id }) => {
-        const formData = new FormData();
-        formData.append("data", JSON.stringify(data));
-
+      query: ({ id, formData }) => {
         return {
           url: `region/update?region_id=${id}`,
           method: "PATCH",

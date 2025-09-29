@@ -50,7 +50,6 @@ export const useGetCountries = () => {
   const { current_page, page_size } = meta || {};
   const [searchKeyword, setSearchKeyword] = useState("");
   const [filterKey, setFilterKey] = useState(undefined);
-  const [isPopularFilter, setIsPopularFilter] = useState(undefined);
   const debouncedSearch = useDebouncedSearch(searchKeyword, 1000);
 
   const isInitialRender = useRef(true);
@@ -62,7 +61,6 @@ export const useGetCountries = () => {
     limit: page_size,
     search: debouncedSearch,
     ...(filterKey !== undefined && { status: filterKey || null }),
-    ...(isPopularFilter !== undefined && { is_popular: isPopularFilter }),
     forceRefetch: forceRefetchTrigger,
   };
 
@@ -74,8 +72,7 @@ export const useGetCountries = () => {
         isInitialRender.current &&
         dataList.length > 0 &&
         debouncedSearch === "" &&
-        filterKey === undefined &&
-        isPopularFilter === undefined,
+        filterKey === undefined,
     }
   );
 
@@ -100,7 +97,7 @@ export const useGetCountries = () => {
     }
     setForceRefetchTrigger((prev) => prev + 1);
     // dispatch(setCountryMetaData({ ...meta, current_page: 1 }));
-  }, [debouncedSearch, filterKey, isPopularFilter]);
+  }, [debouncedSearch, filterKey]);
 
   useEffect(() => {
     if (
@@ -201,8 +198,6 @@ export const useGetCountries = () => {
     handleOpenAddCountryModal,
     handleStatusChange,
     updatingCountrys,
-    isPopularFilter,
-    setIsPopularFilter,
   };
 };
 
@@ -211,13 +206,14 @@ export const useAddCountry = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    code: "",
-    region: "",
-    popular: "no",
-    discount: null,
+    code: null,
+    region: null,
+    file: null,
   });
   const [errors, setErrors] = useState({});
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [typeError, setTypeError] = useState(false);
   const [addCountry, { isLoading: isSubmitting }] = useAddCountryMutation();
 
   const { data: regionsResponse, isLoading: isRegionsLoading } =
@@ -228,16 +224,31 @@ export const useAddCountry = () => {
     useGetAllApiCountrysQuery();
   const countries = countriesResponse?.data || [];
 
+  const fileInputRef = useRef(null);
+
+  const handleFileDelete = () => {
+    setFormData((prev) => ({ ...prev, file: null }));
+    setImagePreview(null);
+    setTypeError(false);
+    setErrors((prev) => ({ ...prev, file: null }));
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const handleChange = (name, value) => {
     let processedValue = value;
+
+    if (name === "file") {
+      const file = value;
+      if (file) {
+        setFormData((prev) => ({ ...prev, file }));
+        setImagePreview(URL.createObjectURL(file));
+        setErrors((prev) => ({ ...prev, file: null }));
+      }
+    }
 
     if (name === "country" || name === "code") {
       processedValue = value && typeof value === "object" ? value.code : value;
       name = "code";
-    }
-
-    if (name === "discount" && value === "") {
-      processedValue = null;
     }
 
     setFormData((prev) => ({
@@ -276,7 +287,19 @@ export const useAddCountry = () => {
     try {
       const payload = transformFormDataToAPI(formData, countries);
 
-      const response = await addCountry({ data: payload }).unwrap();
+      const formDataToSend = new FormData();
+      formDataToSend.append(
+        "data",
+        JSON.stringify({
+          ...payload,
+        })
+      );
+
+      if (formData.file) {
+        formDataToSend.append("single", formData.file);
+      }
+
+      const response = await addCountry(formDataToSend).unwrap();
       if (response?.success) {
         setIsModalVisible(true);
         dispatch(addNewCountryToList(response.data));
@@ -321,6 +344,10 @@ export const useAddCountry = () => {
     isRegionsLoading,
     isCountriesLoading,
     isSubmitting,
+    imagePreview,
+    fileInputRef,
+    typeError,
+    handleFileDelete,
   };
 };
 
@@ -333,8 +360,7 @@ export const useUpdateCountry = () => {
   const [formData, setFormData] = useState({
     code: "",
     region: "",
-    popular: "no",
-    discount: null,
+    file: null,
     _id: "",
   });
 
@@ -343,12 +369,6 @@ export const useUpdateCountry = () => {
     setFormData({
       code: selectedData.code || "",
       region: selectedData.region?._id || "",
-      popular: selectedData.is_popular ? "yes" : "no",
-      discount:
-        selectedData.discount.amount === undefined ||
-        selectedData.discount.amount === ""
-          ? null
-          : selectedData.discount.amount,
       _id: selectedData._id || "",
     });
   }, [selectedData]);
@@ -361,6 +381,8 @@ export const useUpdateCountry = () => {
 
   const [errors, setErrors] = useState({});
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [typeError, setTypeError] = useState(false);
   const [updateCountry, { isLoading: isSubmitting }] =
     useUpdateCountryMutation();
 
@@ -372,18 +394,31 @@ export const useUpdateCountry = () => {
     useGetAllApiCountrysQuery();
   const countries = countriesResponse?.data || [];
 
+  const fileInputRef = useRef(null);
+
+  const handleFileDelete = () => {
+    setFormData((prev) => ({ ...prev, file: null }));
+    setImagePreview(null);
+    setTypeError(false);
+    setErrors((prev) => ({ ...prev, file: null }));
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const handleChange = (name, value) => {
     let processedValue = value;
+    if (name === "file") {
+      const file = value;
+      if (file) {
+        setFormData((prev) => ({ ...prev, file }));
+        setImagePreview(URL.createObjectURL(file));
+        setErrors((prev) => ({ ...prev, file: null }));
+      }
+    }
 
     if (name === "country" || name === "code") {
       processedValue = value && typeof value === "object" ? value.code : value;
       name = "code";
     }
-
-    if (name === "discount") {
-      processedValue = value === "" ? null : Number(value);
-    }
-
     setFormData((prev) => ({
       ...prev,
       [name]: processedValue,

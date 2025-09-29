@@ -117,50 +117,6 @@ function UpdateCountryForm() {
                 <span className="text-red-500 text-sm">{errors.region}</span>
               )}
             </div>
-
-            {/* Popular */}
-            <div className="flex flex-col gap-1">
-              <span className="text-black-700">Popular</span>
-              <Select
-                className={`w-full border ${
-                  errors.popular ? "!border-red-500" : "border-natural-400"
-                } rounded-lg
-                  [&_.ant-select-selector]:!h-12
-                  [&_.ant-select-selector]:!px-4
-                  [&_.ant-select-selector]:!flex
-                  [&_.ant-select-selector]:!items-center
-                  [&_.ant-select-selector]:!leading-[3.5rem]`}
-                placeholder="Select one"
-                value={formData.popular}
-                onChange={(value) => handleChange("popular", value)}
-              >
-                <Select.Option value="yes">Yes</Select.Option>
-                <Select.Option value="no">No</Select.Option>
-              </Select>
-              {errors.popular && (
-                <span className="text-red-500 text-sm">{errors.popular}</span>
-              )}
-            </div>
-
-            {/* Discount */}
-            <div className="flex flex-col gap-1">
-              <span className="text-black-700">Discount (Optional)</span>
-              <input
-                type="number"
-                placeholder="Enter in % value"
-                className={`w-full border ${
-                  errors.discount ? "!border-red-500" : "border-natural-400"
-                } border-natural-400 placeholder:text-disabled text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-                value={formData.discount}
-                onChange={(e) => handleChange("discount", e.target.value)}
-                min="0"
-                max="100"
-                onWheel={(e) => e.target.blur()}
-              />
-              {errors.discount && (
-                <span className="text-red-500 text-sm">{errors.discount}</span>
-              )}
-            </div>
           </div>
 
           {/* Action Buttons */}
@@ -176,7 +132,12 @@ function UpdateCountryForm() {
             <button
               type="submit"
               className="btn w-auto h-12 px-6 bg-black hover:bg-black-900 uppercase text-white hover:text-white disabled:text-white"
-              disabled={!isFormValid || isRegionLoading || isCountryLoading || isSubmitting}
+              disabled={
+                !isFormValid ||
+                isRegionLoading ||
+                isCountryLoading ||
+                isSubmitting
+              }
             >
               {isSubmitting ? "Processing..." : "Update"}
             </button>

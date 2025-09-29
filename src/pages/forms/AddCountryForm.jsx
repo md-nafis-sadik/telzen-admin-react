@@ -5,6 +5,7 @@ import ReactCountryFlag from "react-country-flag";
 import NotifyContainer from "../../utils/getNotify";
 import { useAddCountry } from "../../hooks/features/useCountrys";
 import SkeletonBox from "../../shared/custom/CustomSkeletonBox";
+import { NotificationDeleteIcon } from "../../utils/svgs";
 
 function AddCountryForm() {
   const {
@@ -21,6 +22,10 @@ function AddCountryForm() {
     isRegionLoading,
     isCountryLoading,
     isSubmitting,
+    imagePreview,
+    fileInputRef,
+    typeError,
+    handleFileDelete,
   } = useAddCountry();
 
   return (
@@ -108,48 +113,71 @@ function AddCountryForm() {
               )}
             </div>
 
-            {/* Popular */}
+            {/* Image */}
             <div className="flex flex-col gap-1">
-              <span className="text-black-700">Popular</span>
-              <Select
-                className={`w-full border ${
-                  errors.popular ? "!border-red-500" : "border-natural-400"
-                } rounded-lg
-                  [&_.ant-select-selector]:!h-12
-                  [&_.ant-select-selector]:!px-4
-                  [&_.ant-select-selector]:!flex
-                  [&_.ant-select-selector]:!items-center
-                  [&_.ant-select-selector]:!leading-[3.5rem]`}
-                placeholder="Select one"
-                value={formData.popular}
-                onChange={(value) => handleChange("popular", value)}
-              >
-                <Select.Option value="yes">Yes</Select.Option>
-                <Select.Option value="no">No</Select.Option>
-              </Select>
-              {errors.popular && (
-                <span className="text-red-500 text-sm">{errors.popular}</span>
-              )}
-            </div>
-
-            {/* Discount */}
-            <div className="flex flex-col gap-1">
-              <span className="text-black-700">Discount (Optional)</span>
-              <input
-                type="number"
-                placeholder="Enter in % value"
-                className={`w-full border ${
-                  errors.discount ? "!border-red-500" : "border-natural-400"
-                } border-natural-400 placeholder:text-disabled text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-                value={formData.discount}
-                onChange={(e) => handleChange("discount", e.target.value)}
-                min="0"
-                max="100"
-                onWheel={(e) => e.target.blur()}
-              />
-              {errors.discount && (
-                <span className="text-red-500 text-sm">{errors.discount}</span>
-              )}
+              <span className="text-blackHigh">Image</span>
+              <div>
+                <div className="w-full relative">
+                  <input
+                    type="file"
+                    id="imageId"
+                    className="absolute opacity-0"
+                    ref={fileInputRef}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      handleChange("file", e.target.files[0]);
+                    }}
+                  />
+                  <label
+                    htmlFor="imageId"
+                    className={`flex items-center gap-2 py-1.5 px-1.5 border ${
+                      errors.file ? "border-red-500" : "border-slateLow"
+                    } rounded-lg cursor-pointer`}
+                  >
+                    {!imagePreview && (
+                      <span className="inline-block px-4 py-2 bg-fadeColor text-white text-sm rounded-lg">
+                        Choose File
+                      </span>
+                    )}
+                    {!imagePreview ? (
+                      <span className="text-xs text-blackSemi">
+                        Upload Image
+                      </span>
+                    ) : (
+                      <span className="flex justify-between w-full items-center">
+                        <span className="flex items-center gap-2">
+                          <img
+                            src={imagePreview}
+                            alt="Preview"
+                            className="w-9 h-9 rounded-sm bg-center object-cover"
+                          />
+                          <p className="text-blackSemi text-base whitespace-nowrap overflow-hidden text-ellipsis">
+                            {formData.file?.name?.substring(0, 25)}
+                          </p>
+                        </span>
+                        <button
+                          type="button"
+                          className="flex items-center justify-center"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleFileDelete();
+                          }}
+                        >
+                          <NotificationDeleteIcon />
+                        </button>
+                      </span>
+                    )}
+                  </label>
+                </div>
+                {typeError && (
+                  <p className="text-xs text-errorColor mt-1 font-medium">
+                    Only JPG, JPEG or PNG file are supported
+                  </p>
+                )}
+                {errors.file && (
+                  <span className="text-red-500 text-sm">{errors.file}</span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -166,7 +194,12 @@ function AddCountryForm() {
             <button
               type="submit"
               className="btn w-auto h-12 px-6 bg-black hover:bg-black-900 uppercase text-white hover:text-white disabled:text-white"
-              disabled={!isFormValid || isRegionLoading || isCountryLoading || isSubmitting}
+              disabled={
+                !isFormValid ||
+                isRegionLoading ||
+                isCountryLoading ||
+                isSubmitting
+              }
             >
               {isSubmitting ? "Processing..." : "Done"}
             </button>

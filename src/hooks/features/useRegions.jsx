@@ -136,7 +136,7 @@ export const useGetRegions = () => {
     try {
       const result = await updatePackageRegion({
         id: regionId,
-        data: { status: apiStatus },
+        formData: { status: apiStatus },
       }).unwrap();
 
       if (result?.success) {
@@ -182,16 +182,36 @@ export const useGetRegions = () => {
 export const useAddRegion = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ name: "" });
+  const [formData, setFormData] = useState({ name: "", file: null });
   const [errors, setErrors] = useState({});
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [addRegion, { isLoading }] = useAddRegionMutation();
+  const [imagePreview, setImagePreview] = useState(null);
+  const [typeError, setTypeError] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const handleChange = (name, value) => {
+    if (name === "file") {
+      const file = value;
+      if (file) {
+        setFormData((prev) => ({ ...prev, file }));
+        setImagePreview(URL.createObjectURL(file));
+        setErrors((prev) => ({ ...prev, file: null }));
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
 
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
+      if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
+    }
+  };
+
+  const fileInputRef = useRef(null);
+
+  const handleFileDelete = () => {
+    setFormData((prev) => ({ ...prev, file: null }));
+    setImagePreview(null);
+    setTypeError(false);
+    setErrors((prev) => ({ ...prev, file: null }));
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const validateForm = () => {
@@ -215,18 +235,28 @@ export const useAddRegion = () => {
     }
 
     try {
-      const payload = { ...formData, name: formData.name.trim() };
-      const response = await addRegion({ data: payload }).unwrap();
+      const formDataToSend = new FormData();
+      formDataToSend.append(
+        "data",
+        JSON.stringify({
+          name: formData.name,
+        })
+      );
+
+      if (formData.file) {
+        formDataToSend.append("single", formData.file);
+      }
+      const response = await addRegion(formDataToSend).unwrap();
 
       if (response?.success) {
         setIsModalVisible(true);
         dispatch(addNewRegionToList(response.data));
       } else {
-        message.error(response?.message || "Failed to create region");
+        console.error(response?.message || "Failed to create region");
       }
     } catch (error) {
       console.error("Error creating region:", error);
-      message.error(
+      errorNotify(
         error?.data?.message || "Failed to create region. Please try again."
       );
     }
@@ -251,6 +281,10 @@ export const useAddRegion = () => {
     isLoading,
     isFormValid,
     navigate,
+    imagePreview,
+    fileInputRef,
+    typeError,
+    handleFileDelete,
   };
 };
 
@@ -262,11 +296,14 @@ export const useUpdateRegion = () => {
   const [formData, setFormData] = useState({
     name: "",
     status: "active",
+    file: null,
     _id: "",
   });
   const [errors, setErrors] = useState({});
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [updateRegion, { isLoading }] = useUpdateRegionMutation();
+  const [imagePreview, setImagePreview] = useState(null);
+  const [typeError, setTypeError] = useState(false);
 
   useEffect(() => {
     if (selectedData) {
@@ -274,13 +311,38 @@ export const useUpdateRegion = () => {
         name: selectedData.name || "",
         status: selectedData.status || "active",
         _id: selectedData._id || "",
+        file: {
+          name: selectedData.image ? selectedData.image.split("/").pop() : "",
+          value: selectedData.image || "",
+        },
       });
+      setImagePreview(selectedData.image);
     }
   }, [selectedData]);
 
   const handleChange = (name, value) => {
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
+    if (name === "file") {
+      const file = value;
+      if (file) {
+        setFormData((prev) => ({ ...prev, file }));
+        setImagePreview(URL.createObjectURL(file));
+        setErrors((prev) => ({ ...prev, file: null }));
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+
+      if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
+    }
+  };
+
+  const fileInputRef = useRef(null);
+
+  const handleFileDelete = () => {
+    setFormData((prev) => ({ ...prev, file: null }));
+    setImagePreview(null);
+    setTypeError(false);
+    setErrors((prev) => ({ ...prev, file: null }));
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const validateForm = () => {
@@ -307,21 +369,28 @@ export const useUpdateRegion = () => {
     }
 
     try {
-      const payload = {
-        name: formData.name.trim(),
-        status: formData.status,
-      };
+      const formDataToSend = new FormData();
+      formDataToSend.append(
+        "data",
+        JSON.stringify({
+          name: formData.name,
+        })
+      );
+
+      if (formData.file) {
+        formDataToSend.append("single", formData.file);
+      }
 
       const result = await updateRegion({
         id: formData._id,
-        data: payload,
+        formData: formDataToSend,
       }).unwrap();
 
       if (result.success) {
         setIsModalVisible(true);
         dispatch(updateRegionInList({ ...result.data, _id: result.data._id }));
       } else {
-        message.error(result.message || "Failed to update region");
+        console.error(result.message || "Failed to update region");
       }
     } catch (error) {
       console.error("Error updating region:", error);
@@ -334,7 +403,7 @@ export const useUpdateRegion = () => {
         );
         setErrors(apiErrors);
       }
-      message.error(
+      errorNotify(
         error.data?.message || "An error occurred while updating the region"
       );
     }
@@ -360,5 +429,9 @@ export const useUpdateRegion = () => {
     isLoading,
     isFormValid,
     navigate,
+    imagePreview,
+    fileInputRef,
+    typeError,
+    handleFileDelete,
   };
 };

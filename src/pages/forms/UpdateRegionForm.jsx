@@ -2,6 +2,7 @@ import BackToPrev from "../../components/shared/back/BackToPrev";
 import SuccessModal from "../../components/modals/SuccessModal";
 import { useUpdateRegion } from "../../hooks/features/useRegions";
 import NotifyContainer from "../../utils/getNotify";
+import { NotificationDeleteIcon } from "../../utils/svgs";
 
 function UpdateRegionForm() {
   const {
@@ -14,6 +15,10 @@ function UpdateRegionForm() {
     errors,
     formData,
     navigate,
+    imagePreview,
+    fileInputRef,
+    typeError,
+    handleFileDelete,
   } = useUpdateRegion();
 
   return (
@@ -39,23 +44,72 @@ function UpdateRegionForm() {
               )}
             </div>
 
-            {/* Status Field */}
-            {/* <div className="flex flex-col gap-1">
-              <label className="text-black-700">Status</label>
-              <select
-                className={`w-full border ${
-                  errors.status ? "border-red-500" : "border-natural-400"
-                } text-blackLow rounded-lg outline-none py-3 px-4`}
-                value={formData.status}
-                onChange={(e) => handleChange("status", e.target.value)}
-              >
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-              {errors.status && (
-                <span className="text-red-500 text-sm">{errors.status}</span>
-              )}
-            </div> */}
+            {/* Image */}
+            <div className="flex flex-col gap-1">
+              <span className="text-blackHigh">Image</span>
+              <div>
+                <div className="w-full relative">
+                  <input
+                    type="file"
+                    id="imageId"
+                    className="absolute opacity-0"
+                    ref={fileInputRef}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      handleChange("file", e.target.files[0]);
+                    }}
+                  />
+                  <label
+                    htmlFor="imageId"
+                    className={`flex items-center gap-2 py-1.5 px-1.5 border ${
+                      errors.file ? "border-red-500" : "border-slateLow"
+                    } rounded-lg cursor-pointer`}
+                  >
+                    {!imagePreview && (
+                      <span className="inline-block px-4 py-2 bg-fadeColor text-white text-sm rounded-lg">
+                        Choose File
+                      </span>
+                    )}
+                    {!imagePreview ? (
+                      <span className="text-xs text-blackSemi">
+                        Upload Image
+                      </span>
+                    ) : (
+                      <span className="flex justify-between w-full items-center">
+                        <span className="flex items-center gap-2">
+                          <img
+                            src={imagePreview}
+                            alt="Preview"
+                            className="w-9 h-9 rounded-sm bg-center object-cover"
+                          />
+                          <p className="text-blackSemi text-base whitespace-nowrap overflow-hidden text-ellipsis">
+                            {formData.file?.name?.substring(0, 25)}
+                          </p>
+                        </span>
+                        <button
+                          type="button"
+                          className="flex items-center justify-center"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleFileDelete();
+                          }}
+                        >
+                          <NotificationDeleteIcon />
+                        </button>
+                      </span>
+                    )}
+                  </label>
+                </div>
+                {typeError && (
+                  <p className="text-xs text-errorColor mt-1 font-medium">
+                    Only JPG, JPEG or PNG file are supported
+                  </p>
+                )}
+                {errors.file && (
+                  <span className="text-red-500 text-sm">{errors.file}</span>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Action Buttons */}
