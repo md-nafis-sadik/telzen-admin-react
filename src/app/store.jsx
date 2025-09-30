@@ -7,7 +7,7 @@ import regionSlice from "../features/packages/packageRegion/regionSlice";
 import countrySlice from "../features/packages/packageCountry/countrySlice";
 import packageSlice from "../features/packages/package/packageSlice";
 import staffSlice from "../features/staffs/staffSlice";
-import promoSlice from "../features/promos/promoSlice";
+import couponSlice from "../features/coupons/couponSlice";
 import userSlice from "../features/users/userSlice";
 import userDetailsSlice from "../features/userDetails/userDetailsSlice";
 import revenueSlice from "../features/revenues/revenueSlice";
@@ -25,7 +25,7 @@ export const store = configureStore({
     country: countrySlice,
     package: packageSlice,
     staff: staffSlice,
-    promo: promoSlice,
+    coupon: couponSlice,
     user: userSlice,
     userDetails: userDetailsSlice,
     revenue: revenueSlice,

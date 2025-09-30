@@ -10,7 +10,7 @@ export const packagesApi = apiSlice.injectEndpoints({
       ) => {
         const queryString = new URLSearchParams(params).toString();
         return {
-          url: `package?${queryString}&vendor_type=keep-go`,
+          url: `package?${queryString}`,
           method: "GET",
         };
       },
@@ -38,7 +38,7 @@ export const packagesApi = apiSlice.injectEndpoints({
       ) => {
         const queryString = new URLSearchParams(params).toString();
         return {
-          url: `package?${queryString}&vendor_type=keep-go`,
+          url: `package?${queryString}`,
           method: "GET",
         };
       },
@@ -54,7 +54,7 @@ export const packagesApi = apiSlice.injectEndpoints({
       ) => {
         const queryString = new URLSearchParams(params).toString();
         return {
-          url: `package/keep-go?${queryString}`,
+          url: `package/esim-access?${queryString}`,
           method: "GET",
         };
       },

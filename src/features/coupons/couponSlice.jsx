@@ -23,15 +23,15 @@ const initialState = {
   },
 };
 
-const promoSlice = createSlice({
-  name: "promo",
+const couponSlice = createSlice({
+  name: "coupon",
   initialState,
   reducers: {
-    setPromoDataList: (state, action) => {
+    setCouponDataList: (state, action) => {
       state.dataList = action.payload.data;
     },
 
-    setPromoData: (state, action) => {
+    setCouponData: (state, action) => {
       const { data, meta } = action.payload;
       const result = setPaginatedDataFromApi({
         incomingData: data,
@@ -45,8 +45,8 @@ const promoSlice = createSlice({
       state.dataList = result.dataList;
     },
 
-    addNewPromoToList: (state, action) => {
-      const newPromo = {
+    addNewCouponToList: (state, action) => {
+      const newCoupon = {
         ...action.payload,
         rankingNumber: 1, // Since it's being added at the top, it gets rank 1
         totalPrizeGiven: 0,
@@ -58,7 +58,7 @@ const promoSlice = createSlice({
         meta: state.meta,
         data: state.data,
         dataList: state.dataList,
-        newItem: newPromo,
+        newItem: newCoupon,
       });
 
       state.meta = result.meta;
@@ -83,7 +83,7 @@ const promoSlice = createSlice({
       state.dataList = updatedData[current_pageKey] || [];
     },
 
-    updatePromoInList: (state, action) => {
+    updateCouponInList: (state, action) => {
       state.dataList = updateDataInDataList({
         dataList: state.dataList,
         updatedItem: action.payload,
@@ -96,7 +96,7 @@ const promoSlice = createSlice({
       });
     },
 
-    removePromoFromList: (state, action) => {
+    removeCouponFromList: (state, action) => {
       const result = removeDataFromPaginatedList({
         meta: state.meta,
         data: state.data,
@@ -126,7 +126,7 @@ const promoSlice = createSlice({
       state.dataList = updatedData[current_pageKey] || [];
     },
 
-    setPromoMetaData: (state, action) => {
+    setCouponMetaData: (state, action) => {
       state.meta = { ...state.meta, ...action.payload };
       const updateKey = Object.keys(action.payload)[0];
 
@@ -173,26 +173,26 @@ const promoSlice = createSlice({
     },
     /* ============ End data setup ============ */
 
-    setSelectedPromoData: (state, action) => {
+    setSelectedCouponData: (state, action) => {
       state.selectedData = action.payload;
     },
     // Reset selectedData when needed
-    clearSelectedPromoData: (state) => {
+    clearSelectedCouponData: (state) => {
       state.selectedData = null;
     },
   },
 });
 
 export const {
-  setPromoDataList,
-  setPromoData,
-  addNewPromoToList,
-  updatePromoInList,
-  removePromoFromList,
-  setPromoMetaData,
+  setCouponDataList,
+  setCouponData,
+  addNewCouponToList,
+  updateCouponInList,
+  removeCouponFromList,
+  setCouponMetaData,
 
-  setSelectedPromoData,
-  clearSelectedPromoData,
-  setPromoConfirmationModal,
-} = promoSlice.actions;
-export default promoSlice.reducer;
+  setSelectedCouponData,
+  clearSelectedCouponData,
+  setCouponConfirmationModal,
+} = couponSlice.actions;
+export default couponSlice.reducer;

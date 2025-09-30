@@ -8,8 +8,8 @@ import Users from "../pages/users/Users";
 import PrivateRouter from "./PrivateRouter";
 import Settings from "../pages/settings/Settings";
 import Staffs from "../pages/staffs/Staffs";
-import AddPromoForm from "../pages/forms/AddPromoForm";
-import UpdatePromoForm from "../pages/forms/UpdatePromoForm";
+import AddCouponForm from "../pages/forms/AddCouponForm";
+import UpdateCouponForm from "../pages/forms/UpdateCouponForm";
 import AddStaffForm from "../pages/forms/AddStaffForm";
 import UpdateStaffForm from "../pages/forms/UpdateStaffForm";
 import AddSellerForm from "../pages/forms/AddSellerForm";
@@ -20,7 +20,7 @@ import Region from "../pages/packageRegion/Region";
 import Country from "../pages/packageCountry/Country";
 import AddCountryForm from "../pages/forms/AddCountryForm";
 import UpdateCountryForm from "../pages/forms/UpdateCountryForm";
-import Promo from "../pages/promos/Promos";
+import Coupon from "../pages/coupons/Coupons";
 import ForgotPassword from "../pages/authentication/ForgotPassword";
 import Revenue from "../pages/revenues/Revenues";
 import Notification from "../pages/notifications/Notification";
@@ -217,7 +217,7 @@ export const routes = createBrowserRouter([
         ),
       },
       {
-        path: "/promo",
+        path: "/coupon",
         element: (
           <PrivateRouter
             allowedRoles={[
@@ -227,12 +227,12 @@ export const routes = createBrowserRouter([
               "admin",
             ]}
           >
-            <Promo />
+            <Coupon />
           </PrivateRouter>
         ),
       },
       {
-        path: "/promo-add",
+        path: "/coupon-add",
         element: (
           <PrivateRouter
             allowedRoles={[
@@ -242,12 +242,12 @@ export const routes = createBrowserRouter([
               "admin",
             ]}
           >
-            <AddPromoForm />
+            <AddCouponForm />
           </PrivateRouter>
         ),
       },
       {
-        path: "/promo-edit",
+        path: "/coupon-edit",
         element: (
           <PrivateRouter
             allowedRoles={[
@@ -257,7 +257,7 @@ export const routes = createBrowserRouter([
               "admin",
             ]}
           >
-            <UpdatePromoForm />
+            <UpdateCouponForm />
           </PrivateRouter>
         ),
       },

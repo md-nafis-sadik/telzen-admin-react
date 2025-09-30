@@ -1,11 +1,10 @@
-import { Select } from "antd";
+import { Select, Switch } from "antd";
 import BackToPrev from "../../components/shared/back/BackToPrev";
 import SuccessModal from "../../components/modals/SuccessModal";
 import { useAddPackage } from "../../hooks/features/usePackages";
 import NotifyContainer from "../../utils/notify";
 import ReactCountryFlag from "react-country-flag";
 import SkeletonBox from "../../shared/custom/CustomSkeletonBox";
-import { currency, getSymbol } from "../../utils/currency";
 
 function AddPackageForm() {
   const {
@@ -24,15 +23,8 @@ function AddPackageForm() {
     dropdownRender,
     packageType,
     setPackageType,
-    selectedRegion,
-    setSelectedRegion,
-    selectedCountry,
-    setSelectedCountry,
     selectedPackage,
     setSelectedPackage,
-    availableRegions,
-    availableCountries,
-    availableRefills,
     isLoading,
     packageCountries,
     availablePackageOptions,
@@ -43,14 +35,28 @@ function AddPackageForm() {
     sortedRegions,
     finalPrice,
     coverageError,
+    handleVatTypeToggle,
+    handleDiscountTypeToggle,
   } = useAddPackage();
+
+  // Helper function to get currency symbol
+  const getSymbol = (currency) => {
+    switch (currency) {
+      case "USD":
+        return "$";
+      case "EUR":
+        return "€";
+      default:
+        return currency;
+    }
+  };
 
   return (
     <section className="px-8 py-6 h-full overflow-auto">
       <div className="bg-white p-6 rounded-2xl">
         <BackToPrev path="/packages" title="Add Package"></BackToPrev>
         <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-2 gap-y-4 gap-x-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-12">
             {/* Package Type */}
             <div className="flex flex-col gap-1">
               <span className="text-black-700">Package Type</span>
@@ -65,122 +71,20 @@ function AddPackageForm() {
                 value={packageType}
                 onChange={(value) => {
                   setPackageType(value);
-                  setSelectedRegion(null);
-                  setSelectedCountry(null);
                   setSelectedPackage(null);
+                  setSelectedPackageData(null);
                 }}
                 options={[
                   { value: "country", label: "Country Travel Plan" },
                   { value: "regional", label: "Regional Travel Plan" },
-                  // { value: "global", label: "Global Travel Plan" },
                 ]}
               />
             </div>
 
-            {/* Region/Country Selection */}
-            {packageType && (
+            {/* Package Selection */}
+            {packageType && availablePackages.length > 0 && (
               <div className="flex flex-col gap-1">
-                <span className="text-black-700">
-                  Select Package
-                  {/* {packageType === "country"
-                    ? "Select Country"
-                    : "Select Region"} */}
-                </span>
-                {packageType === "country" ? (
-                  isLoading ? (
-                    <SkeletonBox className="w-full h-[49px] !rounded-lg" />
-                  ) : (
-                    <Select
-                      className="w-full border rounded-lg
-                      [&_.ant-select-selector]:!h-12
-                      [&_.ant-select-selector]:!px-4
-                      [&_.ant-select-selector]:!flex
-                      [&_.ant-select-selector]:!items-center
-                      [&_.ant-select-selector]:!leading-[3.5rem]"
-                      placeholder={isLoading ? "Loading..." : "Select package"}
-                      showSearch
-                      disabled={isLoading}
-                      options={availableCountries.map((country) => ({
-                        value: country.name,
-                        label: country.name,
-                      }))}
-                      value={selectedCountry}
-                      onChange={setSelectedCountry}
-                      loading={isLoading}
-                    />
-                  )
-                ) : isLoading ? (
-                  <SkeletonBox className="w-full h-[49px] !rounded-lg" />
-                ) : (
-                  <Select
-                    className="w-full border rounded-lg
-                      [&_.ant-select-selector]:!h-12
-                      [&_.ant-select-selector]:!px-4
-                      [&_.ant-select-selector]:!flex
-                      [&_.ant-select-selector]:!items-center
-                      [&_.ant-select-selector]:!leading-[3.5rem]"
-                    placeholder={isLoading ? "Loading..." : "Select package"}
-                    value={selectedRegion}
-                    showSearch
-                    onChange={(value) => {
-                      setSelectedRegion(value);
-                      setSelectedPackage(null);
-                    }}
-                    disabled={isLoading}
-                    loading={isLoading}
-                    options={availableRegions.map((region) => ({
-                      value: region.name,
-                      label: region.name,
-                    }))}
-                  />
-                )}
-              </div>
-            )}
-
-            {/* Package Selection - Only show if multiple packages available */}
-            {(selectedCountry || selectedRegion) &&
-              availablePackageOptions.length > 0 && (
-                <div className="flex flex-col gap-1">
-                  <span className="text-black-700">Select Package</span>
-                  {isLoading ? (
-                    <SkeletonBox className="w-full h-[49px] !rounded-lg" />
-                  ) : (
-                    <Select
-                      className="w-full border rounded-lg
-                      [&_.ant-select-selector]:!h-12
-                      [&_.ant-select-selector]:!px-4
-                      [&_.ant-select-selector]:!flex
-                      [&_.ant-select-selector]:!items-center
-                      [&_.ant-select-selector]:!leading-[3.5rem]"
-                      placeholder={
-                        isLoading
-                          ? "Loading..."
-                          : availablePackageOptions.length === 0
-                          ? "No packages available"
-                          : "Select package"
-                      }
-                      value={selectedPackageData?.id}
-                      onChange={(value) => {
-                        const selected = availablePackageOptions.find(
-                          (opt) => opt.value === value
-                        );
-                        setSelectedPackageData(selected?.data || null);
-                        setSelectedPackage(null);
-                      }}
-                      disabled={
-                        isLoading || availablePackageOptions.length === 0
-                      }
-                      options={availablePackageOptions}
-                    />
-                  )}
-                </div>
-              )}
-
-            {/* Data Plan Selection - Only show if a package is selected or only one exists */}
-            {(selectedPackageData ||
-              (availablePackages.length === 1 && availablePackages[0])) && (
-              <div className="flex flex-col gap-1">
-                <span className="text-black-700">Select Keepgo Dataplan</span>
+                <span className="text-black-700">Select Package</span>
                 {isLoading ? (
                   <SkeletonBox className="w-full h-[49px] !rounded-lg" />
                 ) : (
@@ -191,17 +95,19 @@ function AddPackageForm() {
                     [&_.ant-select-selector]:!flex
                     [&_.ant-select-selector]:!items-center
                     [&_.ant-select-selector]:!leading-[3.5rem]"
-                    placeholder={
-                      isLoading
-                        ? "Loading..."
-                        : availableRefills.length === 0
-                        ? "No data plans available"
-                        : "Select data plan"
-                    }
-                    value={selectedPackage}
-                    onChange={setSelectedPackage}
-                    disabled={isLoading || availableRefills.length === 0}
-                    options={availableRefills}
+                    placeholder={isLoading ? "Loading..." : "Select package"}
+                    showSearch
+                    disabled={isLoading}
+                    options={availablePackageOptions}
+                    value={selectedPackageData?.package_code}
+                    onChange={(value) => {
+                      const selected = availablePackages.find(
+                        (pkg) => pkg.package_code === value
+                      );
+                      setSelectedPackageData(selected || null);
+                      setSelectedPackage(value);
+                    }}
+                    loading={isLoading}
                   />
                 )}
               </div>
@@ -224,139 +130,6 @@ function AddPackageForm() {
                 <span className="text-red-500 text-sm">{errors.name}</span>
               )}
             </div>
-
-            {packageType === "country" && (
-              <div className="flex flex-col gap-1">
-                <span className="text-black-700">Coverage Countries</span>
-                {isCountryLoading ? (
-                  <SkeletonBox className="w-full h-[49px] !rounded-lg" />
-                ) : (
-                  <Select
-                    mode="multiple"
-                    className={`w-full border ${
-                      errors.coverage_countries || coverageError
-                        ? "!border-red-500"
-                        : "border-natural-400"
-                    } rounded-lg [&_.ant-select-selector]:!h-12 [&_.ant-select-selection-placeholder]:!px-2 [&_.ant-select-selector]:!px-3 [&_.ant-select-selector]:!flex [&_.ant-select-selector]:!items-center [&_.ant-select-selector]:!leading-[3.5rem]`}
-                    placeholder="Select Countries"
-                    value={formData.coverage_countries}
-                    onChange={(value) =>
-                      handleChange("coverage_countries", value)
-                    }
-                    status={errors.coverage_countries ? "error" : ""}
-                    tagRender={tagRender}
-                    maxTagCount={2}
-                    showSearch
-                    optionFilterProp="label"
-                    dropdownRender={dropdownRender}
-                    disabled={!selectedPackage}
-                  >
-                    {sortedCountries.map((country) => (
-                      <Select.Option
-                        key={country._id}
-                        value={country._id}
-                        label={country.name}
-                      >
-                        <div className="flex items-center gap-3">
-                          <ReactCountryFlag
-                            countryCode={country.code}
-                            svg
-                            style={{ width: "20px", height: "15px" }}
-                          />
-                          <span>{country.name}</span>
-                        </div>
-                      </Select.Option>
-                    ))}
-                  </Select>
-                )}
-
-                {selectedPackage && (
-                  <div className="col-span-2 text-xs p-2 border border-neutral-300 rounded-lg mt-1">
-                    {packageCountries &&
-                      packageCountries.map((country, index) => (
-                        <span className="text-xs" key={country.code || index}>
-                          {country}
-                          {index < packageCountries.length - 1 ? ", " : ""}
-                        </span>
-                      ))}
-                  </div>
-                )}
-
-                {(errors.coverage_countries ||
-                  errors.coverage_regions ||
-                  coverageError) && (
-                  <span className="text-red-500 text-sm col-span-2">
-                    {errors.coverage_countries ||
-                      errors.coverage_regions ||
-                      coverageError}
-                  </span>
-                )}
-              </div>
-            )}
-
-            {packageType === "regional" && (
-              <div className="flex flex-col gap-1">
-                <span className="text-black-700">Coverage Regions</span>
-                {isRegionLoading ? (
-                  <SkeletonBox className="w-full h-[49px] !rounded-lg" />
-                ) : (
-                  <Select
-                    mode="multiple"
-                    className={`w-full border ${
-                      errors.coverage_regions || coverageError
-                        ? "!border-red-500"
-                        : "border-natural-400"
-                    } rounded-lg [&_.ant-select-selector]:!h-12 [&_.ant-select-selection-placeholder]:!px-2 [&_.ant-select-selector]:!px-3 [&_.ant-select-selector]:!flex [&_.ant-select-selector]:!items-center [&_.ant-select-selector]:!leading-[3.5rem]`}
-                    placeholder="Select Regions"
-                    value={formData.coverage_regions}
-                    onChange={(value) =>
-                      handleChange("coverage_regions", value)
-                    }
-                    status={errors.coverage_regions ? "error" : ""}
-                    tagRender={tagRender}
-                    maxTagCount={2}
-                    showSearch
-                    optionFilterProp="label"
-                    dropdownRender={dropdownRender}
-                    disabled={!selectedPackage}
-                  >
-                    {sortedRegions.map((region) => (
-                      <Select.Option
-                        key={region._id}
-                        value={region._id}
-                        label={region.name}
-                      >
-                        <div className="flex items-center gap-3">
-                          <span>{region.name}</span>
-                        </div>
-                      </Select.Option>
-                    ))}
-                  </Select>
-                )}
-
-                {/* {selectedPackage && (
-                  <div className="col-span-2 text-xs p-2 border border-neutral-300 rounded-lg mt-1">
-                    {packageCountries &&
-                      packageCountries.map((country, index) => (
-                        <span className="text-xs" key={country.code || index}>
-                          {country}
-                          {index < packageCountries.length - 1 ? ", " : ""}
-                        </span>
-                      ))}
-                  </div>
-                )} */}
-
-                {(errors.coverage_countries ||
-                  errors.coverage_regions ||
-                  coverageError) && (
-                  <span className="text-red-500 text-sm col-span-2">
-                    {errors.coverage_countries ||
-                      errors.coverage_regions ||
-                      coverageError}
-                  </span>
-                )}
-              </div>
-            )}
 
             {/* Data Limit */}
             <div className="flex flex-col gap-1">
@@ -406,126 +179,287 @@ function AddPackageForm() {
               )}
             </div>
 
-            {/* Original Price */}
+            {/* Retail Price */}
             <div className="flex flex-col gap-1">
-              <span className="text-black-700">Original Price (USD)</span>
+              <span className="text-black-700">Retail Price (USD)</span>
               <input
                 type="number"
-                placeholder="Enter original price"
+                placeholder="Enter retail price"
                 className={`w-full border placeholder:text-disabled ${
-                  errors.original_price
-                    ? "border-red-500"
-                    : "border-natural-400"
+                  errors.retail_price ? "border-red-500" : "border-natural-400"
                 } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-                value={formData.original_price.USD}
+                value={formData.retail_price.USD}
                 onChange={(e) =>
-                  handleChange("original_price.USD", e.target.value)
+                  handleChange("retail_price.USD", e.target.value)
                 }
                 onWheel={(e) => e.target.blur()}
                 disabled={true}
               />
-              {errors.original_price && (
+              {errors.retail_price && (
                 <span className="text-red-500 text-sm">
-                  {errors.original_price}
+                  {errors.retail_price}
                 </span>
               )}
             </div>
 
-            {/* Price */}
+            {/* Selling Price */}
             <div className="flex flex-col gap-1">
               <span className="text-black-700">Selling Price (USD)</span>
               <input
                 type="number"
-                placeholder="Enter Package price"
+                placeholder="Enter selling price"
                 className={`w-full border placeholder:text-disabled ${
-                  errors.price ? "border-red-500" : "border-natural-400"
+                  errors.selling_price ? "border-red-500" : "border-natural-400"
                 } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-                value={formData.price.USD}
-                onChange={(e) => handleChange("price.USD", e.target.value)}
+                value={formData.selling_price.USD}
+                onChange={(e) =>
+                  handleChange("selling_price.USD", e.target.value)
+                }
                 onWheel={(e) => e.target.blur()}
                 disabled={!selectedPackage}
               />
-              {errors.price && (
-                <span className="text-red-500 text-sm">{errors.price}</span>
+              {errors.selling_price && (
+                <span className="text-red-500 text-sm">
+                  {errors.selling_price}
+                </span>
               )}
             </div>
 
-            {/* EUR Price (Optional) */}
+            {/* VAT on Selling Price */}
+            {/* VAT on Selling Price */}
             <div className="flex flex-col gap-1">
-              <span className="text-black-700">Selling Price (EUR)</span>
-              <input
-                type="number"
-                placeholder="Enter EUR price"
-                className={`w-full border placeholder:text-disabled ${
-                  errors.price ? "border-red-500" : "border-natural-400"
-                } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-                value={formData.price.EUR || ""}
-                onChange={(e) => handleChange("price.EUR", e.target.value)}
-                onWheel={(e) => e.target.blur()}
-                disabled={!selectedPackage}
-              />
+              <span className="text-black-700">
+                VAT on Selling Price (Optional)
+              </span>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  placeholder={
+                    formData.vat_on_selling_price.is_type_percentage
+                      ? "Enter VAT in %"
+                      : "Enter VAT amount"
+                  }
+                  className={`w-full border placeholder:text-disabled ${
+                    errors.vat_on_selling_price
+                      ? "border-red-500"
+                      : "border-natural-400"
+                  } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+                  value={formData.vat_on_selling_price.amount}
+                  min="0"
+                  max={
+                    formData.vat_on_selling_price.is_type_percentage
+                      ? "100"
+                      : undefined
+                  }
+                  onChange={(e) => {
+                    let value = e.target.value;
+                    if (value !== "") {
+                      if (formData.vat_on_selling_price.is_type_percentage) {
+                        value = Math.min(100, Math.max(0, Number(value)));
+                      }
+                      // For fixed amount, no max limit needed as validation will handle it
+                    }
+                    handleChange("vat_on_selling_price.amount", value);
+                  }}
+                  disabled={!selectedPackage}
+                />
+                <div className="flex items-center gap-2 whitespace-nowrap">
+                  <span className="text-sm w-3">
+                    {formData.vat_on_selling_price.is_type_percentage
+                      ? "%"
+                      : "$"}
+                  </span>
+                  <Switch
+                    checked={!formData.vat_on_selling_price.is_type_percentage}
+                    onChange={handleVatTypeToggle}
+                    size="small"
+                    className="bg-neutral-400"
+                  />
+                </div>
+              </div>
+              {errors.vat_on_selling_price && (
+                <span className="text-red-500 text-sm">
+                  {errors.vat_on_selling_price}
+                </span>
+              )}
             </div>
 
-            {/* Discount */}
+            {/* Discount on Selling Price */}
+            {/* Discount on Selling Price */}
             <div className="flex flex-col gap-1">
               <span className="text-black-700">Discount Amount (Optional)</span>
-              <input
-                type="number"
-                placeholder="Enter in % value"
-                className={`w-full border border-natural-400 placeholder:text-disabled text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-                value={formData.discount.amount}
-                min="0"
-                max="100"
-                onChange={(e) => {
-                  let value = e.target.value;
-                  if (value !== "") {
-                    value = Math.min(100, Math.max(0, Number(value)));
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  placeholder={
+                    formData.discount_on_selling_price.is_type_percentage
+                      ? "Enter discount in %"
+                      : "Enter discount amount"
                   }
-                  handleChange("discount.amount", value);
-                }}
-                disabled={!selectedPackage}
-              />
+                  className={`w-full border placeholder:text-disabled ${
+                    errors.discount_on_selling_price
+                      ? "border-red-500"
+                      : "border-natural-400"
+                  } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+                  value={formData.discount_on_selling_price.amount}
+                  min="0"
+                  max={
+                    formData.discount_on_selling_price.is_type_percentage
+                      ? "100"
+                      : `${formData.selling_price.USD}`
+                  }
+                  onChange={(e) => {
+                    let value = e.target.value;
+                    if (value !== "") {
+                      if (
+                        formData.discount_on_selling_price.is_type_percentage
+                      ) {
+                        value = Math.min(100, Math.max(0, Number(value)));
+                      } else if (formData.selling_price.USD) {
+                        value = Math.min(
+                          formData.selling_price.USD,
+                          Number(value)
+                        );
+                      }
+                    }
+                    handleChange("discount_on_selling_price.amount", value);
+                  }}
+                  disabled={!selectedPackage}
+                />
+                <div className="flex items-center gap-2 whitespace-nowrap">
+                  <span className="text-sm w-3">
+                    {formData.discount_on_selling_price.is_type_percentage
+                      ? "%"
+                      : "$"}
+                  </span>
+                  <Switch
+                    checked={
+                      !formData.discount_on_selling_price.is_type_percentage
+                    }
+                    onChange={handleDiscountTypeToggle}
+                    size="small"
+                    className="bg-neutral-400"
+                  />
+                </div>
+              </div>
+              {errors.discount_on_selling_price && (
+                <span className="text-red-500 text-sm">
+                  {errors.discount_on_selling_price}
+                </span>
+              )}
             </div>
 
-            {/* VAT */}
-            {/* <div className="flex flex-col gap-1">
-              <span className="text-black-700">VAT Amount (%)</span>
-              <input
-                type="number"
-                placeholder="Enter VAT percentage"
-                className={`w-full border border-natural-400 placeholder:text-disabled text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-                value={formData.vat.amount}
-                min="0"
-                max="100"
-                onChange={(e) => {
-                  const value = Math.min(100, Number(e.target.value));
-                  handleChange("vat.amount", value);
-                }}
-                onWheel={(e) => e.target.blur()}
-                disabled={!selectedPackage}
-              />
-            </div> */}
+            {/* Coverage Countries */}
+            {packageType === "country" && (
+              <div className="flex flex-col gap-1 col-span-1">
+                <span className="text-black-700">Coverage Countries</span>
+                {isCountryLoading ? (
+                  <SkeletonBox className="w-full h-[49px] !rounded-lg" />
+                ) : (
+                  <Select
+                    mode="multiple"
+                    className={`w-full border ${
+                      errors.coverage_countries || coverageError
+                        ? "!border-red-500"
+                        : "border-natural-400"
+                    } rounded-lg [&_.ant-select-selector]:!min-h-12 [&_.ant-select-selection-placeholder]:!px-2 [&_.ant-select-selector]:!px-3 [&_.ant-select-selector]:!flex [&_.ant-select-selector]:!items-center`}
+                    placeholder="Select Countries"
+                    value={formData.coverage_countries}
+                    onChange={(value) =>
+                      handleChange("coverage_countries", value)
+                    }
+                    status={errors.coverage_countries ? "error" : ""}
+                    tagRender={tagRender}
+                    maxTagCount={2}
+                    showSearch
+                    optionFilterProp="label"
+                    dropdownRender={dropdownRender}
+                    disabled={!selectedPackage}
+                  >
+                    {sortedCountries.map((country) => (
+                      <Select.Option
+                        key={country._id}
+                        value={country._id}
+                        label={country.name}
+                      >
+                        <div className="flex items-center gap-3">
+                          <ReactCountryFlag
+                            countryCode={country.code}
+                            svg
+                            style={{ width: "20px", height: "15px" }}
+                          />
+                          <span>{country.name}</span>
+                        </div>
+                      </Select.Option>
+                    ))}
+                  </Select>
+                )}
 
-            {/* Auto Renew */}
-            {/* <div className="flex flex-col gap-1">
-              <span className="text-black-700">Auto Renews</span>
-              <Select
-                className={`w-full border rounded-lg
-                  [&_.ant-select-selector]:!h-12
-                  [&_.ant-select-selector]:!px-4
-                  [&_.ant-select-selector]:!flex
-                  [&_.ant-select-selector]:!items-center
-                  [&_.ant-select-selector]:!leading-[3.5rem]`}
-                value={formData.is_auto_renew_available}
-                onChange={(value) =>
-                  handleChange("is_auto_renew_available", value)
-                }
-                disabled={!selectedPackage}
-              >
-                <Select.Option value={true}>Yes</Select.Option>
-                <Select.Option value={false}>No</Select.Option>
-              </Select>
-            </div> */}
+                {/* Display package coverage countries */}
+                {selectedPackage && packageCountries.length > 0 && (
+                  <div className="flex flex-col gap-1 col-span-1 mt-2">
+                    <div className="text-xs p-2 border border-neutral-300 rounded-lg bg-neutral-50">
+                      Available Coverage: {packageCountries.join(", ")}
+                    </div>
+                  </div>
+                )}
+
+                {(errors.coverage_countries || coverageError) && (
+                  <span className="text-red-500 text-sm">
+                    {errors.coverage_countries || coverageError}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Coverage Regions */}
+            {packageType === "regional" && (
+              <div className="flex flex-col gap-1 col-span-1">
+                <span className="text-black-700">Coverage Regions</span>
+                {isRegionLoading ? (
+                  <SkeletonBox className="w-full h-[49px] !rounded-lg" />
+                ) : (
+                  <Select
+                    mode="multiple"
+                    className={`w-full border ${
+                      errors.coverage_regions || coverageError
+                        ? "!border-red-500"
+                        : "border-natural-400"
+                    } rounded-lg [&_.ant-select-selector]:!min-h-12 [&_.ant-select-selection-placeholder]:!px-2 [&_.ant-select-selector]:!px-3 [&_.ant-select-selector]:!flex [&_.ant-select-selector]:!items-center`}
+                    placeholder="Select Regions"
+                    value={formData.coverage_regions}
+                    onChange={(value) =>
+                      handleChange("coverage_regions", value)
+                    }
+                    status={errors.coverage_regions ? "error" : ""}
+                    tagRender={tagRender}
+                    maxTagCount={2}
+                    showSearch
+                    optionFilterProp="label"
+                    dropdownRender={dropdownRender}
+                    disabled={!selectedPackage}
+                  >
+                    {sortedRegions.map((region) => (
+                      <Select.Option
+                        key={region._id}
+                        value={region._id}
+                        label={region.name}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span>{region.name}</span>
+                        </div>
+                      </Select.Option>
+                    ))}
+                  </Select>
+                )}
+
+                {(errors.coverage_regions || coverageError) && (
+                  <span className="text-red-500 text-sm">
+                    {errors.coverage_regions || coverageError}
+                  </span>
+                )}
+              </div>
+            )}
 
             {/* Status */}
             <div className="flex flex-col gap-1">
@@ -551,7 +485,7 @@ function AddPackageForm() {
             </div>
 
             {/* Note */}
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1 col-span-1">
               <span className="text-black-700">Note (Optional)</span>
               <input
                 type="text"
@@ -564,13 +498,10 @@ function AddPackageForm() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            {formData.price.USD && (
-              <div
-                className={`font-medium mt-4 text-neutral-600 pr-3 ${
-                  formData.price.EUR ? "border-r border-neutral-400" : ""
-                }`}
-              >
+          {/* Final Price Display */}
+          <div className="flex items-center gap-3 mt-4">
+            {formData.selling_price.USD && (
+              <div className="font-medium text-neutral-600 pr-3 border-r border-neutral-400">
                 Final Price (USD):{" "}
                 <span className="text-blue-900">
                   {getSymbol("USD")}
@@ -578,12 +509,12 @@ function AddPackageForm() {
                 </span>
               </div>
             )}
-            {formData.price.EUR && (
-              <div className="font-medium mt-4 text-neutral-600">
-                Final Price (EUR):{" "}
-                <span className="text-blue-900">
+            {formData.discount_on_selling_price.amount && (
+              <div className="font-medium text-neutral-600">
+                Price After Discount:{" "}
+                <span className="text-green-600">
                   {getSymbol("USD")}
-                  {finalPrice.finalEUR}
+                  {finalPrice.priceAfterDiscountUSD}
                 </span>
               </div>
             )}

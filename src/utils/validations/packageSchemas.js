@@ -15,33 +15,28 @@ const BasePackageSchema = z.object({
   status: z.enum(["active", "inactive"]),
   coverage_countries: z.array(z.string()).optional(),
   coverage_regions: z.array(z.string()).optional(),
-  original_price: z.object({
-    USD: z.number().min(0, "Original price must be positive"),
+  retail_price: z.object({
+    USD: z.number().min(0, "Retail price must be positive"),
   }),
-  price: z.object({
-    USD: z.number().min(0, "Price must be positive"),
-    EUR: z.number().min(0, "Price must be positive").optional(),
+  selling_price: z.object({
+    USD: z.number().min(0, "Selling price must be positive"),
   }),
-  vat: z
+  vat_on_selling_price: z
     .object({
-      amount: z.number().min(0).max(100).default(0),
+      amount: z.number().min(0).default(0),
     })
     .optional(),
   is_auto_renew_available: z.boolean().default(false),
-  discount: z
+  discount_on_selling_price: z
     .object({
-      amount: z
-        .number()
-        .min(0)
-        .max(100, "Discount cannot exceed 100%")
-        .default(0),
+      amount: z.number().min(0).default(0),
     })
     .optional(),
-  vendor_type: z.string().min(1, "Vendor type is required").default("keep-go"),
   note: z.string().optional(),
-  keep_go_bundle_id: z.string().nonempty("Bundle ID is required"),
+  package_code: z.string().nonempty("Bundle ID is required"),
   id: z.string(),
-  keep_go_bundle_type: z.string(),
+  coverage_type: z.string(),
+  slug: z.string(),
 });
 
 const BasePackageUpKeepgoSchema = z.object({
@@ -58,20 +53,19 @@ const BasePackageUpKeepgoSchema = z.object({
   status: z.enum(["active", "inactive"]),
   coverage_countries: z.array(z.string()).optional(),
   coverage_regions: z.array(z.string()).optional(),
-  original_price: z.object({
+  retail_price: z.object({
     USD: z.number().min(0, "Original price must be positive"),
   }),
-  price: z.object({
+  selling_price: z.object({
     USD: z.number().min(0, "Price must be positive"),
-    EUR: z.number().min(0, "Price must be positive").optional(),
   }),
-  vat: z
+  vat_on_selling_price: z
     .object({
       amount: z.number().min(0).max(100).default(0),
     })
     .optional(),
   is_auto_renew_available: z.boolean().default(false),
-  discount: z
+  discount_on_selling_price: z
     .object({
       amount: z
         .number()
@@ -80,7 +74,6 @@ const BasePackageUpKeepgoSchema = z.object({
         .default(0),
     })
     .optional(),
-  vendor_type: z.string().min(1, "Vendor type is required").default("keep-go"),
   note: z.string().optional(),
   id: z.string(),
 });

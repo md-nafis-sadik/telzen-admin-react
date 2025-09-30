@@ -16,8 +16,8 @@ import ActivePackageIcon from "../../../assets/svgs/ActivePackageIcon";
 import InactivePackageIcon from "../../../assets/svgs/InactivePackageIcon";
 import ActiveSellerIcon from "../../../assets/svgs/ActiveSellerIcon";
 import InactiveSellerIcon from "../../../assets/svgs/InactiveSellerIcon";
-import ActivePromoIcon from "../../../assets/svgs/ActivePromoIcon";
-import InactivePromoIcon from "../../../assets/svgs/InactivePromoIcon";
+import ActiveCouponIcon from "../../../assets/svgs/ActiveCouponIcon";
+import InactiveCouponIcon from "../../../assets/svgs/InactiveCouponIcon";
 import ActiveStaffIcon from "../../../assets/svgs/ActiveStaffIcon";
 import InactiveStaffIcon from "../../../assets/svgs/InactiveStaffIcon";
 import ActiveRevenueIcon from "../../../assets/svgs/ActiveRevenueIcon";
@@ -383,32 +383,33 @@ function Sidebar({ showSidebar, setShowSidebar }) {
 
           {/* Packages(Vendor 3) Setup */}
 
-          {/* <li>
+          <li>
             <div>
               <Link
-                to="/promo"
-                className={`${activePath === "promo" ? "active py-3 pr-4" : "p-4 pl-5"
-                  } flex items-center gap-4 w-full rounded-lg`}
+                to="/coupon"
+                className={`${
+                  activePath === "coupon" ? "active py-3 pr-4" : "p-4 pl-5"
+                } flex items-center gap-4 w-full rounded-lg`}
                 onClick={() => {
-                  dispatch(setActivePath("promo"));
+                  dispatch(setActivePath("coupon"));
                   setIsSubmenuOpen((prev) => !prev);
                 }}
               >
-                {activePath === "promo" && (
+                {activePath === "coupon" && (
                   <div className="border-2 rounded-full border-main-500 w-1 h-[24px] bg-main-500"></div>
                 )}
-                {activePath === "promo" ? (
-                  <ActivePromoIcon className="shrink-0" />
+                {activePath === "coupon" ? (
+                  <ActiveCouponIcon className="shrink-0" />
                 ) : (
-                  <InactivePromoIcon className="shrink-0" />
+                  <InactiveCouponIcon className="shrink-0" />
                 )}
 
                 <span className={`duration-300 ${showSidebar ? "" : "hidden"}`}>
-                  Promo
+                  Coupon
                 </span>
               </Link>
             </div>
-          </li> */}
+          </li>
 
           {/* Settings */}
 

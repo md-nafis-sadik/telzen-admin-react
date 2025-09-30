@@ -2,24 +2,24 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { errorNotify, successNotify } from "../../utils/notify";
 import {
-  removePromoFromList,
-  setSelectedPromoData,
-  setPromoMetaData,
-  updatePromoInList,
-  addNewPromoToList,
-} from "../../features/promos/promoSlice";
+  removeCouponFromList,
+  setSelectedCouponData,
+  setCouponMetaData,
+  updateCouponInList,
+  addNewCouponToList,
+} from "../../features/coupons/couponSlice";
 import {
-  useGetAllPromosQuery,
-  useDeletePromoMutation,
-  useUpdatePromoMutation,
-  useAddPromoMutation,
-} from "../../features/promos/promoApi";
+  useGetAllCouponsQuery,
+  useDeleteCouponMutation,
+  useUpdateCouponMutation,
+  useAddCouponMutation,
+} from "../../features/coupons/couponApi";
 import { useNavigate } from "react-router-dom";
 import { useGetAllActiveCountrysQuery } from "../../features/packages/packageCountry";
 import {
-  AddPromoSchema,
-  UpdatePromoSchema,
-} from "../../utils/validations/promoSchemas";
+  AddCouponSchema,
+  UpdateCouponSchema,
+} from "../../utils/validations/couponSchemas";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 
@@ -39,11 +39,11 @@ export const useDebouncedSearch = (inputValue, delay = 1000) => {
   return debouncedValue;
 };
 
-// ** Promo List **
-export const useGetPromos = () => {
+// ** Coupon List **
+export const useGetCoupons = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { dataList, meta, selectedData } = useSelector((state) => state.promo);
+  const { dataList, meta, selectedData } = useSelector((state) => state.coupon);
   const { current_page, page_size } = meta || {};
   const [searchKeyword, setSearchKeyword] = useState("");
   const [filterKey, setFilterKey] = useState(undefined);
@@ -61,7 +61,7 @@ export const useGetPromos = () => {
     forceRefetch: forceRefetchTrigger,
   };
 
-  const { isLoading, isFetching, isError, error } = useGetAllPromosQuery(
+  const { isLoading, isFetching, isError, error } = useGetAllCouponsQuery(
     apiParams,
     {
       refetchOnMountOrArgChange: false,
@@ -72,12 +72,14 @@ export const useGetPromos = () => {
     }
   );
 
-  const [promoId, setPromoId] = useState(null);
-  const updatePageMeta = (value) => dispatch(setPromoMetaData(value));
-  const handleSetSelectedPromo = (data) => dispatch(setSelectedPromoData(data));
-  const [deletePromo, { isLoading: deleteLoading }] = useDeletePromoMutation();
-  const [updatingPromos, setUpdatingPromos] = useState({});
-  const [updatePackagePromo] = useUpdatePromoMutation();
+  const [couponId, setCouponId] = useState(null);
+  const updatePageMeta = (value) => dispatch(setCouponMetaData(value));
+  const handleSetSelectedCoupon = (data) =>
+    dispatch(setSelectedCouponData(data));
+  const [deleteCoupon, { isLoading: deleteLoading }] =
+    useDeleteCouponMutation();
+  const [updatingCoupons, setUpdatingCoupons] = useState({});
+  const [updatePackageCoupon] = useUpdateCouponMutation();
 
   useEffect(() => {
     if (isInitialRender.current) {
@@ -86,7 +88,7 @@ export const useGetPromos = () => {
       return;
     }
     setForceRefetchTrigger((prev) => prev + 1);
-    // dispatch(setPromoMetaData({ ...meta, current_page: 1 }));
+    // dispatch(setCouponMetaData({ ...meta, current_page: 1 }));
   }, [debouncedSearch, filterKey]);
 
   useEffect(() => {
@@ -102,59 +104,61 @@ export const useGetPromos = () => {
   }, [debouncedSearch, dataList.length]);
 
   const handleDelete = async () => {
-    if (!promoId) {
-      errorNotify("Promo ID is required.");
+    if (!couponId) {
+      errorNotify("Coupon ID is required.");
       return false;
     }
 
     try {
-      const response = await deletePromo({ id: promoId }).unwrap();
+      const response = await deleteCoupon({ id: couponId }).unwrap();
       if (response?.success) {
-        dispatch(removePromoFromList({ _id: promoId }));
+        dispatch(removeCouponFromList({ _id: couponId }));
         successNotify(response?.message);
         return true;
       }
     } catch (err) {
-      errorNotify(err?.data?.message || "Failed to delete promo");
+      errorNotify(err?.data?.message || "Failed to delete coupon");
       return false;
     }
   };
 
   const handleNavigate = (item) => {
-    dispatch(setSelectedPromoData(item));
-    navigate("/promo-edit");
+    dispatch(setSelectedCouponData(item));
+    navigate("/coupon-edit");
   };
 
-  const handleOpenAddPromoModal = () => {
-    navigate("/promo-add", {
+  const handleOpenAddCouponModal = () => {
+    navigate("/coupon-add", {
       state: {
         type: "add",
       },
     });
   };
 
-  const handleStatusChange = async (promoId, newStatus) => {
+  const handleStatusChange = async (couponId, newStatus) => {
     const apiStatus = newStatus === "Active";
 
-    setUpdatingPromos((prev) => ({ ...prev, [promoId]: true }));
+    setUpdatingCoupons((prev) => ({ ...prev, [couponId]: true }));
 
     try {
-      const result = await updatePackagePromo({
-        id: promoId,
+      const result = await updatePackageCoupon({
+        id: couponId,
         data: { is_active: apiStatus },
       }).unwrap();
 
       if (result?.success) {
-        dispatch(updatePromoInList({ ...result?.data, _id: result?.data._id }));
+        dispatch(
+          updateCouponInList({ ...result?.data, _id: result?.data._id })
+        );
       } else {
-        errorNotify(result?.message || "Failed to update promo status");
+        errorNotify(result?.message || "Failed to update coupon status");
       }
     } catch (error) {
-      errorNotify(error?.data?.message || "Failed to update promo status");
+      errorNotify(error?.data?.message || "Failed to update coupon status");
     } finally {
-      setUpdatingPromos((prev) => {
+      setUpdatingCoupons((prev) => {
         const newState = { ...prev };
-        delete newState[promoId];
+        delete newState[couponId];
         return newState;
       });
     }
@@ -172,17 +176,17 @@ export const useGetPromos = () => {
     searchKeyword,
     setSearchKeyword,
     selectedData,
-    handleSetSelectedPromo,
-    setPromoId,
+    handleSetSelectedCoupon,
+    setCouponId,
     handleNavigate,
-    handleOpenAddPromoModal,
+    handleOpenAddCouponModal,
     handleStatusChange,
-    updatingPromos,
+    updatingCoupons,
   };
 };
 
-// ** Add Promo **
-export const useAddPromo = () => {
+// ** Add Coupon **
+export const useAddCoupon = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -196,7 +200,7 @@ export const useAddPromo = () => {
   });
   const [errors, setErrors] = useState({});
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [addPromo, { isLoading }] = useAddPromoMutation();
+  const [addCoupon, { isLoading }] = useAddCouponMutation();
 
   const { data: countriesResponse, isLoading: isCountryLoading } =
     useGetAllActiveCountrysQuery();
@@ -231,7 +235,7 @@ export const useAddPromo = () => {
   };
 
   const validateForm = () => {
-    const result = AddPromoSchema.safeParse({
+    const result = AddCouponSchema.safeParse({
       ...formData,
       discount: { amount: Number(formData.discount.amount) || 0 },
     });
@@ -266,15 +270,15 @@ export const useAddPromo = () => {
         validity_end_at: formData.validity_end_at,
       };
 
-      const response = await addPromo({ data: payload }).unwrap();
+      const response = await addCoupon({ data: payload }).unwrap();
       if (response?.success) {
         setIsModalVisible(true);
-        dispatch(addNewPromoToList(response.data));
+        dispatch(addNewCouponToList(response.data));
       } else {
-        errorNotify(response?.message || "Failed to create promo");
+        errorNotify(response?.message || "Failed to create coupon");
       }
     } catch (error) {
-      console.error("Error creating promo:", error);
+      console.error("Error creating coupon:", error);
       if (error.data?.errorMessages) {
         const apiErrors = Object.fromEntries(
           error.data.errorMessages.map((err) => [
@@ -285,17 +289,17 @@ export const useAddPromo = () => {
         setErrors(apiErrors);
       }
       errorNotify(
-        error.data?.message || "Failed to create promo. Please try again."
+        error.data?.message || "Failed to create coupon. Please try again."
       );
     }
   };
 
   const handleModalOk = () => {
     setIsModalVisible(false);
-    navigate("/promo");
+    navigate("/coupon");
   };
 
-  const isFormValid = AddPromoSchema.safeParse(formData).success;
+  const isFormValid = AddCouponSchema.safeParse(formData).success;
 
   return {
     formData,
@@ -313,11 +317,11 @@ export const useAddPromo = () => {
   };
 };
 
-// ** Update Promo **
-export const useUpdatePromo = () => {
+// ** Update Coupon **
+export const useUpdateCoupon = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { selectedData } = useSelector((state) => state.promo);
+  const { selectedData } = useSelector((state) => state.coupon);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -332,7 +336,7 @@ export const useUpdatePromo = () => {
 
   const [errors, setErrors] = useState({});
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [updatePromo, { isLoading }] = useUpdatePromoMutation();
+  const [updateCoupon, { isLoading }] = useUpdateCouponMutation();
 
   const { data: countriesResponse, isLoading: isCountryLoading } =
     useGetAllActiveCountrysQuery();
@@ -382,7 +386,7 @@ export const useUpdatePromo = () => {
   };
 
   const validateForm = () => {
-    const result = UpdatePromoSchema.safeParse({
+    const result = UpdateCouponSchema.safeParse({
       ...formData,
       discount: {
         amount:
@@ -425,19 +429,19 @@ export const useUpdatePromo = () => {
         }),
       };
 
-      const result = await updatePromo({
+      const result = await updateCoupon({
         id: formData._id,
         data: payload,
       }).unwrap();
 
       if (result.success) {
         setIsModalVisible(true);
-        dispatch(updatePromoInList(result.data));
+        dispatch(updateCouponInList(result.data));
       } else {
-        message.error(result.message || "Failed to update promo");
+        message.error(result.message || "Failed to update coupon");
       }
     } catch (error) {
-      console.error("Error updating promo:", error);
+      console.error("Error updating coupon:", error);
       if (error.data?.errorMessages) {
         const apiErrors = Object.fromEntries(
           error.data.errorMessages.map((err) => [
@@ -448,17 +452,17 @@ export const useUpdatePromo = () => {
         setErrors(apiErrors);
       }
       message.error(
-        error.data?.message || "An error occurred while updating the promo"
+        error.data?.message || "An error occurred while updating the coupon"
       );
     }
   };
 
   const handleModalOk = () => {
     setIsModalVisible(false);
-    navigate("/promo");
+    navigate("/coupon");
   };
 
-  const isFormValid = UpdatePromoSchema.safeParse(formData).success;
+  const isFormValid = UpdateCouponSchema.safeParse(formData).success;
 
   return {
     formData,

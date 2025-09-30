@@ -56,10 +56,7 @@ export const countryApi = apiSlice.injectEndpoints({
 
     // UPDATE A ADMIN
     updateCountry: builder.mutation({
-      query: ({ data, id }) => {
-        const formData = new FormData();
-        formData.append("data", JSON.stringify(data));
-
+      query: ({ id, formData }) => {
         return {
           url: `country/update?country_id=${id}`,
           method: "PATCH",

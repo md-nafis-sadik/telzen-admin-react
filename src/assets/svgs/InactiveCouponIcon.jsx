@@ -1,5 +1,4 @@
-
-const InctivePromoIcon = ({className}) => {
+const InctiveCouponIcon = ({ className }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -17,4 +16,4 @@ const InctivePromoIcon = ({className}) => {
   );
 };
 
-export default InctivePromoIcon;
+export default InctiveCouponIcon;

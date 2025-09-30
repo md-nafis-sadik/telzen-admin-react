@@ -145,7 +145,7 @@ export const useGetCountries = () => {
     try {
       const result = await updatePackageCountry({
         id: countryId,
-        data: { status: apiStatus },
+        formData: { status: apiStatus },
       });
 
       let updatedCountry = { ...result?.data?.data };
@@ -370,7 +370,12 @@ export const useUpdateCountry = () => {
       code: selectedData.code || "",
       region: selectedData.region?._id || "",
       _id: selectedData._id || "",
+      file: {
+        name: selectedData.image ? selectedData.image.split("/").pop() : "",
+        value: selectedData.image || "",
+      },
     });
+    setImagePreview(selectedData.image);
   }, [selectedData]);
 
   useEffect(() => {
@@ -455,9 +460,21 @@ export const useUpdateCountry = () => {
     try {
       const payload = transformFormDataToAPI(formData, countries);
 
+      const formDataToSend = new FormData();
+      formDataToSend.append(
+        "data",
+        JSON.stringify({
+          ...payload,
+        })
+      );
+
+      if (formData.file) {
+        formDataToSend.append("single", formData.file);
+      }
+
       const response = await updateCountry({
         id: formData._id,
-        data: payload,
+        formData: formDataToSend,
       }).unwrap();
 
       if (response?.success) {
@@ -519,5 +536,9 @@ export const useUpdateCountry = () => {
     isRegionsLoading,
     isCountriesLoading,
     isSubmitting,
+    imagePreview,
+    fileInputRef,
+    typeError,
+    handleFileDelete,
   };
 };

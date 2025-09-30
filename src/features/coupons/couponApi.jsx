@@ -1,22 +1,22 @@
-import { setPromoData, setPromoMetaData } from ".";
+import { setCouponData, setCouponMetaData } from ".";
 import { apiSlice } from "../api/apiSlice";
 
-export const promoApi = apiSlice.injectEndpoints({
+export const couponApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // GET ALL ADMINS
-    getAllPromos: builder.query({
+    getAllCoupons: builder.query({
       query: (params = { page: 1, limit: 10, search: "", status: "" }) => {
         const queryString = new URLSearchParams(params).toString();
         return {
-          url: `promo?${queryString}`,
+          url: `coupon?${queryString}`,
           method: "GET",
         };
       },
       async onQueryStarted(_args, { queryFulfilled, dispatch }) {
         try {
           const { data: apiData } = await queryFulfilled;
-          dispatch(setPromoData(apiData));
-          dispatch(setPromoMetaData(apiData?.meta));
+          dispatch(setCouponData(apiData));
+          dispatch(setCouponMetaData(apiData?.meta));
         } catch (err) {
           console.error(err);
         }
@@ -24,25 +24,25 @@ export const promoApi = apiSlice.injectEndpoints({
     }),
 
     // GET ALL ADMINS
-    getAllActivePromos: builder.query({
+    getAllActiveCoupons: builder.query({
       query: (
         params = { page: 1, limit: "", search: "", status: "active" }
       ) => {
         const queryString = new URLSearchParams(params).toString();
         return {
-          url: `promo?${queryString}`,
+          url: `coupon?${queryString}`,
           method: "GET",
         };
       },
     }),
     // ADD A NEW ADMIN
-    addPromo: builder.mutation({
+    addCoupon: builder.mutation({
       query: ({ data }) => {
         const formData = new FormData();
         formData.append("data", JSON.stringify(data));
 
         return {
-          url: "/promo/create",
+          url: "/coupon/create",
           method: "POST",
           body: formData,
         };
@@ -50,13 +50,13 @@ export const promoApi = apiSlice.injectEndpoints({
     }),
 
     // UPDATE A ADMIN
-    updatePromo: builder.mutation({
+    updateCoupon: builder.mutation({
       query: ({ data, id }) => {
         const formData = new FormData();
         formData.append("data", JSON.stringify(data));
 
         return {
-          url: `promo/update?promo_id=${id}`,
+          url: `coupon/update?coupon_id=${id}`,
           method: "PATCH",
           body: formData,
         };
@@ -64,10 +64,10 @@ export const promoApi = apiSlice.injectEndpoints({
     }),
 
     // DELETE A NEW ADMIN
-    deletePromo: builder.mutation({
+    deleteCoupon: builder.mutation({
       query: ({ id }) => {
         return {
-          url: `promo/delete?promo_id=${id}`,
+          url: `coupon/delete?coupon_id=${id}`,
           method: "DELETE",
         };
       },
@@ -76,9 +76,9 @@ export const promoApi = apiSlice.injectEndpoints({
 });
 
 export const {
-  useGetAllPromosQuery,
-  useAddPromoMutation,
-  useDeletePromoMutation,
-  useUpdatePromoMutation,
-  useGetAllActivePromosQuery,
-} = promoApi;
+  useGetAllCouponsQuery,
+  useAddCouponMutation,
+  useDeleteCouponMutation,
+  useUpdateCouponMutation,
+  useGetAllActiveCouponsQuery,
+} = couponApi;

@@ -213,15 +213,15 @@ export const useAddPackage = () => {
       status: "active",
       coverage_countries: [],
       coverage_regions: [],
-      original_price: { USD: "" },
-      price: { USD: "", EUR: "" },
-      vat: { amount: "" },
+      retail_price: { USD: "" },
+      selling_price: { USD: "" },
+      vat_on_selling_price: { amount: "", is_type_percentage: true },
       is_auto_renew_available: false,
-      discount: { amount: "" },
-      vendor_type: "keep-go",
+      discount_on_selling_price: { amount: "", is_type_percentage: true },
       note: "",
-      keep_go_bundle_id: "",
-      keep_go_bundle_type: "country",
+      package_code: "",
+      coverage_type: "country",
+      slug: "",
     }),
     []
   );
@@ -232,12 +232,9 @@ export const useAddPackage = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [addPackage] = useAddPackageMutation();
   const [packageType, setPackageType] = useState("country");
-  const [selectedRegion, setSelectedRegion] = useState(null);
-  const [selectedCountry, setSelectedCountry] = useState(null);
   const [selectedPackage, setSelectedPackage] = useState(null);
-  const [availableRegions, setAvailableRegions] = useState([]);
-  const [availableCountries, setAvailableCountries] = useState([]);
   const [packageCountries, setPackageCountries] = useState([]);
+  const [packageRegions, setPackageRegions] = useState([]);
   const [availablePackages, setAvailablePackages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPackageData, setSelectedPackageData] = useState(null);
@@ -265,7 +262,6 @@ export const useAddPackage = () => {
   const regions = regionsResponse?.data || [];
 
   // Memoized sorted countries and regions
-  // Combine related memoized values
   const [sortedCountries, sortedRegions] = useMemo(() => {
     const countriesCopy = countries.length ? [...countries] : [];
     const regionsCopy = regions?.length ? [...regions] : [];
@@ -289,178 +285,140 @@ export const useAddPackage = () => {
     formData.coverage_regions,
   ]);
 
-  // Final price calculation
   const finalPrice = useMemo(() => {
-    const baseEUR = parseFloat(formData.price.EUR || 0);
-    const baseUSD = parseFloat(formData.price.USD || 0);
-    const vat = parseFloat(formData.vat.amount || 0);
-    const discount = parseFloat(formData.discount.amount || 0);
+    const baseUSD = parseFloat(formData.selling_price.USD || 0);
+    const vatAmount = parseFloat(formData.vat_on_selling_price.amount || 0);
+    const discountAmount = parseFloat(
+      formData.discount_on_selling_price.amount || 0
+    );
 
-    const priceAfterDiscountUSD = baseUSD - (baseUSD * discount) / 100;
-    const finalUSD =
-      priceAfterDiscountUSD + (priceAfterDiscountUSD * vat) / 100;
+    let priceAfterDiscountUSD = baseUSD;
+    let finalUSD = baseUSD;
 
-    const priceAfterDiscountEUR = baseEUR - (baseEUR * discount) / 100;
-    const finalEUR =
-      priceAfterDiscountEUR + (priceAfterDiscountEUR * vat) / 100;
+    if (formData.discount_on_selling_price.is_type_percentage) {
+      priceAfterDiscountUSD = baseUSD - (baseUSD * discountAmount) / 100;
+    } else {
+      const maxDiscount = Math.min(discountAmount, baseUSD);
+      priceAfterDiscountUSD = baseUSD - maxDiscount;
+    }
+
+    if (formData.vat_on_selling_price.is_type_percentage) {
+      finalUSD =
+        priceAfterDiscountUSD + (priceAfterDiscountUSD * vatAmount) / 100;
+    } else {
+      finalUSD = priceAfterDiscountUSD + vatAmount;
+    }
 
     return {
-      finalUSD: finalUSD.toFixed(2),
-      finalEUR: finalEUR.toFixed(2),
+      finalUSD: Math.max(0, finalUSD).toFixed(2),
+      priceAfterDiscountUSD: Math.max(0, priceAfterDiscountUSD).toFixed(2),
     };
   }, [
-    formData.price.EUR,
-    formData.price.USD,
-    formData.vat.amount,
-    formData.discount.amount,
+    formData.selling_price.USD,
+    formData.vat_on_selling_price.amount,
+    formData.vat_on_selling_price.is_type_percentage,
+    formData.discount_on_selling_price.amount,
+    formData.discount_on_selling_price.is_type_percentage,
   ]);
 
-  // Available refills derived from selected package
-  const availableRefills = useMemo(() => {
-    if (!selectedPackageData) return [];
-
-    return selectedPackageData.refills.map((refill) => ({
-      value: refill.title,
-      label: `${refill.title} (${refill.price_usd} USD) ${
-        refill.amount_days ? "" : "Unlimited"
-      }`,
-    }));
-  }, [selectedPackageData]);
-
-  // Available package options
   const availablePackageOptions = useMemo(() => {
-    if (availablePackages.length > 1) {
-      return availablePackages.map((pkg) => ({
-        value: pkg.id,
-        label: pkg.name,
-        data: pkg,
-      }));
-    }
-    return [];
+    return availablePackages.map((pkg) => ({
+      value: pkg.package_code,
+      label: `${pkg.name} (${pkg.data_plan_in_mb}MB - ${pkg.validity.amount} days)`,
+      data: pkg,
+    }));
   }, [availablePackages]);
 
-  // Combined effect for form validation and package type changes
   useEffect(() => {
-    // Form validation
     const result = AddPackageSchema.safeParse(formData);
     if (result.success) {
       setErrors({});
     }
 
-    // Reset form when package type changes
     if (!packageType) return;
 
-    const resetFormAndFetchData = async () => {
+    const fetchPackagesForType = async () => {
       setFormData((prev) => ({
         ...initialFormState,
-        keep_go_bundle_type: packageType,
+        coverage_type: packageType,
       }));
       setSelectedPackage(null);
-      setSelectedRegion(null);
-      setSelectedCountry(null);
       setSelectedPackageData(null);
+      setPackageCountries([]);
 
-      // Fetch data based on package type
       setIsLoading(true);
       try {
         const response = await fetchPackages({
-          bundle_type: packageType,
+          coverage_type: packageType,
         }).unwrap();
-        const packages = response.data || [];
-        setAvailablePackages(packages);
-
-        if (packageType === "country") {
-          const uniqueCountries = [
-            ...new Set(packages.flatMap((pkg) => pkg.coverage)),
-          ].map((name) => ({ name }));
-          setAvailableCountries(uniqueCountries);
-        } else {
-          const uniqueRegions = packages.map((pkg) => ({
-            id: pkg.id,
-            name: pkg.name,
-            coverage: pkg.coverage,
-          }));
-          setAvailableRegions(uniqueRegions);
-        }
+        setAvailablePackages(response.data || []);
+      } catch (error) {
+        console.error("Error fetching packages:", error);
+        setAvailablePackages([]);
       } finally {
         setIsLoading(false);
       }
     };
 
-    resetFormAndFetchData();
-  }, [packageType, fetchPackages]);
+    fetchPackagesForType();
+  }, [packageType, fetchPackages, initialFormState]);
 
-  // Effect for handling selected package changes
   useEffect(() => {
-    if (!selectedPackage || availablePackages.length === 0) return;
+    if (!selectedPackage || !selectedPackageData) return;
 
-    const selectedPkg = selectedPackageData;
-    if (selectedPkg) {
-      const selectedRefill = selectedPkg.refills.find(
-        (refill) => refill.title === selectedPackage
-      );
+    const countryCodes = selectedPackageData.country_code
+      .split(",")
+      .map((code) => code.trim());
 
-      if (selectedRefill) {
-        const coverageCountryIds = selectedPkg.coverage.map((countryName) => {
-          const country = countries.find((c) => c.name === countryName);
-          return country?.name || countryName;
-        });
-        setPackageCountries(coverageCountryIds);
-        setFormData((prev) => ({
+    setPackageCountries(countryCodes);
+
+    setFormData((prev) => ({
+      ...prev,
+      name: selectedPackageData.name,
+      data_plan_in_mb: selectedPackageData.data_plan_in_mb,
+      validity: {
+        amount: selectedPackageData.validity?.amount || 0,
+        type: selectedPackageData.validity?.type || "day",
+      },
+      retail_price: { USD: selectedPackageData.retail_price || 0 },
+      package_code: selectedPackageData.package_code,
+      slug: selectedPackageData.slug,
+    }));
+  }, [selectedPackage, selectedPackageData]);
+
+  const handleCountrySelection = useCallback(
+    (selectedCountryIds) => {
+      setFormData((prev) => {
+        const previousCountries = prev.coverage_countries || [];
+        const newlySelected = selectedCountryIds.filter(
+          (id) => !previousCountries.includes(id)
+        );
+        const newCountryRegions = newlySelected
+          .map((countryId) => {
+            const country = countries.find((c) => c._id === countryId);
+            return country?.region?._id;
+          })
+          .filter((regionId) => regionId);
+        const allRegions = [
+          ...new Set([...prev.coverage_regions, ...newCountryRegions]),
+        ];
+
+        return {
           ...prev,
-          name: selectedRefill.title,
-          data_plan_in_mb: selectedRefill.amount_mb,
-          validity: {
-            amount: selectedRefill.amount_days || 0,
-            type: "day",
-          },
-          original_price: { USD: selectedRefill.price_usd },
-          keep_go_bundle_id: String(selectedPkg.id),
-        }));
-      }
-    }
-  }, [selectedPackage, availablePackages, countries]);
+          coverage_countries: selectedCountryIds,
+          coverage_regions: allRegions,
+        };
+      });
+    },
+    [countries]
+  );
 
-  // Effect for handling region/country selection changes
-  useEffect(() => {
-    if (!selectedRegion && !selectedCountry) return;
-
-    const fetchPackagesForSelection = async () => {
-      setIsLoading(true);
-      try {
-        setFormData((prev) => ({
-          ...initialFormState,
-          keep_go_bundle_type: packageType,
-        }));
-        setSelectedPackage(null);
-        setSelectedPackageData(null);
-
-        const searchTerm =
-          packageType === "country" ? selectedCountry : selectedRegion;
-        const response = await fetchPackages({
-          bundle_type: packageType,
-          search: searchTerm,
-        }).unwrap();
-
-        const packages = response.data || [];
-        setAvailablePackages(packages);
-
-        // If there's only one package, select it automatically
-        if (packages.length === 1) {
-          setSelectedPackageData(packages[0]);
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchPackagesForSelection();
-  }, [selectedRegion, selectedCountry, packageType]);
-
-  // Form change handler
   const handleChange = useCallback(
     (name, value) => {
-      if (name.includes(".")) {
+      if (name === "coverage_countries") {
+        handleCountrySelection(value);
+        console.log(value);
+      } else if (name.includes(".")) {
         const [parent, child] = name.split(".");
         setFormData((prev) => ({
           ...prev,
@@ -482,11 +440,36 @@ export const useAddPackage = () => {
           [name]: null,
         }));
       }
+
+      if (name === "coverage_countries" || name === "coverage_regions") {
+        setCoverageError(null);
+      }
     },
-    [errors]
+    [errors, handleCountrySelection]
   );
 
-  // Form validation
+  const handleVatTypeToggle = useCallback((isFixed) => {
+    setFormData((prev) => ({
+      ...prev,
+      vat_on_selling_price: {
+        ...prev.vat_on_selling_price,
+        is_type_percentage: !isFixed,
+        amount: "",
+      },
+    }));
+  }, []);
+
+  const handleDiscountTypeToggle = useCallback((isFixed) => {
+    setFormData((prev) => ({
+      ...prev,
+      discount_on_selling_price: {
+        ...prev.discount_on_selling_price,
+        is_type_percentage: !isFixed,
+        amount: "",
+      },
+    }));
+  }, []);
+
   const validateForm = useCallback(() => {
     const dataToValidate = {
       ...formData,
@@ -494,15 +477,17 @@ export const useAddPackage = () => {
         formData.data_plan_in_mb === ""
           ? NaN
           : Number(formData.data_plan_in_mb),
-      original_price: {
+      retail_price: {
         USD:
-          formData.original_price.USD === ""
+          formData.retail_price.USD === ""
             ? NaN
-            : Number(formData.original_price.USD),
+            : Number(formData.retail_price.USD),
       },
-      price: {
-        USD: formData.price.USD === "" ? NaN : Number(formData.price.USD),
-        EUR: formData.price.EUR === "" ? NaN : Number(formData.price.EUR),
+      selling_price: {
+        USD:
+          formData.selling_price.USD === ""
+            ? NaN
+            : Number(formData.selling_price.USD),
       },
       validity: {
         amount:
@@ -511,13 +496,20 @@ export const useAddPackage = () => {
             : Number(formData.validity.amount),
         type: formData.validity.type || "day",
       },
-      vat: {
-        amount: formData.vat.amount ? Number(formData.vat.amount) : 0,
+      vat_on_selling_price: {
+        amount: formData.vat_on_selling_price.amount
+          ? Number(formData.vat_on_selling_price.amount)
+          : 0,
+        is_type_percentage: formData.vat_on_selling_price.is_type_percentage,
       },
-      discount: {
-        amount: formData.discount.amount ? Number(formData.discount.amount) : 0,
+      discount_on_selling_price: {
+        amount: formData.discount_on_selling_price.amount
+          ? Number(formData.discount_on_selling_price.amount)
+          : 0,
+        is_type_percentage:
+          formData.discount_on_selling_price.is_type_percentage,
       },
-      keep_go_bundle_id: formData.keep_go_bundle_id,
+      package_code: formData.package_code,
     };
 
     // First validate with schema
@@ -537,7 +529,33 @@ export const useAddPackage = () => {
       return false;
     }
 
-    // Then validate coverage based on package type
+    const sellingPrice = parseFloat(formData.selling_price.USD || 0);
+
+    if (!formData.vat_on_selling_price.is_type_percentage) {
+      const vatAmount = parseFloat(formData.vat_on_selling_price.amount || 0);
+      if (vatAmount > sellingPrice) {
+        setErrors((prev) => ({
+          ...prev,
+          vat_on_selling_price: "VAT amount cannot exceed selling price",
+        }));
+        return false;
+      }
+    }
+
+    if (!formData.discount_on_selling_price.is_type_percentage) {
+      const discountAmount = parseFloat(
+        formData.discount_on_selling_price.amount || 0
+      );
+      if (discountAmount > sellingPrice) {
+        setErrors((prev) => ({
+          ...prev,
+          discount_on_selling_price:
+            "Discount amount cannot exceed selling price",
+        }));
+        return false;
+      }
+    }
+
     let isValid = true;
     if (packageType === "country" && formData.coverage_countries.length === 0) {
       setCoverageError("At least one country must be selected");
@@ -560,7 +578,7 @@ export const useAddPackage = () => {
     return true;
   }, [formData, packageType]);
 
-  // Update isFormValid to use the same logic as validateForm
+  // Update isFormValid
   const isFormValid = useMemo(() => {
     const dataToValidate = {
       ...formData,
@@ -568,15 +586,17 @@ export const useAddPackage = () => {
         formData.data_plan_in_mb === ""
           ? NaN
           : Number(formData.data_plan_in_mb),
-      original_price: {
+      retail_price: {
         USD:
-          formData.original_price.USD === ""
+          formData.retail_price.USD === ""
             ? NaN
-            : Number(formData.original_price.USD),
+            : Number(formData.retail_price.USD),
       },
-      price: {
-        USD: formData.price.USD === "" ? NaN : Number(formData.price.USD),
-        EUR: formData.price.EUR === "" ? NaN : Number(formData.price.EUR),
+      selling_price: {
+        USD:
+          formData.selling_price.USD === ""
+            ? NaN
+            : Number(formData.selling_price.USD),
       },
       validity: {
         amount:
@@ -585,17 +605,39 @@ export const useAddPackage = () => {
             : Number(formData.validity.amount),
         type: formData.validity.type || "day",
       },
-      vat: {
-        amount: formData.vat.amount ? Number(formData.vat.amount) : 0,
+      vat_on_selling_price: {
+        amount: formData.vat_on_selling_price.amount
+          ? Number(formData.vat_on_selling_price.amount)
+          : 0,
+        is_type_percentage: formData.vat_on_selling_price.is_type_percentage,
       },
-      discount: {
-        amount: formData.discount.amount ? Number(formData.discount.amount) : 0,
+      discount_on_selling_price: {
+        amount: formData.discount_on_selling_price.amount
+          ? Number(formData.discount_on_selling_price.amount)
+          : 0,
+        is_type_percentage:
+          formData.discount_on_selling_price.is_type_percentage,
       },
-      keep_go_bundle_id: formData.keep_go_bundle_id,
+      package_code: formData.package_code,
+      slug: formData.slug,
     };
 
     const result = AddPackageSchema.safeParse(dataToValidate);
     if (!result.success) return false;
+
+    const sellingPrice = parseFloat(formData.selling_price.USD || 0);
+
+    if (!formData.vat_on_selling_price.is_type_percentage) {
+      const vatAmount = parseFloat(formData.vat_on_selling_price.amount || 0);
+      if (vatAmount > sellingPrice) return false;
+    }
+
+    if (!formData.discount_on_selling_price.is_type_percentage) {
+      const discountAmount = parseFloat(
+        formData.discount_on_selling_price.amount || 0
+      );
+      if (discountAmount > sellingPrice) return false;
+    }
 
     if (packageType === "country" && formData.coverage_countries.length === 0) {
       return false;
@@ -607,7 +649,6 @@ export const useAddPackage = () => {
     return true;
   }, [formData, packageType]);
 
-  // Form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -618,28 +659,36 @@ export const useAddPackage = () => {
     setIsSubmitting(true);
 
     try {
-      const validatedData = AddPackageSchema.parse({
+      let validatedData = AddPackageSchema.parse({
         ...formData,
         data_plan_in_mb: Number(formData.data_plan_in_mb),
         validity: {
           amount: Number(formData.validity.amount),
           type: formData.validity.type,
         },
-        original_price: {
-          USD: Number(formData.original_price.USD) || 0,
+        retail_price: {
+          USD: Number(formData.retail_price.USD) || 0,
         },
-        price: {
-          USD: Number(formData.price.USD) || 0,
-          EUR: Number(formData.price.EUR) || 0,
+        selling_price: {
+          USD: Number(formData.selling_price.USD) || 0,
         },
-        vat: {
-          amount: Number(formData.vat.amount) || 0,
+        vat_on_selling_price: {
+          amount: Number(formData.vat_on_selling_price.amount) || 0,
+          is_type_percentage: formData.vat_on_selling_price.is_type_percentage,
         },
-        discount: {
-          amount: Number(formData.discount.amount) || 0,
+        discount_on_selling_price: {
+          amount: Number(formData.discount_on_selling_price.amount) || 0,
+          is_type_percentage:
+            formData.discount_on_selling_price.is_type_percentage,
         },
-        keep_go_bundle_type: packageType,
+        coverage_type: packageType,
+        slug: formData.slug,
       });
+
+      if (formData.coverage_type === "regional") {
+        const { coverage_countries, ...rest } = validatedData;
+        validatedData = rest;
+      }
 
       const response = await addPackage({ data: validatedData }).unwrap();
 
@@ -756,15 +805,8 @@ export const useAddPackage = () => {
     dropdownRender,
     packageType,
     setPackageType,
-    selectedRegion,
-    setSelectedRegion,
-    selectedCountry,
-    setSelectedCountry,
     selectedPackage,
     setSelectedPackage,
-    availableRegions,
-    availableCountries,
-    availableRefills,
     isLoading,
     packageCountries,
     availablePackageOptions,
@@ -772,19 +814,18 @@ export const useAddPackage = () => {
     setSelectedPackageData,
     availablePackages,
     isRegionLoading,
-    regions,
     sortedRegions,
     finalPrice,
     coverageError,
+    handleVatTypeToggle,
+    handleDiscountTypeToggle,
   };
 };
-
 export const useUpdatePackage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { selectedData } = useSelector((state) => state.package);
 
-  // Initial form state
   const initialFormState = useMemo(
     () => ({
       id: "",
@@ -796,24 +837,25 @@ export const useUpdatePackage = () => {
       status: "active",
       coverage_countries: [],
       coverage_regions: [],
-      original_price: { USD: 0, EUR: 0 },
-      price: { USD: 0, EUR: 0 },
-      vat: { amount: 0 },
+      retail_price: { USD: "" },
+      selling_price: { USD: "" },
+      vat_on_selling_price: { amount: "", is_type_percentage: true },
+      discount_on_selling_price: { amount: "", is_type_percentage: true },
       is_auto_renew_available: true,
-      discount: { amount: 0 },
-      vendor_type: "keep-go",
       note: "",
+      slug: "",
     }),
     []
   );
-  const [coverageValidation, setCoverageValidation] = useState(false);
+
   const [formData, setFormData] = useState(initialFormState);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [updatePackage] = useUpdatePackageMutation();
 
-  // API queries
+  // Renamed to avoid conflict with hook name
+  const [updatePackageMutation] = useUpdatePackageMutation();
+
   const {
     data: countriesResponse,
     isLoading: isCountrysLoading,
@@ -826,39 +868,47 @@ export const useUpdatePackage = () => {
     isFetching: isRegionsFetching,
   } = useGetAllActiveRegionsQuery();
 
-  // Derived state
   const isCountryLoading = isCountrysLoading || isCountrysFetching;
   const countries = countriesResponse?.data || [];
   const isRegionLoading = isRegionsLoading || isRegionsFetching;
   const regions = regionsResponse?.data || [];
 
-  // Final price calculation
   const finalPrice = useMemo(() => {
-    const baseEUR = parseFloat(formData.price.EUR || 0);
-    const baseUSD = parseFloat(formData.price.USD || 0);
-    const vat = parseFloat(formData.vat.amount || 0);
-    const discount = parseFloat(formData.discount.amount || 0);
+    const baseUSD = parseFloat(formData.selling_price.USD || 0);
+    const vatAmount = parseFloat(formData.vat_on_selling_price.amount || 0);
+    const discountAmount = parseFloat(
+      formData.discount_on_selling_price.amount || 0
+    );
 
-    const priceAfterDiscountUSD = baseUSD - (baseUSD * discount) / 100;
-    const finalUSD =
-      priceAfterDiscountUSD + (priceAfterDiscountUSD * vat) / 100;
+    let priceAfterDiscountUSD = baseUSD;
+    let finalUSD = baseUSD;
 
-    const priceAfterDiscountEUR = baseEUR - (baseEUR * discount) / 100;
-    const finalEUR =
-      priceAfterDiscountEUR + (priceAfterDiscountEUR * vat) / 100;
+    if (formData.discount_on_selling_price.is_type_percentage) {
+      priceAfterDiscountUSD = baseUSD - (baseUSD * discountAmount) / 100;
+    } else {
+      const maxDiscount = Math.min(discountAmount, baseUSD);
+      priceAfterDiscountUSD = baseUSD - maxDiscount;
+    }
+
+    if (formData.vat_on_selling_price.is_type_percentage) {
+      finalUSD =
+        priceAfterDiscountUSD + (priceAfterDiscountUSD * vatAmount) / 100;
+    } else {
+      finalUSD = priceAfterDiscountUSD + vatAmount;
+    }
 
     return {
-      finalUSD: finalUSD.toFixed(2),
-      finalEUR: finalEUR.toFixed(2),
+      finalUSD: Math.max(0, finalUSD).toFixed(2),
+      priceAfterDiscountUSD: Math.max(0, priceAfterDiscountUSD).toFixed(2),
     };
   }, [
-    formData.price.EUR,
-    formData.price.USD,
-    formData.vat.amount,
-    formData.discount.amount,
+    formData.selling_price.USD,
+    formData.vat_on_selling_price.amount,
+    formData.vat_on_selling_price.is_type_percentage,
+    formData.discount_on_selling_price.amount,
+    formData.discount_on_selling_price.is_type_percentage,
   ]);
 
-  // Sorted countries and regions
   const sortedCountries = useMemo(() => {
     if (!countries.length) return [];
     const countriesCopy = [...countries];
@@ -884,16 +934,56 @@ export const useUpdatePackage = () => {
     });
   }, [regions, formData.coverage_regions]);
 
-  // Combined effect for form validation and data initialization
-  useEffect(() => {
-    // Form validation
-    const result = UpdatePackageSchema.safeParse(formData);
-    if (result.success) {
-      setErrors({});
-    }
+  const getRegionsFromCountries = useCallback(
+    (countryIds) => {
+      if (!countryIds.length || !countries.length) return [];
 
-    // Initialize form data when selectedData changes
-    if (selectedData) {
+      const regionIds = countryIds
+        .map((countryId) => {
+          const country = countries.find((c) => c._id === countryId);
+          return country?.region?._id;
+        })
+        .filter((regionId) => regionId && regionId !== "");
+
+      return [...new Set(regionIds)]; // Remove duplicates
+    },
+    [countries]
+  );
+
+  const handleCountrySelection = useCallback(
+    (selectedCountryIds) => {
+      setFormData((prev) => {
+        const regionsFromCountries =
+          getRegionsFromCountries(selectedCountryIds);
+
+        return {
+          ...prev,
+          coverage_countries: selectedCountryIds,
+          coverage_regions: regionsFromCountries,
+        };
+      });
+    },
+    [getRegionsFromCountries]
+  );
+
+  useEffect(() => {
+    if (selectedData && countries.length > 0) {
+      const coverageCountries =
+        selectedData.coverage_countries?.map((country) =>
+          typeof country === "object" ? country._id : country
+        ) || [];
+
+      // Calculate regions from the selected countries
+      let regionsFromCountries = [];
+      if (selectedData.coverge_type === "country") {
+        regionsFromCountries = getRegionsFromCountries(coverageCountries);
+      } else {
+        regionsFromCountries =
+          selectedData.coverage_regions?.map((region) =>
+            typeof region === "object" ? region._id : region
+          ) || [];
+      }
+
       setFormData({
         id: selectedData._id || selectedData.id || "",
         name: selectedData.name || "",
@@ -906,38 +996,37 @@ export const useUpdatePackage = () => {
           type: selectedData.validity?.type || "day",
         },
         status: selectedData.status || "active",
-        coverage_countries:
-          selectedData.coverage_countries?.map((country) =>
-            typeof country === "object" ? country._id : country
-          ) || [],
-        coverage_regions:
-          selectedData.coverage_regions?.map((region) =>
-            typeof region === "object" ? region._id : region
-          ) || [],
-        original_price: {
-          USD: selectedData.original_price?.USD?.toString() || "",
-          EUR: selectedData.original_price?.EUR?.toString() || "",
+        coverage_countries: coverageCountries,
+        coverage_regions: regionsFromCountries,
+        retail_price: {
+          USD: selectedData.retail_price?.USD?.toString() || "",
         },
-        price: {
-          USD: selectedData.price?.USD?.toString() || "",
-          EUR: selectedData.price?.EUR?.toString() || "",
+        selling_price: {
+          USD: selectedData.selling_price?.USD?.toString() || "",
         },
-        vat: {
-          amount: selectedData.vat?.amount?.toString() || "",
+        vat_on_selling_price: {
+          amount: selectedData.vat_on_selling_price?.amount?.toString() || "",
+          is_type_percentage:
+            selectedData.vat_on_selling_price?.is_type_percentage ?? true,
+        },
+        discount_on_selling_price: {
+          amount:
+            selectedData.discount_on_selling_price?.amount?.toString() || "",
+          is_type_percentage:
+            selectedData.discount_on_selling_price?.is_type_percentage ?? true,
         },
         is_auto_renew_available: selectedData.is_auto_renew_available ?? true,
-        discount: {
-          amount: selectedData.discount?.amount?.toString() || "",
-        },
-        vendor_type: selectedData.vendor_type || "telnyx",
         note: selectedData.note || "",
+        slug: selectedData.slug || "",
       });
     }
-  }, [selectedData]);
-  // Form change handler
+  }, [selectedData, countries, getRegionsFromCountries]);
+
   const handleChange = useCallback(
     (name, value) => {
-      if (name.includes(".")) {
+      if (name === "coverage_countries") {
+        handleCountrySelection(value);
+      } else if (name.includes(".")) {
         const [parent, child] = name.split(".");
         setFormData((prev) => ({
           ...prev,
@@ -960,10 +1049,9 @@ export const useUpdatePackage = () => {
         }));
       }
     },
-    [errors]
+    [errors, handleCountrySelection]
   );
 
-  // Form validation
   const validateForm = useCallback(() => {
     const numericData = {
       ...formData,
@@ -977,26 +1065,29 @@ export const useUpdatePackage = () => {
             : Number(formData.validity.amount),
         type: formData.validity.type,
       },
-      original_price: {
+      retail_price: {
         USD:
-          formData.original_price.USD === ""
+          formData.retail_price.USD === ""
             ? ""
-            : Number(formData.original_price.USD),
-        EUR:
-          formData.original_price.EUR === ""
+            : Number(formData.retail_price.USD),
+      },
+      selling_price: {
+        USD:
+          formData.selling_price.USD === ""
             ? ""
-            : Number(formData.original_price.EUR),
+            : Number(formData.selling_price.USD),
       },
-      price: {
-        USD: formData.price.USD === "" ? "" : Number(formData.price.USD),
-        EUR: formData.price.EUR === "" ? "" : Number(formData.price.EUR),
+      vat_on_selling_price: {
+        amount: Number(formData.vat_on_selling_price.amount) || 0,
+        is_type_percentage:
+          formData.vat_on_selling_price?.is_type_percentage ?? true,
       },
-      vat: {
-        amount: Number(formData.vat.amount) || 0,
+      discount_on_selling_price: {
+        amount: Number(formData.discount_on_selling_price.amount) || 0,
+        is_type_percentage:
+          formData.discount_on_selling_price?.is_type_percentage ?? true,
       },
-      discount: {
-        amount: Number(formData.discount.amount) || 0,
-      },
+      slug: formData.slug || "",
     };
 
     const result = UpdatePackageSchema.safeParse(numericData);
@@ -1014,7 +1105,6 @@ export const useUpdatePackage = () => {
     return true;
   }, [formData]);
 
-  // Form validity check
   const isFormValid = useMemo(() => {
     if (!formData.id) return false;
 
@@ -1030,42 +1120,43 @@ export const useUpdatePackage = () => {
             : Number(formData.validity.amount),
         type: formData.validity.type,
       },
-      original_price: {
+      retail_price: {
         USD:
-          formData.original_price.USD === ""
+          formData.retail_price.USD === ""
             ? ""
-            : Number(formData.original_price.USD),
-        EUR:
-          formData.original_price.EUR === ""
+            : Number(formData.retail_price.USD),
+      },
+      selling_price: {
+        USD:
+          formData.selling_price.USD === ""
             ? ""
-            : Number(formData.original_price.EUR),
+            : Number(formData.selling_price.USD),
       },
-      price: {
-        USD: formData.price.USD === "" ? "" : Number(formData.price.USD),
-        EUR: formData.price.EUR === "" ? "" : Number(formData.price.EUR),
+      vat_on_selling_price: {
+        amount: Number(formData.vat_on_selling_price.amount) || 0,
+        is_type_percentage:
+          formData.vat_on_selling_price?.is_type_percentage ?? true,
       },
-      vat: {
-        amount: Number(formData.vat.amount) || 0,
+      discount_on_selling_price: {
+        amount: Number(formData.discount_on_selling_price.amount) || 0,
+        is_type_percentage:
+          formData.discount_on_selling_price?.is_type_percentage ?? true,
       },
-      discount: {
-        amount: Number(formData.discount.amount) || 0,
-      },
+      slug: formData.slug || "",
     };
 
     const result = UpdatePackageSchema.safeParse(numericData);
 
-    // Check coverage based on bundle type
     let coverageValid = false;
-    if (selectedData?.keep_go_bundle_type === "regional") {
+    if (selectedData?.coverage_type === "regional") {
       coverageValid = formData.coverage_regions.length > 0;
-    } else if (selectedData?.keep_go_bundle_type === "country") {
+    } else if (selectedData?.coverage_type === "country") {
       coverageValid = formData.coverage_countries.length > 0;
     }
 
     return result.success && coverageValid;
-  }, [formData, selectedData?.keep_go_bundle_type]);
+  }, [formData, selectedData?.coverage_type]);
 
-  // Form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -1077,7 +1168,7 @@ export const useUpdatePackage = () => {
     setIsSubmitting(true);
 
     try {
-      const validatedData = UpdatePackageSchema.parse({
+      let validatedData = UpdatePackageSchema.parse({
         ...formData,
         data_plan_in_mb: Number(formData.data_plan_in_mb),
         bonus_data_plan_in_mb: Number(formData.bonus_data_plan_in_mb) || 0,
@@ -1085,23 +1176,37 @@ export const useUpdatePackage = () => {
           amount: Number(formData.validity.amount),
           type: formData.validity.type,
         },
-        original_price: {
-          USD: Number(formData.original_price.USD),
-          EUR: Number(formData.original_price.EUR),
+        retail_price: {
+          USD:
+            formData.retail_price.USD === ""
+              ? ""
+              : Number(formData.retail_price.USD),
         },
-        price: {
-          USD: Number(formData.price.USD),
-          EUR: Number(formData.price.EUR),
+        selling_price: {
+          USD:
+            formData.selling_price.USD === ""
+              ? ""
+              : Number(formData.selling_price.USD),
         },
-        vat: {
-          amount: Number(formData.vat.amount) || 0,
+        vat_on_selling_price: {
+          amount: Number(formData.vat_on_selling_price.amount) || 0,
+          is_type_percentage:
+            formData.vat_on_selling_price?.is_type_percentage ?? true,
         },
-        discount: {
-          amount: Number(formData.discount.amount) || 0,
+        discount_on_selling_price: {
+          amount: Number(formData.discount_on_selling_price.amount) || 0,
+          is_type_percentage:
+            formData.discount_on_selling_price?.is_type_percentage ?? true,
         },
+        slug: formData.slug || "",
       });
 
-      const response = await updatePackage({
+      if (selectedData.coverage_type === "regional") {
+        const { coverage_countries, ...rest } = validatedData;
+        validatedData = rest;
+      }
+
+      const response = await updatePackageMutation({
         id: formData.id,
         data: validatedData,
       }).unwrap();

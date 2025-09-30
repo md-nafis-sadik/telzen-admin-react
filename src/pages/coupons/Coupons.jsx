@@ -1,7 +1,7 @@
 import FormInput from "../../shared/forms/FormInput";
 import { DeleteIcon, EditIcon, SearchSvg } from "../../utils/svgs";
 import SecondaryButton from "../../shared/buttons/SecondaryButton";
-import { useGetPromos } from "../../hooks/features/usePromos";
+import { useGetCoupons } from "../../hooks/features/useCoupons";
 import NotifyContainer from "../../utils/notify";
 import ConfirmationModal from "../../components/modals/ConfirmationModal";
 import { CustomTable } from "../../shared/custom";
@@ -11,7 +11,7 @@ import { Select } from "antd";
 import utc from "dayjs/plugin/utc";
 dayjs.extend(utc);
 
-const Promo = () => {
+const Coupon = () => {
   const {
     isLoading,
     isError,
@@ -22,12 +22,12 @@ const Promo = () => {
     setSearchKeyword,
     updatePageMeta,
     handleDelete,
-    setPromoId,
+    setCouponId,
     handleNavigate,
-    handleOpenAddPromoModal,
+    handleOpenAddCouponModal,
     handleStatusChange,
-    updatingPromos,
-  } = useGetPromos();
+    updatingCoupons,
+  } = useGetCoupons();
 
   const { Option } = Select;
 
@@ -36,12 +36,12 @@ const Promo = () => {
       <section className="h-full w-full max-h-[95%] px-4 md:px-6 py-6">
         <div className="bg-white shadow-sm w-full rounded-2xl flex flex-col p-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-            <h2 className="title-cmn text-[18px] font-semibold">Promo</h2>
+            <h2 className="title-cmn text-[18px] font-semibold">Coupon</h2>
 
             <div className="flex flex-col md:flex-row items-center gap-4">
               <div className="w-full md:w-[200px] relative">
                 <FormInput
-                  placeholder="Search Promo"
+                  placeholder="Search Coupon"
                   inputCss="pl-12 !py-3 !rounded-lg"
                   value={searchKeyword}
                   onChange={(e) => setSearchKeyword(e.target.value)}
@@ -51,9 +51,9 @@ const Promo = () => {
               </div>
 
               <SecondaryButton
-                text="Add Promo"
+                text="Add Coupon"
                 width="w-max"
-                onClick={() => handleOpenAddPromoModal()}
+                onClick={() => handleOpenAddCouponModal()}
               />
             </div>
           </div>
@@ -82,36 +82,36 @@ const Promo = () => {
             ]}
             dataLength={dataList?.length || 0}
           >
-            {dataList?.map((promo, index) => (
+            {dataList?.map((coupon, index) => (
               <tr
                 className={`bg-white text-blackSemi relative ${
                   index !== dataList.length - 1
                     ? "after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:border-b after:border-natural"
                     : ""
                 }`}
-                key={promo?._id}
+                key={coupon?._id}
               >
-                <td>{promo?.title}</td>
-                <td>{promo?.code}</td>
-                <td>{promo.discount?.amount}%</td>
+                <td>{coupon?.title}</td>
+                <td>{coupon?.code}</td>
+                <td>{coupon.discount?.amount}%</td>
                 <td>
-                  {promo?.coverage_countries?.length ? (
-                    promo.coverage_countries.length <= 2 ? (
-                      promo.coverage_countries.map((c) => c.name).join(", ")
+                  {coupon?.coverage_countries?.length ? (
+                    coupon.coverage_countries.length <= 2 ? (
+                      coupon.coverage_countries.map((c) => c.name).join(", ")
                     ) : (
                       <>
-                        {promo.coverage_countries
+                        {coupon.coverage_countries
                           .slice(0, 2)
                           .map((c) => c.name)
                           .join(", ")}
                         <span
                           className="text-neutral-500 ml-1"
-                          title={promo.coverage_countries
+                          title={coupon.coverage_countries
                             .slice(2)
                             .map((c) => c.name)
                             .join(", ")}
                         >
-                          +{promo.coverage_countries.length - 2} more
+                          +{coupon.coverage_countries.length - 2} more
                         </span>
                       </>
                     )
@@ -120,26 +120,26 @@ const Promo = () => {
                   )}
                 </td>
                 <td>
-                  {promo?.validity_end_at
+                  {coupon?.validity_end_at
                     ? `${dayjs
-                        .unix(promo.validity_end_at)
+                        .unix(coupon.validity_end_at)
                         .utc()
                         .format("YYYY-MM-DD")}`
                     : "-"}
                 </td>
                 <td>
-                  {promo?.validity_end_at
+                  {coupon?.validity_end_at
                     ? `${dayjs
-                        .unix(promo.validity_end_at)
+                        .unix(coupon.validity_end_at)
                         .utc()
                         .format("HH:mm")}`
                     : "-"}
                 </td>
-                <td>{promo?.usages_count}</td>
-                <td>{promo?.max_usages_limit}</td>
-                <td>{promo?.is_private ? "Private" : "Public"}</td>
+                <td>{coupon?.usages_count}</td>
+                <td>{coupon?.max_usages_limit}</td>
+                <td>{coupon?.is_private ? "Private" : "Public"}</td>
                 <td className="py-3">
-                  {updatingPromos[promo._id] ? (
+                  {updatingCoupons[coupon._id] ? (
                     <SkeletonBox className="h-7 w-24" />
                   ) : (
                     <Select
@@ -152,8 +152,10 @@ const Promo = () => {
                             [&_.ant-select-selector]:!flex
                             [&_.ant-select-selector]:!items-center
                         `}
-                      value={promo?.is_active ? "Active" : "Inactive"}
-                      onChange={(value) => handleStatusChange(promo._id, value)}
+                      value={coupon?.is_active ? "Active" : "Inactive"}
+                      onChange={(value) =>
+                        handleStatusChange(coupon._id, value)
+                      }
                     >
                       <Option value="Active">Active</Option>
                       <Option value="Inactive">Inactive</Option>
@@ -163,13 +165,16 @@ const Promo = () => {
 
                 <th className="py-3 w-[120px]">
                   <span className="flex items-center justify-center gap-2">
-                    <button type="button" onClick={() => handleNavigate(promo)}>
+                    <button
+                      type="button"
+                      onClick={() => handleNavigate(coupon)}
+                    >
                       <EditIcon />
                     </button>
                     <label
                       htmlFor="confirmationPopup"
                       className="cursor-pointer"
-                      onClick={() => setPromoId(promo._id)}
+                      onClick={() => setCouponId(coupon._id)}
                     >
                       <DeleteIcon />
                     </label>
@@ -180,10 +185,10 @@ const Promo = () => {
           </CustomTable>
         </div>
       </section>
-      <ConfirmationModal handleStatus={handleDelete} title="promo" />
+      <ConfirmationModal handleStatus={handleDelete} title="coupon" />
       <NotifyContainer />
     </>
   );
 };
 
-export default Promo;
+export default Coupon;
