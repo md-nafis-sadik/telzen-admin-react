@@ -110,7 +110,7 @@ export const useGetUserDetails = () => {
                   font-size: 10px;
                   font-style: normal;
                   font-weight: 600;
-                  line-height: 120%; margin-bottom: 3px;" margin-bottom: 3px;>Telzen Digital.</div>
+                  line-height: 120%; margin-bottom: 4px;" margin-bottom: 3px;>Netro Systems Limited</div>
                 <div style="color: #888;
                   font-size: 10px;
                   font-weight: 400;
@@ -123,7 +123,7 @@ export const useGetUserDetails = () => {
                 <div style="color: #888;
                   font-size: 10px;
                   font-weight: 400;
-                  line-height: 130%;">hello@netrosystems.com</div>
+                  line-height: 130%;">hello@telzen.digital</div>
             </div>
         </div>
 
