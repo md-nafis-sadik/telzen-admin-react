@@ -3,13 +3,13 @@
 }
 
 .sidebar .active {
-  background-color: #fff0f2;
+  background-color: #E6FFF8;
   color: #4f4f4f;
   font-weight: 500 !important;
 }
 
 .dropdown-menu {
-  background-color: #f7f7f7;
+  background-color: #E6FFF8;
 }
 
 .dropdown-text {

@@ -11,7 +11,55 @@ const initialState = {
   dataList: [],
   data: {},
   selectedData: null,
+  availablePackages: [],
+  // Cache packages by coverage type
+  cachedPackages: {
+    country: [],
+    region: [],
+  },
   isConfirmModalOpen: false,
+  // Add form state
+  addFormState: {
+    packageType: "country",
+    selectedPackageCode: null,
+    selectedPackageData: null,
+    formData: {
+      name: "",
+      type: "data",
+      data_plan_in_mb: "",
+      bonus_data_plan_in_mb: "",
+      validity: { amount: "", type: "day" },
+      status: "active",
+      coverage_countries: [],
+      coverage_regions: [],
+      retail_price: { USD: "" },
+      selling_price: { USD: "" },
+      is_auto_renew_available: false,
+      discount_on_selling_price: { amount: "", is_type_percentage: true },
+      package_code: "",
+      coverage_type: "country",
+      slug: "",
+    },
+  },
+  // Add form data for edit package
+  editFormData: {
+    id: "",
+    name: "",
+    type: "data",
+    data_plan_in_mb: "",
+    bonus_data_plan_in_mb: "",
+    validity: { amount: "", type: "day" },
+    status: "active",
+    coverage_countries: [],
+    coverage_regions: [],
+    retail_price: { USD: "" },
+    selling_price: { USD: "" },
+    // vat_on_selling_price: { amount: "", is_type_percentage: true },
+    discount_on_selling_price: { amount: "", is_type_percentage: true },
+    is_auto_renew_available: true,
+    note: "",
+    slug: "",
+  },
 
   meta: {
     total_items: 1,
@@ -185,6 +233,123 @@ const packageSlice = createSlice({
     setPackageConfirmationModal: (state, action) => {
       state.isConfirmModalOpen = action.payload;
     },
+    // Set available packages for add package form
+    setAvailablePackages: (state, action) => {
+      state.availablePackages = action.payload;
+    },
+    // Set cached packages for specific coverage type
+    setCachedPackages: (state, action) => {
+      const { coverageType, packages } = action.payload;
+      state.cachedPackages[coverageType] = packages;
+      // Also update availablePackages if this is the current package type
+      if (state.addFormState.packageType === coverageType) {
+        state.availablePackages = packages;
+      }
+    },
+    // Add form state management
+    setAddFormPackageType: (state, action) => {
+      state.addFormState.packageType = action.payload;
+      // Reset selection when package type changes
+      state.addFormState.selectedPackageCode = null;
+      state.addFormState.selectedPackageData = null;
+      // Use cached packages if available, otherwise clear
+      const cachedPackages = state.cachedPackages[action.payload] || [];
+      state.availablePackages = cachedPackages;
+      // Reset form data to initial state with new coverage type
+      state.addFormState.formData = {
+        name: "",
+        type: "data",
+        data_plan_in_mb: "",
+        bonus_data_plan_in_mb: "",
+        validity: { amount: "", type: "day" },
+        status: "active",
+        coverage_countries: [],
+        coverage_regions: [],
+        retail_price: { USD: "" },
+        selling_price: { USD: "" },
+        is_auto_renew_available: false,
+        discount_on_selling_price: { amount: "", is_type_percentage: true },
+        package_code: "",
+        coverage_type: action.payload,
+        slug: "",
+      };
+    },
+    setAddFormSelectedPackage: (state, action) => {
+      const { packageCode, packageData } = action.payload;
+      state.addFormState.selectedPackageCode = packageCode;
+      state.addFormState.selectedPackageData = packageData;
+
+      if (packageData) {
+        // Auto-populate form data from selected package
+        state.addFormState.formData = {
+          ...state.addFormState.formData,
+          name: packageData.name || "",
+          data_plan_in_mb: packageData.data_plan_in_mb || "",
+          validity: {
+            amount: packageData.validity?.amount || "",
+            type: packageData.validity?.type || "day",
+          },
+          retail_price: { USD: packageData.retail_price || "" },
+          package_code: packageData.package_code || "",
+          slug: packageData.slug || "",
+        };
+      }
+    },
+    setAddFormData: (state, action) => {
+      state.addFormState.formData = {
+        ...state.addFormState.formData,
+        ...action.payload,
+      };
+    },
+    resetAddFormState: (state) => {
+      state.addFormState = {
+        packageType: "country",
+        selectedPackageCode: null,
+        selectedPackageData: null,
+        formData: {
+          name: "",
+          type: "data",
+          data_plan_in_mb: "",
+          bonus_data_plan_in_mb: "",
+          validity: { amount: "", type: "day" },
+          status: "active",
+          coverage_countries: [],
+          coverage_regions: [],
+          retail_price: { USD: "" },
+          selling_price: { USD: "" },
+          is_auto_renew_available: false,
+          discount_on_selling_price: { amount: "", is_type_percentage: true },
+          package_code: "",
+          coverage_type: "country",
+          slug: "",
+        },
+      };
+    },
+    // Set edit form data
+    setEditFormData: (state, action) => {
+      state.editFormData = action.payload;
+    },
+    // Reset edit form data
+    resetEditFormData: (state) => {
+      state.editFormData = {
+        id: "",
+        name: "",
+        type: "data",
+        data_plan_in_mb: "",
+        bonus_data_plan_in_mb: "",
+        validity: { amount: "", type: "day" },
+        status: "active",
+        coverage_countries: [],
+        coverage_regions: [],
+        retail_price: { USD: "" },
+        selling_price: { USD: "" },
+        // vat_on_selling_price: { amount: "", is_type_percentage: true },
+        discount_on_selling_price: { amount: "", is_type_percentage: true },
+        is_auto_renew_available: true,
+        note: "",
+        slug: "",
+      };
+    },
   },
 });
 
@@ -199,5 +364,13 @@ export const {
   setSelectedPackageData,
   clearSelectedPackageData,
   setPackageConfirmationModal,
+  setAvailablePackages,
+  setCachedPackages,
+  setEditFormData,
+  resetEditFormData,
+  setAddFormPackageType,
+  setAddFormSelectedPackage,
+  setAddFormData,
+  resetAddFormState,
 } = packageSlice.actions;
 export default packageSlice.reducer;

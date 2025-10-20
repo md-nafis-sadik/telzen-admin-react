@@ -14,7 +14,7 @@ import { Select } from "antd";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import { getSymbol } from "../../utils/currency";
-import { logoForPdf } from "../../assets/getAssets";
+import { logo } from "../../assets/getAssets";
 
 // ** UserDetails List **
 export const useGetUserDetails = () => {
@@ -59,7 +59,7 @@ export const useGetUserDetails = () => {
   const handleDownloadInvoice = async ({ user, userDetails }) => {
     try {
       const dummyInvoiceData = {
-        userName: user.full_name,
+        userName: user.name,
         userPhone: user.phone,
         invoiceNumber: userDetails?.order?.order_id,
         invoiceDate: new Date(
@@ -69,21 +69,23 @@ export const useGetUserDetails = () => {
           month: "short",
           year: "numeric",
         }),
+        isPercentage: userDetails?.evaluated_tax?.tax_rate_type === "percentage",
         quantity: 1,
         packageName: userDetails?.static_package?.name,
         rate: `${getSymbol(userDetails?.order?.payment_currency)}${
-          userDetails?.evaluated_tax?.payment_amount_without_tax
+          userDetails?.evaluated_tax?.currency_results?.USD?.payment_amount_without_tax
         }`,
         amount: `${getSymbol(userDetails?.order?.payment_currency)}${
-          userDetails?.evaluated_tax?.payment_amount_without_tax
+          userDetails?.evaluated_tax?.currency_results?.USD?.payment_amount_without_tax
         }`,
-        tax: `${getSymbol(userDetails?.order?.payment_currency)}${
-          userDetails?.evaluated_tax?.tax_amount
+        tax: `${userDetails?.evaluated_tax?.tax_rate_type === "percentage" ? '' : getSymbol(userDetails?.order?.payment_currency)}${
+          userDetails?.evaluated_tax?.tax_rate_type === "percentage" ? `${(userDetails?.evaluated_tax?.currency_results?.USD?.tax_amount*100).toFixed(0)} %` : userDetails?.evaluated_tax?.currency_results?.USD?.tax_amount
         }`,
         total: `${getSymbol(userDetails?.order?.payment_currency)}${
-          userDetails?.evaluated_tax?.payment_amount_with_tax
+          userDetails?.evaluated_tax?.currency_results?.USD?.payment_amount_with_tax
         }`,
         iccid: userDetails?.esim?.iccid || "ICCID",
+        
       };
 
       // Create a temporary div to hold our invoice HTML
@@ -104,7 +106,7 @@ export const useGetUserDetails = () => {
           <div>
         <!-- Header -->
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 70px;">
-            <img src=${logoForPdf} alt="Logo" style="height: 32px;" />
+            <img src=${logo} alt="Logo" style="height: 32px;" />
             <div style="font-size: 10px; line-height: 1.5;">
                 <div style="color: #1A1C21;
                   font-size: 10px;
@@ -309,7 +311,7 @@ export const useGetUserDetails = () => {
       const pdf = new jsPDF("p", "pt", "a4");
 
       const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.page_size.getWidth();
+      const pdfWidth = pdf.internal.pageSize.getWidth(); // ✅ fixed line
       const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
       pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);

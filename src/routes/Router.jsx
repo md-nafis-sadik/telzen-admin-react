@@ -193,7 +193,7 @@ export const routes = createBrowserRouter([
         ),
       },
       {
-        path: "/package-edit",
+        path: "/package-edit/:id",
         element: (
           <PrivateRouter allowedRoles={["manager", "sales-manager", "admin"]}>
             <UpdatePackageForm />

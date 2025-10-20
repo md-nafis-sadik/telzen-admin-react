@@ -76,7 +76,7 @@ const UserDetails = ({ isHome }) => {
                 </td>
                 <td className="py-4">
                   {getSymbol(userDetails?.order?.payment_currency)}
-                  {userDetails?.order?.payment_amount}
+                  {userDetails?.order?.payment_amount.USD}
                 </td>
                 <td className="py-4 flex items-center gap-4">
                   {new Date(

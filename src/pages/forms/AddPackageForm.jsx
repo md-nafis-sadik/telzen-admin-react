@@ -1,10 +1,11 @@
-import { Select, Switch } from "antd";
+import { Select, Switch, Tag } from "antd";
 import BackToPrev from "../../components/shared/back/BackToPrev";
 import SuccessModal from "../../components/modals/SuccessModal";
 import { useAddPackage } from "../../hooks/features/usePackages";
 import NotifyContainer from "../../utils/notify";
 import ReactCountryFlag from "react-country-flag";
 import SkeletonBox from "../../shared/custom/CustomSkeletonBox";
+import { getSymbol } from "../../utils/currency";
 
 function AddPackageForm() {
   const {
@@ -13,14 +14,11 @@ function AddPackageForm() {
     handleChange,
     handleSubmit,
     handleModalOk,
-    isFormValid,
     errors,
     formData,
     navigate,
     isSubmitting,
     sortedCountries,
-    tagRender,
-    dropdownRender,
     packageType,
     setPackageType,
     selectedPackage,
@@ -35,22 +33,11 @@ function AddPackageForm() {
     sortedRegions,
     finalPrice,
     coverageError,
-    handleVatTypeToggle,
     handleDiscountTypeToggle,
+    tagRender,
+    dropdownRender,
+    isFormValid
   } = useAddPackage();
-
-  // Helper function to get currency symbol
-  const getSymbol = (currency) => {
-    switch (currency) {
-      case "USD":
-        return "$";
-      case "EUR":
-        return "€";
-      default:
-        return currency;
-    }
-  };
-
   return (
     <section className="px-8 py-6 h-full overflow-auto">
       <div className="bg-white p-6 rounded-2xl">
@@ -81,37 +68,34 @@ function AddPackageForm() {
               />
             </div>
 
-            {/* Package Selection */}
-            {packageType && availablePackages.length > 0 && (
-              <div className="flex flex-col gap-1">
-                <span className="text-black-700">Select Package</span>
-                {isLoading ? (
-                  <SkeletonBox className="w-full h-[49px] !rounded-lg" />
-                ) : (
-                  <Select
-                    className="w-full border rounded-lg
+            <div className="flex flex-col gap-1">
+              <span className="text-black-700">Select Package</span>
+              {isLoading ? (
+                <SkeletonBox className="w-full h-[49px] !rounded-lg" />
+              ) : (
+                <Select
+                  className="w-full border rounded-lg
                     [&_.ant-select-selector]:!h-12
                     [&_.ant-select-selector]:!px-4
                     [&_.ant-select-selector]:!flex
                     [&_.ant-select-selector]:!items-center
                     [&_.ant-select-selector]:!leading-[3.5rem]"
-                    placeholder={isLoading ? "Loading..." : "Select package"}
-                    showSearch
-                    disabled={isLoading}
-                    options={availablePackageOptions}
-                    value={selectedPackageData?.package_code}
-                    onChange={(value) => {
-                      const selected = availablePackages.find(
-                        (pkg) => pkg.package_code === value
-                      );
-                      setSelectedPackageData(selected || null);
-                      setSelectedPackage(value);
-                    }}
-                    loading={isLoading}
-                  />
-                )}
-              </div>
-            )}
+                  placeholder={isLoading ? "Loading..." : "Select package"}
+                  showSearch
+                  disabled={isLoading}
+                  options={availablePackageOptions}
+                  value={selectedPackageData?.package_code}
+                  onChange={(value) => {
+                    const selected = availablePackages.find(
+                      (pkg) => pkg.package_code === value
+                    );
+                    setSelectedPackageData(selected || null);
+                    setSelectedPackage(value);
+                  }}
+                  loading={isLoading}
+                />
+              )}
+            </div>
 
             {/* Package Name */}
             <div className="flex flex-col gap-1">
@@ -165,7 +149,9 @@ function AddPackageForm() {
                 type="number"
                 placeholder="Enter validity amount"
                 className={`w-full border placeholder:text-disabled ${
-                  errors.validity ? "border-red-500" : "border-natural-400"
+                  errors["validity.amount"]
+                    ? "border-red-500"
+                    : "border-natural-400"
                 } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
                 value={formData.validity.amount}
                 onChange={(e) =>
@@ -174,8 +160,10 @@ function AddPackageForm() {
                 onWheel={(e) => e.target.blur()}
                 disabled={true}
               />
-              {errors.validity && (
-                <span className="text-red-500 text-sm">{errors.validity}</span>
+              {errors["validity.amount"] && (
+                <span className="text-red-500 text-sm">
+                  {errors["validity.amount"]}
+                </span>
               )}
             </div>
 
@@ -186,231 +174,23 @@ function AddPackageForm() {
                 type="number"
                 placeholder="Enter retail price"
                 className={`w-full border placeholder:text-disabled ${
-                  errors.retail_price ? "border-red-500" : "border-natural-400"
+                  errors["retail_price.USD"]
+                    ? "border-red-500"
+                    : "border-natural-400"
                 } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-                value={formData.retail_price.USD}
+                value={formData.retail_price?.USD}
                 onChange={(e) =>
                   handleChange("retail_price.USD", e.target.value)
                 }
                 onWheel={(e) => e.target.blur()}
                 disabled={true}
               />
-              {errors.retail_price && (
+              {errors["retail_price.USD"] && (
                 <span className="text-red-500 text-sm">
-                  {errors.retail_price}
+                  {errors["retail_price.USD"]}
                 </span>
               )}
             </div>
-
-            {/* Selling Price */}
-            <div className="flex flex-col gap-1">
-              <span className="text-black-700">Selling Price (USD)</span>
-              <input
-                type="number"
-                placeholder="Enter selling price"
-                className={`w-full border placeholder:text-disabled ${
-                  errors.selling_price ? "border-red-500" : "border-natural-400"
-                } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-                value={formData.selling_price.USD}
-                onChange={(e) =>
-                  handleChange("selling_price.USD", e.target.value)
-                }
-                onWheel={(e) => e.target.blur()}
-                disabled={!selectedPackage}
-              />
-              {errors.selling_price && (
-                <span className="text-red-500 text-sm">
-                  {errors.selling_price}
-                </span>
-              )}
-            </div>
-
-            {/* VAT on Selling Price */}
-            {/* VAT on Selling Price */}
-            <div className="flex flex-col gap-1">
-              <span className="text-black-700">
-                VAT on Selling Price (Optional)
-              </span>
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  placeholder={
-                    formData.vat_on_selling_price.is_type_percentage
-                      ? "Enter VAT in %"
-                      : "Enter VAT amount"
-                  }
-                  className={`w-full border placeholder:text-disabled ${
-                    errors.vat_on_selling_price
-                      ? "border-red-500"
-                      : "border-natural-400"
-                  } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-                  value={formData.vat_on_selling_price.amount}
-                  min="0"
-                  max={
-                    formData.vat_on_selling_price.is_type_percentage
-                      ? "100"
-                      : undefined
-                  }
-                  onChange={(e) => {
-                    let value = e.target.value;
-                    if (value !== "") {
-                      if (formData.vat_on_selling_price.is_type_percentage) {
-                        value = Math.min(100, Math.max(0, Number(value)));
-                      }
-                      // For fixed amount, no max limit needed as validation will handle it
-                    }
-                    handleChange("vat_on_selling_price.amount", value);
-                  }}
-                  disabled={!selectedPackage}
-                />
-                <div className="flex items-center gap-2 whitespace-nowrap">
-                  <span className="text-sm w-3">
-                    {formData.vat_on_selling_price.is_type_percentage
-                      ? "%"
-                      : "$"}
-                  </span>
-                  <Switch
-                    checked={!formData.vat_on_selling_price.is_type_percentage}
-                    onChange={handleVatTypeToggle}
-                    size="small"
-                    className="bg-neutral-400"
-                  />
-                </div>
-              </div>
-              {errors.vat_on_selling_price && (
-                <span className="text-red-500 text-sm">
-                  {errors.vat_on_selling_price}
-                </span>
-              )}
-            </div>
-
-            {/* Discount on Selling Price */}
-            {/* Discount on Selling Price */}
-            <div className="flex flex-col gap-1">
-              <span className="text-black-700">Discount Amount (Optional)</span>
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  placeholder={
-                    formData.discount_on_selling_price.is_type_percentage
-                      ? "Enter discount in %"
-                      : "Enter discount amount"
-                  }
-                  className={`w-full border placeholder:text-disabled ${
-                    errors.discount_on_selling_price
-                      ? "border-red-500"
-                      : "border-natural-400"
-                  } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-                  value={formData.discount_on_selling_price.amount}
-                  min="0"
-                  max={
-                    formData.discount_on_selling_price.is_type_percentage
-                      ? "100"
-                      : `${formData.selling_price.USD}`
-                  }
-                  onChange={(e) => {
-                    let value = e.target.value;
-                    if (value !== "") {
-                      if (
-                        formData.discount_on_selling_price.is_type_percentage
-                      ) {
-                        value = Math.min(100, Math.max(0, Number(value)));
-                      } else if (formData.selling_price.USD) {
-                        value = Math.min(
-                          formData.selling_price.USD,
-                          Number(value)
-                        );
-                      }
-                    }
-                    handleChange("discount_on_selling_price.amount", value);
-                  }}
-                  disabled={!selectedPackage}
-                />
-                <div className="flex items-center gap-2 whitespace-nowrap">
-                  <span className="text-sm w-3">
-                    {formData.discount_on_selling_price.is_type_percentage
-                      ? "%"
-                      : "$"}
-                  </span>
-                  <Switch
-                    checked={
-                      !formData.discount_on_selling_price.is_type_percentage
-                    }
-                    onChange={handleDiscountTypeToggle}
-                    size="small"
-                    className="bg-neutral-400"
-                  />
-                </div>
-              </div>
-              {errors.discount_on_selling_price && (
-                <span className="text-red-500 text-sm">
-                  {errors.discount_on_selling_price}
-                </span>
-              )}
-            </div>
-
-            {/* Coverage Countries */}
-            {packageType === "country" && (
-              <div className="flex flex-col gap-1 col-span-1">
-                <span className="text-black-700">Coverage Countries</span>
-                {isCountryLoading ? (
-                  <SkeletonBox className="w-full h-[49px] !rounded-lg" />
-                ) : (
-                  <Select
-                    mode="multiple"
-                    className={`w-full border ${
-                      errors.coverage_countries || coverageError
-                        ? "!border-red-500"
-                        : "border-natural-400"
-                    } rounded-lg [&_.ant-select-selector]:!min-h-12 [&_.ant-select-selection-placeholder]:!px-2 [&_.ant-select-selector]:!px-3 [&_.ant-select-selector]:!flex [&_.ant-select-selector]:!items-center`}
-                    placeholder="Select Countries"
-                    value={formData.coverage_countries}
-                    onChange={(value) =>
-                      handleChange("coverage_countries", value)
-                    }
-                    status={errors.coverage_countries ? "error" : ""}
-                    tagRender={tagRender}
-                    maxTagCount={2}
-                    showSearch
-                    optionFilterProp="label"
-                    dropdownRender={dropdownRender}
-                    disabled={!selectedPackage}
-                  >
-                    {sortedCountries.map((country) => (
-                      <Select.Option
-                        key={country._id}
-                        value={country._id}
-                        label={country.name}
-                      >
-                        <div className="flex items-center gap-3">
-                          <ReactCountryFlag
-                            countryCode={country.code}
-                            svg
-                            style={{ width: "20px", height: "15px" }}
-                          />
-                          <span>{country.name}</span>
-                        </div>
-                      </Select.Option>
-                    ))}
-                  </Select>
-                )}
-
-                {/* Display package coverage countries */}
-                {selectedPackage && packageCountries.length > 0 && (
-                  <div className="flex flex-col gap-1 col-span-1 mt-2">
-                    <div className="text-xs p-2 border border-neutral-300 rounded-lg bg-neutral-50">
-                      Available Coverage: {packageCountries.join(", ")}
-                    </div>
-                  </div>
-                )}
-
-                {(errors.coverage_countries || coverageError) && (
-                  <span className="text-red-500 text-sm">
-                    {errors.coverage_countries || coverageError}
-                  </span>
-                )}
-              </div>
-            )}
 
             {/* Coverage Regions */}
             {packageType === "regional" && (
@@ -461,6 +241,167 @@ function AddPackageForm() {
               </div>
             )}
 
+            {/* Coverage Countries */}
+            {packageType === "country" && (
+              <div className="flex flex-col gap-1 col-span-1">
+                <span className="text-black-700">Coverage Countries</span>
+                {isCountryLoading ? (
+                  <SkeletonBox className="w-full h-[49px] !rounded-lg" />
+                ) : (
+                  <Select
+                    mode="multiple"
+                    className={`w-full border ${
+                      errors.coverage_countries || coverageError
+                        ? "!border-red-500"
+                        : "border-natural-400"
+                    } rounded-lg [&_.ant-select-selector]:!min-h-12 [&_.ant-select-selection-placeholder]:!px-2 [&_.ant-select-selector]:!px-3 [&_.ant-select-selector]:!flex [&_.ant-select-selector]:!items-center`}
+                    placeholder="Select Countries"
+                    value={formData.coverage_countries}
+                    onChange={(value) =>
+                      handleChange("coverage_countries", value)
+                    }
+                    status={errors.coverage_countries ? "error" : ""}
+                    tagRender={tagRender}
+                    maxTagCount={2}
+                    showSearch
+                    optionFilterProp="label"
+                    dropdownRender={dropdownRender}
+                    disabled={!selectedPackage}
+                  >
+                    {sortedCountries.map((country) => (
+                      <Select.Option
+                        key={country._id}
+                        value={country._id}
+                        label={country.name}
+                      >
+                        <div className="flex items-center gap-3">
+                          <ReactCountryFlag
+                            countryCode={country.code}
+                            svg
+                            style={{ width: "20px", height: "15px" }}
+                          />
+                          <span>{country.name}</span>
+                        </div>
+                      </Select.Option>
+                    ))}
+                  </Select>
+                )}
+
+                {(errors.coverage_countries || coverageError) && (
+                  <span className="text-red-500 text-sm">
+                    {errors.coverage_countries || coverageError}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Display package coverage countries */}
+            {selectedPackage && packageCountries.length > 0 && (
+              <div className="flex-col gap-1 col-span-1 md:col-span-2 mt-2 md:hidden flex">
+                <div className="text-xs p-2 border border-neutral-300 rounded-lg bg-neutral-50">
+                  Available Coverage: {packageCountries.join(", ")}
+                </div>
+              </div>
+            )}
+
+            {/* Selling Price */}
+            <div className="flex flex-col gap-1">
+              <span className="text-black-700">Selling Price (USD)</span>
+              <input
+                type="number"
+                placeholder="Enter selling price"
+                className={`w-full border placeholder:text-disabled ${
+                  errors["selling_price.USD"]
+                    ? "border-red-500"
+                    : "border-natural-400"
+                } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+                value={formData.selling_price.USD}
+                onChange={(e) =>
+                  handleChange("selling_price.USD", e.target.value)
+                }
+                onWheel={(e) => e.target.blur()}
+                disabled={!selectedPackage}
+              />
+              {errors["selling_price.USD"] && (
+                <span className="text-red-500 text-sm">
+                  {errors["selling_price.USD"]}
+                </span>
+              )}
+            </div>
+
+            {/* Display package coverage countries */}
+            {selectedPackage && packageCountries.length > 0 && (
+              <div className="flex-col gap-1 col-span-1 md:col-span-2 mt-2 hidden md:flex">
+                <div className="text-xs p-2 border border-neutral-300 rounded-lg bg-neutral-50">
+                  Available Coverage: {packageCountries.join(", ")}
+                </div>
+              </div>
+            )}
+
+            {/* Discount on Selling Price */}
+            <div className="flex flex-col gap-1">
+              <span className="text-black-700">Discount Amount (Optional)</span>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  placeholder={
+                    formData.discount_on_selling_price.is_type_percentage
+                      ? "Enter discount in %"
+                      : "Enter discount amount"
+                  }
+                  className={`w-full border placeholder:text-disabled ${
+                    errors["discount_on_selling_price.amount"]
+                      ? "border-red-500"
+                      : "border-natural-400"
+                  } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+                  value={formData.discount_on_selling_price.amount}
+                  min="0"
+                  max={
+                    formData.discount_on_selling_price.is_type_percentage
+                      ? "100"
+                      : `${formData.selling_price.USD}`
+                  }
+                  onChange={(e) => {
+                    let value = e.target.value;
+                    if (value !== "") {
+                      if (
+                        formData.discount_on_selling_price.is_type_percentage
+                      ) {
+                        value = Math.min(100, Math.max(0, Number(value)));
+                      } else if (formData.selling_price.USD) {
+                        value = Math.min(
+                          formData.selling_price.USD,
+                          Number(value)
+                        );
+                      }
+                    }
+                    handleChange("discount_on_selling_price.amount", value);
+                  }}
+                  disabled={!selectedPackage}
+                />
+                <div className="flex items-center gap-2 whitespace-nowrap">
+                  <span className="text-sm w-3">
+                    {formData.discount_on_selling_price.is_type_percentage
+                      ? "%"
+                      : "$"}
+                  </span>
+                  <Switch
+                    checked={
+                      !formData.discount_on_selling_price.is_type_percentage
+                    }
+                    onChange={handleDiscountTypeToggle}
+                    size="small"
+                    className="bg-neutral-400"
+                  />
+                </div>
+              </div>
+              {errors["discount_on_selling_price.amount"] && (
+                <span className="text-red-500 text-sm">
+                  {errors["discount_on_selling_price.amount"]}
+                </span>
+              )}
+            </div>
+
             {/* Status */}
             <div className="flex flex-col gap-1">
               <span className="text-black-700">Status</span>
@@ -484,18 +425,6 @@ function AddPackageForm() {
               </Select>
             </div>
 
-            {/* Note */}
-            <div className="flex flex-col gap-1 col-span-1">
-              <span className="text-black-700">Note (Optional)</span>
-              <input
-                type="text"
-                placeholder="Enter note"
-                className="w-full border border-natural-400 placeholder:text-disabled text-blackLow rounded-lg outline-none px-4 py-3"
-                value={formData.note}
-                onChange={(e) => handleChange("note", e.target.value)}
-                disabled={!selectedPackage}
-              />
-            </div>
           </div>
 
           {/* Final Price Display */}

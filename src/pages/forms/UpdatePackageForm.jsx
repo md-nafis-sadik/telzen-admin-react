@@ -1,4 +1,4 @@
-import { Select } from "antd";
+import { Select, Switch } from "antd";
 import BackToPrev from "../../components/shared/back/BackToPrev";
 import SuccessModal from "../../components/modals/SuccessModal";
 import NotifyContainer from "../../utils/notify";
@@ -26,6 +26,9 @@ function UpdatePackageForm() {
     isRegionLoading,
     sortedRegions,
     finalPrice,
+    handleDiscountTypeToggle,
+    isSinglePackageLoading,
+    isSinglePackageError,
   } = useUpdatePackage();
 
   return (
@@ -37,16 +40,20 @@ function UpdatePackageForm() {
             {/* Plan */}
             <div className="flex flex-col gap-1">
               <span className="text-black-700">Package Name</span>
-              <input
-                type="text"
-                placeholder="Enter package name"
-                className={`w-full border placeholder:text-disabled ${
-                  errors.name ? "border-red-500" : "border-natural-400"
-                } text-blackLow rounded-lg outline-none py-3 px-4`}
-                value={formData.name}
-                onChange={(e) => handleChange("name", e.target.value)}
-                disabled={true}
-              />
+              {isSinglePackageLoading ? (
+                <SkeletonBox className="w-full h-12" />
+              ) : (
+                <input
+                  type="text"
+                  placeholder="Enter package name"
+                  className={`w-full border placeholder:text-disabled ${
+                    errors.name ? "border-red-500" : "border-natural-400"
+                  } text-blackLow rounded-lg outline-none py-3 px-4`}
+                  value={formData.name}
+                  onChange={(e) => handleChange("name", e.target.value)}
+                  disabled={true}
+                />
+              )}
               {errors.name && (
                 <span className="text-red-500 text-sm">{errors.name}</span>
               )}
@@ -56,7 +63,7 @@ function UpdatePackageForm() {
             {selectedData?.coverage_type === "country" && (
               <div className="flex flex-col gap-1">
                 <span className="text-black-700">Coverage Countries</span>
-                {isCountryLoading ? (
+                {isCountryLoading || isSinglePackageLoading ? (
                   <SkeletonBox className="w-full h-12" />
                 ) : (
                   <Select
@@ -108,7 +115,7 @@ function UpdatePackageForm() {
             {selectedData?.coverage_type === "regional" && (
               <div className="flex flex-col gap-1">
                 <span className="text-black-700">Coverage Regions</span>
-                {isRegionLoading ? (
+                {isRegionLoading || isSinglePackageLoading ? (
                   <SkeletonBox className="w-full h-[49px] !rounded-lg" />
                 ) : (
                   <Select
@@ -154,21 +161,25 @@ function UpdatePackageForm() {
             {/* Data Plan */}
             <div className="flex flex-col gap-1">
               <span className="text-black-700">Data Limit (MB)</span>
-              <input
-                type="number"
-                placeholder="Enter data limit"
-                className={`w-full border placeholder:text-disabled ${
-                  errors.data_plan_in_mb
-                    ? "border-red-500"
-                    : "border-natural-400"
-                } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-                value={formData.data_plan_in_mb}
-                onChange={(e) =>
-                  handleChange("data_plan_in_mb", e.target.value)
-                }
-                onWheel={(e) => e.target.blur()}
-                disabled={true}
-              />
+              {isSinglePackageLoading ? (
+                <SkeletonBox className="w-full h-12" />
+              ) : (
+                <input
+                  type="number"
+                  placeholder="Enter data limit"
+                  className={`w-full border placeholder:text-disabled ${
+                    errors.data_plan_in_mb
+                      ? "border-red-500"
+                      : "border-natural-400"
+                  } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+                  value={formData.data_plan_in_mb}
+                  onChange={(e) =>
+                    handleChange("data_plan_in_mb", e.target.value)
+                  }
+                  onWheel={(e) => e.target.blur()}
+                  disabled={true}
+                />
+              )}
               {errors.data_plan_in_mb && (
                 <span className="text-red-500 text-sm">
                   {errors.data_plan_in_mb}
@@ -179,19 +190,23 @@ function UpdatePackageForm() {
             {/* Validity Amount */}
             <div className="flex flex-col gap-1">
               <span className="text-black-700">Validity Amount in Days</span>
-              <input
-                type="number"
-                placeholder="Enter validity amount"
-                className={`w-full border placeholder:text-disabled ${
-                  errors.validity ? "border-red-500" : "border-natural-400"
-                } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-                value={formData.validity.amount}
-                onChange={(e) =>
-                  handleChange("validity.amount", e.target.value)
-                }
-                onWheel={(e) => e.target.blur()}
-                disabled={true}
-              />
+              {isSinglePackageLoading ? (
+                <SkeletonBox className="w-full h-12" />
+              ) : (
+                <input
+                  type="number"
+                  placeholder="Enter validity amount"
+                  className={`w-full border placeholder:text-disabled ${
+                    errors.validity ? "border-red-500" : "border-natural-400"
+                  } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+                  value={formData.validity.amount}
+                  onChange={(e) =>
+                    handleChange("validity.amount", e.target.value)
+                  }
+                  onWheel={(e) => e.target.blur()}
+                  disabled={true}
+                />
+              )}
               {errors.validity && (
                 <span className="text-red-500 text-sm">{errors.validity}</span>
               )}
@@ -200,19 +215,25 @@ function UpdatePackageForm() {
             {/* Retail Price - USD */}
             <div className="flex flex-col gap-1">
               <span className="text-black-700">Retail Price (USD)</span>
-              <input
-                type="number"
-                placeholder="Enter retail price in USD"
-                className={`w-full border placeholder:text-disabled ${
-                  errors.retail_price ? "border-red-500" : "border-natural-400"
-                } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-                value={formData.retail_price.USD}
-                onChange={(e) =>
-                  handleChange("retail_price.USD", e.target.value)
-                }
-                onWheel={(e) => e.target.blur()}
-                disabled={true}
-              />
+              {isSinglePackageLoading ? (
+                <SkeletonBox className="w-full h-12" />
+              ) : (
+                <input
+                  type="number"
+                  placeholder="Enter retail price in USD"
+                  className={`w-full border placeholder:text-disabled ${
+                    errors.retail_price
+                      ? "border-red-500"
+                      : "border-natural-400"
+                  } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+                  value={formData.retail_price.USD}
+                  onChange={(e) =>
+                    handleChange("retail_price.USD", e.target.value)
+                  }
+                  onWheel={(e) => e.target.blur()}
+                  disabled={true}
+                />
+              )}
               {errors.retail_price && (
                 <span className="text-red-500 text-sm">
                   {errors.retail_price}
@@ -223,18 +244,24 @@ function UpdatePackageForm() {
             {/* Selling Price - USD */}
             <div className="flex flex-col gap-1">
               <span className="text-black-700">Selling Price (USD)</span>
-              <input
-                type="number"
-                placeholder="Enter selling price in USD"
-                className={`w-full border placeholder:text-disabled ${
-                  errors.selling_price ? "border-red-500" : "border-natural-400"
-                } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-                value={formData.selling_price.USD}
-                onChange={(e) =>
-                  handleChange("selling_price.USD", e.target.value)
-                }
-                onWheel={(e) => e.target.blur()}
-              />
+              {isSinglePackageLoading ? (
+                <SkeletonBox className="w-full h-12" />
+              ) : (
+                <input
+                  type="number"
+                  placeholder="Enter selling price in USD"
+                  className={`w-full border placeholder:text-disabled ${
+                    errors.selling_price
+                      ? "border-red-500"
+                      : "border-natural-400"
+                  } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+                  value={formData.selling_price.USD}
+                  onChange={(e) =>
+                    handleChange("selling_price.USD", e.target.value)
+                  }
+                  onWheel={(e) => e.target.blur()}
+                />
+              )}
               {errors.selling_price && (
                 <span className="text-red-500 text-sm">
                   {errors.selling_price}
@@ -242,50 +269,63 @@ function UpdatePackageForm() {
               )}
             </div>
 
-            {/* VAT Amount */}
-            <div className="flex flex-col gap-1">
-              <span className="text-black-700">VAT Amount</span>
-              <input
-                type="number"
-                placeholder="Enter VAT amount"
-                className={`w-full border placeholder:text-disabled ${
-                  errors.vat_on_selling_price
-                    ? "border-red-500"
-                    : "border-natural-400"
-                } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-                value={formData.vat_on_selling_price.amount}
-                onChange={(e) =>
-                  handleChange("vat_on_selling_price.amount", e.target.value)
-                }
-                onWheel={(e) => e.target.blur()}
-              />
-              {errors.vat_on_selling_price && (
-                <span className="text-red-500 text-sm">
-                  {errors.vat_on_selling_price}
-                </span>
-              )}
-            </div>
-
             {/* Discount Amount */}
             <div className="flex flex-col gap-1">
-              <span className="text-black-700">Discount Amount</span>
-              <input
-                type="number"
-                placeholder="Enter discount amount"
-                className={`w-full border placeholder:text-disabled ${
-                  errors.discount_on_selling_price
-                    ? "border-red-500"
-                    : "border-natural-400"
-                } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-                value={formData.discount_on_selling_price.amount}
-                onChange={(e) =>
-                  handleChange(
-                    "discount_on_selling_price.amount",
-                    e.target.value
-                  )
-                }
-                onWheel={(e) => e.target.blur()}
-              />
+              <span className="text-black-700">Discount Amount (Optional)</span>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  placeholder={
+                    formData.discount_on_selling_price.is_type_percentage
+                      ? "Enter discount in %"
+                      : "Enter discount amount"
+                  }
+                  className={`w-full border placeholder:text-disabled ${
+                    errors.discount_on_selling_price
+                      ? "border-red-500"
+                      : "border-natural-400"
+                  } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+                  value={formData.discount_on_selling_price.amount}
+                  min="0"
+                  max={
+                    formData.discount_on_selling_price.is_type_percentage
+                      ? "100"
+                      : `${formData.selling_price.USD}`
+                  }
+                  onChange={(e) => {
+                    let value = e.target.value;
+                    if (value !== "") {
+                      if (
+                        formData.discount_on_selling_price.is_type_percentage
+                      ) {
+                        value = Math.min(100, Math.max(0, Number(value)));
+                      } else if (formData.selling_price.USD) {
+                        value = Math.min(
+                          formData.selling_price.USD,
+                          Number(value)
+                        );
+                      }
+                    }
+                    handleChange("discount_on_selling_price.amount", value);
+                  }}
+                  onWheel={(e) => e.target.blur()}
+                />
+                <div className="flex items-center gap-2 whitespace-nowrap">
+                  <span className="text-sm w-3">
+                    {formData.discount_on_selling_price.is_type_percentage
+                      ? "%"
+                      : "$"}
+                  </span>
+                  <Switch
+                    checked={
+                      !formData.discount_on_selling_price.is_type_percentage
+                    }
+                    onChange={handleDiscountTypeToggle}
+                    size="small"
+                    className="bg-neutral-400"
+                  />
+                </div>
+              </div>
               {errors.discount_on_selling_price && (
                 <span className="text-red-500 text-sm">
                   {errors.discount_on_selling_price}

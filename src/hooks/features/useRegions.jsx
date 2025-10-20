@@ -15,7 +15,6 @@ import {
   useAddRegionMutation,
 } from "../../features/packages/packageRegion/regionApi";
 import { useNavigate } from "react-router-dom";
-import { Select } from "antd";
 import { regionSchema } from "../../utils/validations/regionSchemas";
 
 export const useDebouncedSearch = (inputValue, delay = 1000) => {

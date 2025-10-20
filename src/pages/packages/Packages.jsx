@@ -84,8 +84,9 @@ const PackageKeepGo = () => {
                     ) : (
                       <Select
                         value={regionFilter === undefined ? "" : regionFilter}
-                        onChange={(value) =>
-                          setRegionFilter(value === "" ? undefined : value)
+                        onChange={(value) => {
+                          console.log(value)
+                          setRegionFilter(value === "" ? undefined : value.toLowerCase())}
                         }
                         placeholder="Region"
                         popupMatchSelectWidth={false}
@@ -105,7 +106,7 @@ const PackageKeepGo = () => {
                           All
                         </Select.Option>
                         {regions.map((region) => (
-                          <Select.Option key={region._id} value={region._id}>
+                          <Select.Option key={region._id} value={region.name}>
                             {region.name}
                           </Select.Option>
                         ))}
