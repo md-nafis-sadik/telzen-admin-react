@@ -12,6 +12,14 @@ const initialState = {
   data: {},
   selectedData: null,
   isConfirmModalOpen: false,
+  editFormData: {
+    id: "",
+    name: "",
+    email: "",
+    role: "admin",
+    phone: "",
+    is_active: true,
+  },
 
   meta: {
     total_items: 1,
@@ -185,6 +193,21 @@ const staffSlice = createSlice({
     setStaffConfirmationModal: (state, action) => {
       state.isConfirmModalOpen = action.payload;
     },
+
+    // Edit form data management
+    setEditFormData: (state, action) => {
+      state.editFormData = { ...state.editFormData, ...action.payload };
+    },
+    resetEditFormData: (state) => {
+      state.editFormData = {
+        id: "",
+        name: "",
+        email: "",
+        role: "admin",
+        phone: "",
+        is_active: true,
+      };
+    },
   },
 });
 
@@ -199,5 +222,7 @@ export const {
   setSelectedStaffData,
   clearSelectedStaffData,
   setStaffConfirmationModal,
+  setEditFormData,
+  resetEditFormData,
 } = staffSlice.actions;
 export default staffSlice.reducer;

@@ -1,4 +1,4 @@
-import { setCountryData, setCountryMetaData } from ".";
+import { setCountryData, setCountryMetaData, setSelectedCountryData, setEditFormData } from ".";
 import { apiSlice } from "../../api/apiSlice";
 
 export const countryApi = apiSlice.injectEndpoints({
@@ -32,6 +32,36 @@ export const countryApi = apiSlice.injectEndpoints({
           url: `country?${queryString}`,
           method: "GET",
         };
+      },
+    }),
+
+    getSingleCountry: builder.query({
+      query: (params = { country_id: "" }) => {
+        const queryString = new URLSearchParams(params).toString();
+        return {
+          url: `country/single?${queryString}`,
+          method: "GET",
+        };
+      },
+      async onQueryStarted(_args, { queryFulfilled, dispatch }) {
+        try {
+          const { data: apiData } = await queryFulfilled;
+          const countryData = apiData.data;
+
+          dispatch(setSelectedCountryData(countryData));
+
+          const formData = {
+            id: countryData._id || countryData.id || "",
+            code: countryData.code || "",
+            name: countryData.name || "",
+            region: countryData.region?._id || countryData.region || "",
+            image: countryData.image || "",
+          };
+
+          dispatch(setEditFormData(formData));
+        } catch (err) {
+          console.error(err);
+        }
       },
     }),
 
@@ -84,4 +114,6 @@ export const {
   useUpdateCountryMutation,
   useGetAllApiCountrysQuery,
   useGetAllActiveCountrysQuery,
+  useGetSingleCountryQuery,
+  useLazyGetSingleCountryQuery,
 } = countryApi;

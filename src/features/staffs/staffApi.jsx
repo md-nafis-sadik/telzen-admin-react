@@ -1,4 +1,4 @@
-import { setStaffData, setStaffMetaData } from ".";
+import { setStaffData, setStaffMetaData, setEditFormData } from ".";
 import { apiSlice } from "../api/apiSlice";
 
 export const staffApi = apiSlice.injectEndpoints({
@@ -70,6 +70,33 @@ export const staffApi = apiSlice.injectEndpoints({
         };
       },
     }),
+
+    // GET SINGLE STAFF
+    getSingleStaff: builder.query({
+      query: ({ staff_id }) => ({
+        url: `admin/single?admin_id=${staff_id}`,
+        method: "GET",
+      }),
+      async onQueryStarted(_args, { queryFulfilled, dispatch }) {
+        try {
+          const { data: apiData } = await queryFulfilled;
+          if (apiData?.success && apiData?.data) {
+            // Transform the data to match editFormData structure
+            const transformedData = {
+              id: apiData.data._id,
+              name: apiData.data.name || "",
+              email: apiData.data.email || "",
+              role: apiData.data.role || "admin",
+              phone: apiData.data.phone || "",
+              is_active: apiData.data.is_active || true,
+            };
+            dispatch(setEditFormData(transformedData));
+          }
+        } catch (err) {
+          console.error("Error fetching single staff:", err);
+        }
+      },
+    }),
   }),
 });
 
@@ -79,4 +106,5 @@ export const {
   useDeleteStaffMutation,
   useUpdateStaffMutation,
   useGetAllActiveStaffsQuery,
+  useLazyGetSingleStaffQuery,
 } = staffApi;

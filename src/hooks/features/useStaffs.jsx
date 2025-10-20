@@ -8,14 +8,17 @@ import {
   updateStaffInList,
   addNewStaffToList,
   clearSelectedStaffData,
+  setEditFormData,
+  resetEditFormData,
 } from "../../features/staffs/staffSlice";
 import {
   useGetAllStaffsQuery,
   useDeleteStaffMutation,
   useUpdateStaffMutation,
   useAddStaffMutation,
+  useLazyGetSingleStaffQuery,
 } from "../../features/staffs/staffApi";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Select } from "antd";
 import { AddStaffSchema, UpdateStaffSchema } from "../../utils/validations";
 
@@ -116,8 +119,7 @@ export const useGetStaffs = () => {
   };
 
   const handleNavigate = (item) => {
-    dispatch(setSelectedStaffData(item));
-    navigate("/staff-edit");
+    navigate(`/staff-edit/${item._id}`);
   };
 
   const handleOpenAddStaffModal = () => {
@@ -295,56 +297,45 @@ export const useAddStaff = () => {
 export const useUpdateStaff = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { selectedData } = useSelector((state) => state.staff);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    admin_id: "",
-    phone: "",
-    country: {
-      code: "",
-      name: "",
-      dial_code: "",
-    },
-    role: "",
-    _id: "",
-  });
+  const { id } = useParams();
+  const { selectedData, editFormData } = useSelector((state) => state.staff);
+
+  const [
+    getSingleStaff,
+    { isLoading: isSingleStaffLoading, isError: isSingleStaffError },
+  ] = useLazyGetSingleStaffQuery();
+
+  const formData = editFormData;
   const [errors, setErrors] = useState({});
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [updateStaff, { isLoading }] = useUpdateStaffMutation();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [updateStaff] = useUpdateStaffMutation();
 
+  // Fetch single staff data when component mounts or id changes
   useEffect(() => {
-    if (selectedData) {
-      setFormData({
-        name: selectedData.name || "",
-        email: selectedData.email || "",
-        phone: selectedData.phone || "",
-        admin_id: selectedData.admin_id || "",
-        country: selectedData.country || {
-          code: "",
-          name: "",
-          dial_code: "",
-        },
-        role: selectedData.role || "",
-        _id: selectedData._id || "",
-      });
+    if (id) {
+      dispatch(resetEditFormData());
+      getSingleStaff({ staff_id: id });
     }
-  }, [selectedData]);
+  }, [dispatch, id, getSingleStaff]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
 
+    let updatedFormData;
     if (name === "country") {
-      setFormData((prev) => ({
-        ...prev,
+      updatedFormData = {
+        ...formData,
         country: value,
-      }));
+      };
     } else {
-      setFormData((prev) => ({
-        ...prev,
+      updatedFormData = {
+        ...formData,
         [name]: typeof value === "string" ? value.trim() : value,
-      }));
+      };
     }
+    
+    dispatch(setEditFormData(updatedFormData));
 
     if (errors[name]) {
       setErrors((prev) => {
@@ -372,26 +363,24 @@ export const useUpdateStaff = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) {
-      errorNotify("Please fix the errors in the form");
       return;
     }
 
+    setIsSubmitting(true);
     try {
       const result = await updateStaff({
-        id: formData._id,
+        id: formData.id,
         data: {
           name: formData.name,
           email: formData.email,
-          admin_id: formData.admin_id,
           phone: formData.phone,
-          country: formData.country,
           role: formData.role,
         },
       }).unwrap();
 
       if (result.success) {
         setIsModalVisible(true);
-        dispatch(updateStaffInList({ ...result?.data, _id: result?.data._id }));
+        dispatch(updateStaffInList(result.data));
       } else {
         errorNotify(result.message || "Failed to update staff");
       }
@@ -409,6 +398,8 @@ export const useUpdateStaff = () => {
       errorNotify(
         error.data?.message || "An error occurred while updating the staff"
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -426,10 +417,10 @@ export const useUpdateStaff = () => {
     handleSubmit,
     handleModalOk,
     isModalVisible,
-    isLoading,
+    isLoading: isSingleStaffLoading,
+    isSubmitting,
     isFormValid,
     navigate,
-    setFormData,
-    setErrors,
+    editFormData,
   };
 };

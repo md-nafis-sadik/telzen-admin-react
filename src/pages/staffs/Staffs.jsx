@@ -129,18 +129,30 @@ const Staff = () => {
                         <BlockIcon />
                       )}
                     </button>
-                    <label
-                      htmlFor="confirmationPopup"
-                      onClick={() => setStaffId(staff?._id)}
-                      disabled={staff?.email === ADMIN_EMAIL}
-                      className={`p-1 rounded  transition-colors ${
-                        staff?.email === ADMIN_EMAIL
-                          ? "opacity-50 cursor-not-allowed"
-                          : "cursor-pointer"
-                      }`}
-                    >
-                      <DeleteIcon />
-                    </label>
+                    {staff?.email !== ADMIN_EMAIL ? (
+                      <label
+                        htmlFor="confirmationPopup"
+                        onClick={() => setStaffId(staff?._id)}
+                        disabled={staff?.email === ADMIN_EMAIL}
+                        className={`p-1 rounded  transition-colors ${
+                          staff?.email === ADMIN_EMAIL
+                            ? "opacity-50 cursor-not-allowed"
+                            : "cursor-pointer"
+                        }`}
+                      >
+                        <DeleteIcon />
+                      </label>
+                    ) : (
+                      <label
+                        className={`p-1 rounded  transition-colors ${
+                          staff?.email === ADMIN_EMAIL
+                            ? "opacity-50 cursor-not-allowed"
+                            : "cursor-pointer"
+                        }`}
+                      >
+                        <DeleteIcon />
+                      </label>
+                    )}
                   </div>
                 </th>
               </tr>

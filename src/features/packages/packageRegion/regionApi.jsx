@@ -1,4 +1,4 @@
-import { setRegionData, setRegionMetaData } from ".";
+import { setRegionData, setRegionMetaData, setSelectedRegionData, setEditFormData } from ".";
 import { apiSlice } from "../api/../../api/apiSlice";
 
 export const regionApi = apiSlice.injectEndpoints({
@@ -36,6 +36,36 @@ export const regionApi = apiSlice.injectEndpoints({
         };
       },
     }),
+
+    getSingleRegion: builder.query({
+      query: (params = { region_id: "" }) => {
+        const queryString = new URLSearchParams(params).toString();
+        return {
+          url: `region/single?${queryString}`,
+          method: "GET",
+        };
+      },
+      async onQueryStarted(_args, { queryFulfilled, dispatch }) {
+        try {
+          const { data: apiData } = await queryFulfilled;
+          const regionData = apiData.data;
+
+          dispatch(setSelectedRegionData(regionData));
+
+          const formData = {
+            id: regionData._id || regionData.id || "",
+            name: regionData.name || "",
+            status: regionData.status || "active",
+            image: regionData.image || "",
+          };
+
+          dispatch(setEditFormData(formData));
+        } catch (err) {
+          console.error(err);
+        }
+      },
+    }),
+
     // ADD A NEW ADMIN
     addRegion: builder.mutation({
       query: (formData) => {
@@ -76,4 +106,6 @@ export const {
   useDeleteRegionMutation,
   useUpdateRegionMutation,
   useGetAllActiveRegionsQuery,
+  useGetSingleRegionQuery,
+  useLazyGetSingleRegionQuery,
 } = regionApi;

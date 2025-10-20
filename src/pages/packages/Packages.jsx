@@ -227,7 +227,7 @@ const PackageKeepGo = () => {
                   {singlePackage?.price.USD}
                 </td> */}
                 <td className="py-3 text-center">
-                  {getSymbol("USD")}
+                  {getSymbol()}
                   {singlePackage?.grand_total_selling_price?.USD}
                 </td>
                 <td className="py-3 text-center">

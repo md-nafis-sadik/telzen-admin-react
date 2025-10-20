@@ -19,14 +19,42 @@ function UpdateCountryForm() {
     navigate,
     regions,
     countries,
-    isRegionLoading,
-    isCountryLoading,
+    isRegionsLoading,
+    isCountriesLoading,
     isSubmitting,
     imagePreview,
     fileInputRef,
     typeError,
     handleFileDelete,
+    selectedData,
+    isSingleCountryLoading,
+    isSingleCountryError,
   } = useUpdateCountry();
+
+  // Show error state if failed to load country data
+  if (isSingleCountryError) {
+    return (
+      <section className="px-8 py-6 h-full overflow-auto">
+        <div className="bg-white p-6 rounded-2xl">
+          <BackToPrev path="/package-countries" title="Update Country" />
+          <div className="flex items-center justify-center h-96">
+            <div className="text-center">
+              <p className="text-red-500 text-lg mb-4">
+                Failed to load country data
+              </p>
+              <button
+                onClick={() => navigate("/package-countries")}
+                className="btn w-auto h-12 px-6 py-2 bg-black text-white uppercase hover:bg-black-900"
+              >
+                Go Back
+              </button>
+            </div>
+          </div>
+        </div>
+        <NotifyContainer />
+      </section>
+    );
+  }
 
   return (
     <section className="px-8 py-6 h-full overflow-auto">
@@ -41,7 +69,7 @@ function UpdateCountryForm() {
             <div className="flex flex-col gap-1">
               <span className="text-black-700">Country</span>
 
-              {isCountryLoading ? (
+              {isCountriesLoading || isSingleCountryLoading ? (
                 <SkeletonBox className="w-full h-12" />
               ) : (
                 <Select
@@ -57,7 +85,7 @@ function UpdateCountryForm() {
                   value={formData.code}
                   onChange={(value) => handleChange("code", value)}
                   status={errors.code ? "error" : ""}
-                  loading={isCountryLoading}
+                  loading={isCountriesLoading}
                   showSearch
                   optionFilterProp="label"
                   filterOption={(input, option) =>
@@ -65,7 +93,7 @@ function UpdateCountryForm() {
                       .toLowerCase()
                       .includes(input.toLowerCase())
                   }
-                  disabled={!!formData._id} // Disable if editing existing country
+                  disabled={!!formData.id} // Disable if editing existing country
                 >
                   {countries.map((country) => (
                     <Select.Option
@@ -93,7 +121,7 @@ function UpdateCountryForm() {
             {/* Region */}
             <div className="flex flex-col gap-1">
               <span className="text-black-700">Region</span>
-              {isRegionLoading ? (
+              {isRegionsLoading || isSingleCountryLoading ? (
                 <SkeletonBox className="w-full h-12" />
               ) : (
                 <Select
@@ -109,7 +137,7 @@ function UpdateCountryForm() {
                   value={formData.region}
                   onChange={(value) => handleChange("region", value)}
                   status={errors.region ? "error" : ""}
-                  loading={isRegionLoading}
+                  loading={isRegionsLoading}
                 >
                   {regions.map((region) => (
                     <Select.Option key={region._id} value={region._id}>
@@ -127,58 +155,62 @@ function UpdateCountryForm() {
             <div className="flex flex-col gap-1">
               <span className="text-blackHigh">Image</span>
               <div>
-                <div className="w-full relative">
-                  <input
-                    type="file"
-                    id="imageId"
-                    className="absolute opacity-0"
-                    ref={fileInputRef}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      handleChange("file", e.target.files[0]);
-                    }}
-                  />
-                  <label
-                    htmlFor="imageId"
-                    className={`flex items-center gap-2 py-1.5 px-1.5 border ${
-                      errors.file ? "border-red-500" : "border-slateLow"
-                    } rounded-lg cursor-pointer`}
-                  >
-                    {!imagePreview && (
-                      <span className="inline-block px-4 py-2 bg-fadeColor text-white text-sm rounded-lg">
-                        Choose File
-                      </span>
-                    )}
-                    {!imagePreview ? (
-                      <span className="text-xs text-blackSemi">
-                        Upload Image
-                      </span>
-                    ) : (
-                      <span className="flex justify-between w-full items-center">
-                        <span className="flex items-center gap-2">
-                          <img
-                            src={imagePreview}
-                            alt="Preview"
-                            className="w-9 h-9 rounded-sm bg-center object-cover"
-                          />
-                          <p className="text-blackSemi text-base whitespace-nowrap overflow-hidden text-ellipsis">
-                            {formData.file?.name?.substring(0, 25)}
-                          </p>
+                {isSingleCountryLoading ? (
+                  <SkeletonBox className="w-full h-12" />
+                ) : (
+                  <div className="w-full relative">
+                    <input
+                      type="file"
+                      id="imageId"
+                      className="absolute opacity-0"
+                      ref={fileInputRef}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        handleChange("file", e.target.files[0]);
+                      }}
+                    />
+                    <label
+                      htmlFor="imageId"
+                      className={`flex items-center gap-2 py-1.5 px-1.5 border ${
+                        errors.file ? "border-red-500" : "border-slateLow"
+                      } rounded-lg cursor-pointer`}
+                    >
+                      {!imagePreview && (
+                        <span className="inline-block px-4 py-2 bg-fadeColor text-white text-sm rounded-lg">
+                          Choose File
                         </span>
-                        <button
-                          type="button"
-                          className="flex items-center justify-center"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleFileDelete();
-                          }}
-                        >
-                          <NotificationDeleteIcon />
-                        </button>
-                      </span>
-                    )}
-                  </label>
-                </div>
+                      )}
+                      {!imagePreview ? (
+                        <span className="text-xs text-blackSemi">
+                          Upload Image
+                        </span>
+                      ) : (
+                        <span className="flex justify-between w-full items-center">
+                          <span className="flex items-center gap-2">
+                            <img
+                              src={imagePreview}
+                              alt="Preview"
+                              className="w-9 h-9 rounded-sm bg-center object-cover"
+                            />
+                            <p className="text-blackSemi text-base whitespace-nowrap overflow-hidden text-ellipsis">
+                              {formData.file?.name?.substring(0, 25)}
+                            </p>
+                          </span>
+                          <button
+                            type="button"
+                            className="flex items-center justify-center"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleFileDelete();
+                            }}
+                          >
+                            <NotificationDeleteIcon />
+                          </button>
+                        </span>
+                      )}
+                    </label>
+                  </div>
+                )}
                 {typeError && (
                   <p className="text-xs text-errorColor mt-1 font-medium">
                     Only JPG, JPEG or PNG file are supported
@@ -206,8 +238,9 @@ function UpdateCountryForm() {
               className="btn w-auto h-12 px-6 bg-black hover:bg-black-900 uppercase text-white hover:text-white disabled:text-white"
               disabled={
                 !isFormValid ||
-                isRegionLoading ||
-                isCountryLoading ||
+                isRegionsLoading ||
+                isCountriesLoading ||
+                isSingleCountryLoading ||
                 isSubmitting
               }
             >

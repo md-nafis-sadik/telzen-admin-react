@@ -12,6 +12,13 @@ const initialState = {
   data: {},
   selectedData: null,
   isConfirmModalOpen: false,
+  // Edit form data for update region
+  editFormData: {
+    id: "",
+    name: "",
+    status: "active",
+    image: "",
+  },
   meta: {
     total_items: 1,
     total_pages: 1,
@@ -166,6 +173,21 @@ const regionSlice = createSlice({
     clearSelectedRegionData: (state) => {
       state.selectedData = null;
     },
+
+    // Set edit form data
+    setEditFormData: (state, action) => {
+      state.editFormData = action.payload;
+    },
+
+    // Reset edit form data
+    resetEditFormData: (state) => {
+      state.editFormData = {
+        id: "",
+        name: "",
+        status: "active",
+        image: "",
+      };
+    },
   },
 });
 
@@ -178,5 +200,7 @@ export const {
   setRegionMetaData,
   setSelectedRegionData,
   clearSelectedRegionData,
+  setEditFormData,
+  resetEditFormData,
 } = regionSlice.actions;
 export default regionSlice.reducer;

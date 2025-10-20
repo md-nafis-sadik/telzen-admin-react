@@ -10,10 +10,12 @@ export const StaffSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email address"),
   phone: z.string().min(10, "Phone number is required"),
-  country: CountrySchema,
   role: z.string().min(1, "Role is required"),
-  _id: z.string().optional(),
+  is_active: z.boolean().optional(),
+  id: z.string().optional(),
 });
 
-export const AddStaffSchema = StaffSchema.omit({ _id: true });
-export const UpdateStaffSchema = StaffSchema.required({ _id: true });
+export const AddStaffSchema = StaffSchema.omit({ id: true });
+export const UpdateStaffSchema = StaffSchema.extend({
+  id: z.string(),
+});

@@ -43,7 +43,7 @@ export const AddCouponSchema = BaseCouponSchema.refine(
 );
 
 export const UpdateCouponSchema = BaseCouponSchema.extend({
-  _id: z.string(),
+  id: z.string(),
 }).refine(validateCoverageCountries, {
   message: "At least one country must be selected for public coupons",
   path: ["coverage_countries"],

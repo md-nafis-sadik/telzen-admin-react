@@ -186,11 +186,11 @@ function UpdateSellerForm() {
             </button>
             <button
               type="submit"
-              className=" btn w-auto h-12 px-6 py-2 bg-black hover:bg-black-900 uppercase text-white hover:text-white disabled:text-white"
+              className="btn w-auto h-12 px-6 bg-black hover:bg-black-900 uppercase text-white hover:text-white disabled:text-white"
               disabled={!isFormValid}
               // disabled={isSubmitting}
             >
-              {isSubmitting ? "Processing..." : "Submit"}
+              {isSubmitting ? "Processing..." : "Update"}
             </button>
           </div>
         </form>

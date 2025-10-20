@@ -7,14 +7,17 @@ import {
   setCouponMetaData,
   updateCouponInList,
   addNewCouponToList,
+  setEditFormData,
+  resetEditFormData,
 } from "../../features/coupons/couponSlice";
 import {
   useGetAllCouponsQuery,
   useDeleteCouponMutation,
   useUpdateCouponMutation,
   useAddCouponMutation,
+  useLazyGetSingleCouponQuery,
 } from "../../features/coupons/couponApi";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useGetAllActiveCountrysQuery } from "../../features/packages/packageCountry";
 import {
   AddCouponSchema,
@@ -123,8 +126,7 @@ export const useGetCoupons = () => {
   };
 
   const handleNavigate = (item) => {
-    dispatch(setSelectedCouponData(item));
-    navigate("/coupon-edit");
+    navigate(`/coupon-edit/${item._id}`);
   };
 
   const handleOpenAddCouponModal = () => {
@@ -321,42 +323,31 @@ export const useAddCoupon = () => {
 export const useUpdateCoupon = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { selectedData } = useSelector((state) => state.coupon);
+  const { id } = useParams();
+  const { selectedData, editFormData } = useSelector((state) => state.coupon);
 
-  const [formData, setFormData] = useState({
-    title: "",
-    code: "",
-    discount: { amount: "" },
-    is_private: false,
-    validity_end_at: dayjs().utc().endOf("day").unix(),
-    coverage_countries: [],
-    max_usages_limit: 1,
-    _id: "",
-  });
+  const [
+    getSingleCoupon,
+    { isLoading: isSingleCouponLoading, isError: isSingleCouponError },
+  ] = useLazyGetSingleCouponQuery();
 
+  const formData = editFormData;
   const [errors, setErrors] = useState({});
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [updateCoupon, { isLoading }] = useUpdateCouponMutation();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [updateCoupon] = useUpdateCouponMutation();
 
   const { data: countriesResponse, isLoading: isCountryLoading } =
     useGetAllActiveCountrysQuery();
   const countries = countriesResponse?.data || [];
 
+  // Fetch single coupon data when component mounts or id changes
   useEffect(() => {
-    if (!selectedData) return;
-    setFormData({
-      title: selectedData.title || "",
-      code: selectedData.code || "",
-      discount: { amount: selectedData.discount?.amount || "" },
-      is_private: selectedData.is_private || false,
-      validity_end_at:
-        selectedData.validity_end_at || dayjs().utc().endOf("day").unix(),
-      coverage_countries:
-        selectedData.coverage_countries?.map((c) => c._id) || [],
-      max_usages_limit: selectedData.max_usages_limit || 1,
-      _id: selectedData._id || "",
-    });
-  }, [selectedData]);
+    if (id) {
+      dispatch(resetEditFormData());
+      getSingleCoupon({ coupon_id: id });
+    }
+  }, [dispatch, id, getSingleCoupon]);
 
   const sortedCountries = useMemo(() => {
     return countries
@@ -376,11 +367,11 @@ export const useUpdateCoupon = () => {
   };
 
   const handleChange = (name, value) => {
-    setFormData((prev) =>
-      name === "is_private" && value === true
-        ? { ...prev, is_private: true, coverage_countries: [] }
-        : updateNestedValue(prev, name, value)
-    );
+    const updatedFormData = name === "is_private" && value === true
+      ? { ...formData, is_private: true, coverage_countries: [] }
+      : updateNestedValue(formData, name, value);
+    
+    dispatch(setEditFormData(updatedFormData));
 
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
   };
@@ -413,9 +404,11 @@ export const useUpdateCoupon = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm())
-      return message.error("Please fix the errors in the form");
+    if (!validateForm()) {
+      return;
+    }
 
+    setIsSubmitting(true);
     try {
       const payload = {
         title: formData.title,
@@ -430,7 +423,7 @@ export const useUpdateCoupon = () => {
       };
 
       const result = await updateCoupon({
-        id: formData._id,
+        id: formData.id,
         data: payload,
       }).unwrap();
 
@@ -438,7 +431,7 @@ export const useUpdateCoupon = () => {
         setIsModalVisible(true);
         dispatch(updateCouponInList(result.data));
       } else {
-        message.error(result.message || "Failed to update coupon");
+        errorNotify(result.message || "Failed to update coupon");
       }
     } catch (error) {
       console.error("Error updating coupon:", error);
@@ -451,9 +444,11 @@ export const useUpdateCoupon = () => {
         );
         setErrors(apiErrors);
       }
-      message.error(
+      errorNotify(
         error.data?.message || "An error occurred while updating the coupon"
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -471,11 +466,13 @@ export const useUpdateCoupon = () => {
     handleSubmit,
     handleModalOk,
     isModalVisible,
-    isLoading,
+    isLoading: isSingleCouponLoading,
+    isSubmitting,
     isFormValid,
     navigate,
     isCountryLoading,
     sortedCountries,
     countries,
+    editFormData,
   };
 };

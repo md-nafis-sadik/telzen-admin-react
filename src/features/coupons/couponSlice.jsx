@@ -12,7 +12,17 @@ const initialState = {
   data: {},
   selectedData: null,
   isConfirmModalOpen: false,
-
+  // Edit form data for update coupon
+  editFormData: {
+    id: "",
+    title: "",
+    code: "",
+    discount: { amount: "" },
+    is_private: false,
+    validity_end_at: null,
+    coverage_countries: [],
+    max_usages_limit: 1,
+  },
   meta: {
     total_items: 1,
     total_pages: 1,
@@ -180,6 +190,25 @@ const couponSlice = createSlice({
     clearSelectedCouponData: (state) => {
       state.selectedData = null;
     },
+
+    // Set edit form data
+    setEditFormData: (state, action) => {
+      state.editFormData = action.payload;
+    },
+
+    // Reset edit form data
+    resetEditFormData: (state) => {
+      state.editFormData = {
+        id: "",
+        title: "",
+        code: "",
+        discount: { amount: "" },
+        is_private: false,
+        validity_end_at: null,
+        coverage_countries: [],
+        max_usages_limit: 1,
+      };
+    },
   },
 });
 
@@ -194,5 +223,7 @@ export const {
   setSelectedCouponData,
   clearSelectedCouponData,
   setCouponConfirmationModal,
+  setEditFormData,
+  resetEditFormData,
 } = couponSlice.actions;
 export default couponSlice.reducer;

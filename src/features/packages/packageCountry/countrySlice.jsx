@@ -12,6 +12,14 @@ const initialState = {
   data: {},
   selectedData: null,
   isConfirmModalOpen: false,
+  // Edit form data for update country
+  editFormData: {
+    id: "",
+    code: "",
+    name: "",
+    region: "",
+    image: "",
+  },
   meta: {
     total_items: 1,
     total_pages: 1,
@@ -163,6 +171,22 @@ const countrySlice = createSlice({
     reorderCountries: (state, action) => {
       state.dataList = action.payload;
     },
+
+    // Set edit form data
+    setEditFormData: (state, action) => {
+      state.editFormData = action.payload;
+    },
+
+    // Reset edit form data
+    resetEditFormData: (state) => {
+      state.editFormData = {
+        id: "",
+        code: "",
+        name: "",
+        region: "",
+        image: "",
+      };
+    },
   },
 });
 
@@ -176,5 +200,7 @@ export const {
   setSelectedCountryData,
   clearSelectedCountryData,
   reorderCountries,
+  setEditFormData,
+  resetEditFormData,
 } = countrySlice.actions;
 export default countrySlice.reducer;

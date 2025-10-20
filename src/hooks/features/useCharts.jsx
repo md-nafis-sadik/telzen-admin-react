@@ -4,7 +4,7 @@ import { useGetSalesDataQuery, useGetUserGrowthDataQuery } from "../../features/
 export const useCharts = () => {
     const currentYear = new Date().getFullYear();
     const [salesYear, setSalesYear] = useState(currentYear);
-    const [currencyCode, setCurrencyCode] = useState("EUR");
+    const [currencyCode, setCurrencyCode] = useState("USD");
     const [userGrowthYear, setUserGrowthYear] = useState(currentYear);
 
     const prevSalesYear = useRef(salesYear);

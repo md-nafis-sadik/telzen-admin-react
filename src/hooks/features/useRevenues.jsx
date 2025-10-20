@@ -87,13 +87,11 @@ export const useGetRevenues = () => {
     const exportData = dataList.map((item) => ({
       "Order ID": item.order_id,
       Date: dayjs.unix(item.selling_date).format("YYYY-MM-DD"),
-      Package: item?.package?.name || "", // Added package name from package object
-      Vendor: formatStatusStr(item.vendor_name),
-      "Customer Name": item.customer.full_name,
+      Package: item?.package?.name || "",
+      "Customer Name": item.customer.name,
       "Customer Email": item.customer.email,
-      "Customer Phone": item.customer.phone,
-      Amount: `${getSymbol(item.payment_currency)}${item.payment_amount}`, // Added currency symbol
-      "Payment Status": formatStatusStr(item.payment_status), // Added payment status
+      Amount: `${getSymbol()}${item.payment_amount.USD}`, 
+      "Payment Status": formatStatusStr(item.payment_status),
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);

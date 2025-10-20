@@ -1,4 +1,4 @@
-import { setCouponData, setCouponMetaData } from ".";
+import { setCouponData, setCouponMetaData, setSelectedCouponData, setEditFormData } from ".";
 import { apiSlice } from "../api/apiSlice";
 
 export const couponApi = apiSlice.injectEndpoints({
@@ -35,6 +35,42 @@ export const couponApi = apiSlice.injectEndpoints({
         };
       },
     }),
+
+    getSingleCoupon: builder.query({
+      query: (params = { coupon_id: "" }) => {
+        const queryString = new URLSearchParams(params).toString();
+        return {
+          url: `coupon/single?${queryString}`,
+          method: "GET",
+        };
+      },
+      async onQueryStarted(_args, { queryFulfilled, dispatch }) {
+        try {
+          const { data: apiData } = await queryFulfilled;
+          const couponData = apiData.data;
+
+          dispatch(setSelectedCouponData(couponData));
+
+          const formData = {
+            id: couponData._id || couponData.id || "",
+            title: couponData.title || "",
+            code: couponData.code || "",
+            discount: { amount: couponData.discount?.amount || "" },
+            is_private: couponData.is_private || false,
+            validity_end_at: couponData.validity_end_at || null,
+            coverage_countries: couponData.coverage_countries?.map((c) => 
+              typeof c === "object" ? c._id : c
+            ) || [],
+            max_usages_limit: couponData.max_usages_limit || 1,
+          };
+
+          dispatch(setEditFormData(formData));
+        } catch (err) {
+          console.error(err);
+        }
+      },
+    }),
+
     // ADD A NEW ADMIN
     addCoupon: builder.mutation({
       query: ({ data }) => {
@@ -81,4 +117,6 @@ export const {
   useDeleteCouponMutation,
   useUpdateCouponMutation,
   useGetAllActiveCouponsQuery,
+  useGetSingleCouponQuery,
+  useLazyGetSingleCouponQuery,
 } = couponApi;

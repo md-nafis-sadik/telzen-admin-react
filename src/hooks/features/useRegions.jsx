@@ -7,14 +7,17 @@ import {
   setRegionMetaData,
   updateRegionInList,
   addNewRegionToList,
+  setEditFormData,
+  resetEditFormData,
 } from "../../features/packages/packageRegion/regionSlice";
 import {
   useGetAllRegionsQuery,
   useDeleteRegionMutation,
   useUpdateRegionMutation,
   useAddRegionMutation,
+  useLazyGetSingleRegionQuery,
 } from "../../features/packages/packageRegion/regionApi";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { regionSchema } from "../../utils/validations/regionSchemas";
 
 export const useDebouncedSearch = (inputValue, delay = 1000) => {
@@ -119,8 +122,7 @@ export const useGetRegions = () => {
   };
 
   const handleNavigate = (item) => {
-    dispatch(setSelectedRegionData(item));
-    navigate("/package-region-edit");
+    navigate(`/package-region-edit/${item._id}`);
   };
 
   const handleOpenAddRegionModal = () => {
@@ -291,44 +293,47 @@ export const useAddRegion = () => {
 export const useUpdateRegion = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { selectedData } = useSelector((state) => state.region);
-  const [formData, setFormData] = useState({
-    name: "",
-    status: "active",
-    file: null,
-    _id: "",
-  });
+  const { id } = useParams();
+  const { selectedData, editFormData } = useSelector((state) => state.region);
+
+  const [
+    getSingleRegion,
+    { isLoading: isSingleRegionLoading, isError: isSingleRegionError },
+  ] = useLazyGetSingleRegionQuery();
+
+  const formData = editFormData;
   const [errors, setErrors] = useState({});
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [updateRegion, { isLoading }] = useUpdateRegionMutation();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [updateRegion] = useUpdateRegionMutation();
   const [imagePreview, setImagePreview] = useState(null);
   const [typeError, setTypeError] = useState(false);
 
+  // Fetch single region data when component mounts or id changes
   useEffect(() => {
-    if (selectedData) {
-      setFormData({
-        name: selectedData.name || "",
-        status: selectedData.status || "active",
-        _id: selectedData._id || "",
-        file: {
-          name: selectedData.image ? selectedData.image.split("/").pop() : "",
-          value: selectedData.image || "",
-        },
-      });
-      setImagePreview(selectedData.image);
+    if (id) {
+      dispatch(resetEditFormData());
+      getSingleRegion({ region_id: id });
     }
-  }, [selectedData]);
+  }, [dispatch, id, getSingleRegion]);
+
+  // Set image preview when formData changes
+  useEffect(() => {
+    if (formData.image) {
+      setImagePreview(formData.image);
+    }
+  }, [formData.image]);
 
   const handleChange = (name, value) => {
     if (name === "file") {
       const file = value;
       if (file) {
-        setFormData((prev) => ({ ...prev, file }));
+        dispatch(setEditFormData({ ...formData, file }));
         setImagePreview(URL.createObjectURL(file));
         setErrors((prev) => ({ ...prev, file: null }));
       }
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+      dispatch(setEditFormData({ ...formData, [name]: value }));
 
       if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
     }
@@ -337,7 +342,7 @@ export const useUpdateRegion = () => {
   const fileInputRef = useRef(null);
 
   const handleFileDelete = () => {
-    setFormData((prev) => ({ ...prev, file: null }));
+    dispatch(setEditFormData({ ...formData, file: null }));
     setImagePreview(null);
     setTypeError(false);
     setErrors((prev) => ({ ...prev, file: null }));
@@ -363,10 +368,10 @@ export const useUpdateRegion = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) {
-      message.error("Please fix the errors in the form");
       return;
     }
 
+    setIsSubmitting(true);
     try {
       const formDataToSend = new FormData();
       formDataToSend.append(
@@ -376,12 +381,12 @@ export const useUpdateRegion = () => {
         })
       );
 
-      if (formData.file) {
+      if (formData.file && typeof formData.file !== 'string') {
         formDataToSend.append("single", formData.file);
       }
 
       const result = await updateRegion({
-        id: formData._id,
+        id: formData.id,
         formData: formDataToSend,
       }).unwrap();
 
@@ -389,7 +394,7 @@ export const useUpdateRegion = () => {
         setIsModalVisible(true);
         dispatch(updateRegionInList({ ...result.data, _id: result.data._id }));
       } else {
-        console.error(result.message || "Failed to update region");
+        errorNotify(result.message || "Failed to update region");
       }
     } catch (error) {
       console.error("Error updating region:", error);
@@ -405,6 +410,8 @@ export const useUpdateRegion = () => {
       errorNotify(
         error.data?.message || "An error occurred while updating the region"
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -425,12 +432,16 @@ export const useUpdateRegion = () => {
     handleSubmit,
     handleModalOk,
     isModalVisible,
-    isLoading,
+    isLoading: isSingleRegionLoading,
+    isSubmitting,
     isFormValid,
     navigate,
     imagePreview,
     fileInputRef,
     typeError,
     handleFileDelete,
+    selectedData,
+    isSingleRegionLoading,
+    isSingleRegionError,
   };
 };

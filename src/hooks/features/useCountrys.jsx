@@ -8,6 +8,8 @@ import {
   updateCountryInList,
   addNewCountryToList,
   clearSelectedCountryData,
+  setEditFormData,
+  resetEditFormData,
 } from "../../features/packages/packageCountry/countrySlice";
 import {
   useGetAllCountrysQuery,
@@ -15,8 +17,9 @@ import {
   useUpdateCountryMutation,
   useAddCountryMutation,
   useGetAllApiCountrysQuery,
+  useLazyGetSingleCountryQuery,
 } from "../../features/packages/packageCountry/countryApi";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useGetAllActiveRegionsQuery } from "../../features/packages/packageRegion";
 import {
   AddCountrySchema,
@@ -128,8 +131,7 @@ export const useGetCountries = () => {
   };
 
   const handleNavigate = (item) => {
-    dispatch(setSelectedCountryData(item));
-    navigate("/package-country-edit");
+    navigate(`/package-country-edit/${item._id}`);
   };
 
   const handleOpenAddCountryModal = () => {
@@ -354,41 +356,21 @@ export const useAddCountry = () => {
 export const useUpdateCountry = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { selectedData } = useSelector((state) => state.country);
+  const { id } = useParams();
+  const { selectedData, editFormData } = useSelector((state) => state.country);
 
-  const [formData, setFormData] = useState({
-    code: "",
-    region: "",
-    file: null,
-    _id: "",
-  });
+  const [
+    getSingleCountry,
+    { isLoading: isSingleCountryLoading, isError: isSingleCountryError },
+  ] = useLazyGetSingleCountryQuery();
 
-  useEffect(() => {
-    if (!selectedData) return;
-    setFormData({
-      code: selectedData.code || "",
-      region: selectedData.region?._id || "",
-      _id: selectedData._id || "",
-      file: {
-        name: selectedData.image ? selectedData.image.split("/").pop() : "",
-        value: selectedData.image || "",
-      },
-    });
-    setImagePreview(selectedData.image);
-  }, [selectedData]);
-
-  useEffect(() => {
-    return () => {
-      dispatch(clearSelectedCountryData());
-    };
-  }, [dispatch]);
-
+  const formData = editFormData;
   const [errors, setErrors] = useState({});
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [typeError, setTypeError] = useState(false);
-  const [updateCountry, { isLoading: isSubmitting }] =
-    useUpdateCountryMutation();
+  const [updateCountry] = useUpdateCountryMutation();
 
   const { data: regionsResponse, isLoading: isRegionsLoading } =
     useGetAllActiveRegionsQuery();
@@ -400,8 +382,23 @@ export const useUpdateCountry = () => {
 
   const fileInputRef = useRef(null);
 
+  // Fetch single country data when component mounts or id changes
+  useEffect(() => {
+    if (id) {
+      dispatch(resetEditFormData());
+      getSingleCountry({ country_id: id });
+    }
+  }, [dispatch, id, getSingleCountry]);
+
+  // Set image preview when formData changes
+  useEffect(() => {
+    if (formData.image) {
+      setImagePreview(formData.image);
+    }
+  }, [formData.image]);
+
   const handleFileDelete = () => {
-    setFormData((prev) => ({ ...prev, file: null }));
+    dispatch(setEditFormData({ ...formData, file: null }));
     setImagePreview(null);
     setTypeError(false);
     setErrors((prev) => ({ ...prev, file: null }));
@@ -410,29 +407,26 @@ export const useUpdateCountry = () => {
 
   const handleChange = (name, value) => {
     let processedValue = value;
+    
     if (name === "file") {
       const file = value;
       if (file) {
-        setFormData((prev) => ({ ...prev, file }));
+        dispatch(setEditFormData({ ...formData, file }));
         setImagePreview(URL.createObjectURL(file));
         setErrors((prev) => ({ ...prev, file: null }));
       }
+      return;
     }
 
     if (name === "country" || name === "code") {
       processedValue = value && typeof value === "object" ? value.code : value;
       name = "code";
     }
-    setFormData((prev) => ({
-      ...prev,
-      [name]: processedValue,
-    }));
+
+    dispatch(setEditFormData({ ...formData, [name]: processedValue }));
 
     if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: null,
-      }));
+      setErrors((prev) => ({ ...prev, [name]: null }));
     }
   };
 
@@ -453,9 +447,11 @@ export const useUpdateCountry = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm())
-      return errorNotify("Please fix the errors in the form");
+    if (!validateForm()) {
+      return;
+    }
 
+    setIsSubmitting(true);
     try {
       const payload = transformFormDataToAPI(formData, countries);
 
@@ -467,12 +463,12 @@ export const useUpdateCountry = () => {
         })
       );
 
-      if (formData.file) {
+      if (formData.file && typeof formData.file !== 'string') {
         formDataToSend.append("single", formData.file);
       }
 
       const response = await updateCountry({
-        id: formData._id,
+        id: formData.id,
         formData: formDataToSend,
       }).unwrap();
 
@@ -508,6 +504,8 @@ export const useUpdateCountry = () => {
       errorNotify(
         error.data?.message || "Failed to update country. Please try again."
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -517,7 +515,7 @@ export const useUpdateCountry = () => {
   };
 
   const isFormValid = useMemo(() => {
-    if (!formData._id) return false;
+    if (!formData.id) return false;
     return UpdateCountrySchema.safeParse(formData).success;
   }, [formData]);
 
@@ -539,5 +537,8 @@ export const useUpdateCountry = () => {
     fileInputRef,
     typeError,
     handleFileDelete,
+    selectedData,
+    isSingleCountryLoading,
+    isSingleCountryError,
   };
 };

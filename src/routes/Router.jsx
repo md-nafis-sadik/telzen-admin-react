@@ -113,7 +113,7 @@ export const routes = createBrowserRouter([
         ),
       },
       {
-        path: "/package-region-edit",
+        path: "/package-region-edit/:id",
         element: (
           <PrivateRouter allowedRoles={["manager", "sales-manager", "admin"]}>
             <UpdateRegionForm />
@@ -169,7 +169,7 @@ export const routes = createBrowserRouter([
         ),
       },
       {
-        path: "/package-country-edit",
+        path: "/package-country-edit/:id",
         element: (
           <PrivateRouter allowedRoles={["manager", "sales-manager", "admin"]}>
             <UpdateCountryForm />
@@ -247,7 +247,7 @@ export const routes = createBrowserRouter([
         ),
       },
       {
-        path: "/coupon-edit",
+        path: "/coupon-edit/:id",
         element: (
           <PrivateRouter
             allowedRoles={[
@@ -304,7 +304,7 @@ export const routes = createBrowserRouter([
         ),
       },
       {
-        path: "/staff-edit",
+        path: "/staff-edit/:id",
         element: (
           <PrivateRouter allowedRoles={["admin"]}>
             <UpdateStaffForm />

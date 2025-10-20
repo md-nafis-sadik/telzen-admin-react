@@ -69,23 +69,26 @@ export const useGetUserDetails = () => {
           month: "short",
           year: "numeric",
         }),
-        isPercentage: userDetails?.evaluated_tax?.tax_rate_type === "percentage",
+        isPercentage:
+          userDetails?.evaluated_tax?.tax_rate_type === "percentage",
         quantity: 1,
         packageName: userDetails?.static_package?.name,
-        rate: `${getSymbol(userDetails?.order?.payment_currency)}${
-          userDetails?.evaluated_tax?.currency_results?.USD?.payment_amount_without_tax
+        rate: `${getSymbol()}${
+          userDetails?.evaluated_tax?.currency_results?.USD
+            ?.payment_amount_without_tax
         }`,
-        amount: `${getSymbol(userDetails?.order?.payment_currency)}${
-          userDetails?.evaluated_tax?.currency_results?.USD?.payment_amount_without_tax
+        amount: `${getSymbol()}${
+          userDetails?.evaluated_tax?.currency_results?.USD
+            ?.payment_amount_without_tax
         }`,
-        tax: `${userDetails?.evaluated_tax?.tax_rate_type === "percentage" ? '' : getSymbol(userDetails?.order?.payment_currency)}${
-          userDetails?.evaluated_tax?.tax_rate_type === "percentage" ? `${(userDetails?.evaluated_tax?.currency_results?.USD?.tax_amount*100).toFixed(0)} %` : userDetails?.evaluated_tax?.currency_results?.USD?.tax_amount
+        tax: `${getSymbol()}${
+          userDetails?.evaluated_tax?.currency_results?.USD?.tax_amount
         }`,
-        total: `${getSymbol(userDetails?.order?.payment_currency)}${
-          userDetails?.evaluated_tax?.currency_results?.USD?.payment_amount_with_tax
+        total: `${getSymbol()}${
+          userDetails?.evaluated_tax?.currency_results?.USD
+            ?.payment_amount_with_tax
         }`,
         iccid: userDetails?.esim?.iccid || "ICCID",
-        
       };
 
       // Create a temporary div to hold our invoice HTML
@@ -137,11 +140,6 @@ export const useGetUserDetails = () => {
                   font-style: normal;
                   font-weight: 600;
                   line-height: 120%; margin-bottom: 4px;">${dummyInvoiceData.userName}</div>
-                <div style="color: #191919;
-                  font-size: 10px;
-                  font-style: normal;
-                  font-weight: 400;
-                  line-height: 130%;">${dummyInvoiceData.userPhone}</div>
             </div>
             <div>
                 <div style="color: #888;

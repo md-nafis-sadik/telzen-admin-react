@@ -3,14 +3,17 @@ import { z } from "zod";
 // Schema for the form data structure
 // countrySchema.js
 export const CountryFormSchema = z.object({
-  code: z.string().min(1, "Country is required"), // Changed from 'country' to 'code'
+  code: z.string().min(1, "Country is required"),
   region: z.string().min(1, "Region is required"),
-  _id: z.string().optional(),
+  id: z.string().optional(),
+  name: z.string().optional(), // Allow name field
+  image: z.string().optional(), // Allow image field
+  file: z.any().optional(), // Allow file upload field
 });
 
 // For API data transformation
 export const transformFormDataToAPI = (formData, countries) => {
-  const selectedCountry = countries.find((c) => c.code === formData.code); // Changed to formData.code
+  const selectedCountry = countries.find((c) => c.code === formData.code);
 
   return {
     code: selectedCountry?.code || formData.code,
@@ -20,5 +23,5 @@ export const transformFormDataToAPI = (formData, countries) => {
   };
 };
 
-export const AddCountrySchema = CountryFormSchema.omit({ _id: true });
-export const UpdateCountrySchema = CountryFormSchema.required({ _id: true });
+export const AddCountrySchema = CountryFormSchema.omit({ id: true, name: true, image: true });
+export const UpdateCountrySchema = CountryFormSchema.required({ id: true });

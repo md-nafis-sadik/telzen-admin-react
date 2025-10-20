@@ -14,6 +14,7 @@ function UpdateCouponForm() {
   const {
     isModalVisible,
     isLoading,
+    isSubmitting,
     handleChange,
     handleSubmit,
     handleModalOk,
@@ -24,6 +25,7 @@ function UpdateCouponForm() {
     isCountryLoading,
     sortedCountries,
     countries,
+    editFormData,
   } = useUpdateCoupon();
 
   const tagRender = (props) => {
@@ -106,24 +108,28 @@ function UpdateCouponForm() {
           <div className="grid grid-cols-2 gap-y-4 gap-x-12">
             <div className="flex flex-col gap-1">
               <span className="text-black-700">Privacy Type</span>
-              <Select
-                className={`w-full border ${
-                  errors.is_private ? "!border-red-500" : "border-natural-400"
-                } rounded-lg
-                                      [&_.ant-select-selector]:!h-12
-                                      [&_.ant-select-selector]:!px-4
-                                      [&_.ant-select-selector]:!flex
-                                      [&_.ant-select-selector]:!items-center
-                                      [&_.ant-select-selector]:!leading-[3.5rem]`}
-                placeholder="Select Privacy type"
-                value={formData.is_private}
-                onChange={(value) => handleChange("is_private", value)}
-                status={errors.role ? "error" : ""}
-                disabled={true}
-              >
-                <Select.Option value={false}>Public</Select.Option>
-                <Select.Option value={true}>Private</Select.Option>
-              </Select>
+              {isLoading ? (
+                <SkeletonBox className="w-full h-12" />
+              ) : (
+                <Select
+                  className={`w-full border ${
+                    errors.is_private ? "!border-red-500" : "border-natural-400"
+                  } rounded-lg
+                                        [&_.ant-select-selector]:!h-12
+                                        [&_.ant-select-selector]:!px-4
+                                        [&_.ant-select-selector]:!flex
+                                        [&_.ant-select-selector]:!items-center
+                                        [&_.ant-select-selector]:!leading-[3.5rem]`}
+                  placeholder="Select Privacy type"
+                  value={formData.is_private}
+                  onChange={(value) => handleChange("is_private", value)}
+                  status={errors.role ? "error" : ""}
+                  disabled={true}
+                >
+                  <Select.Option value={false}>Public</Select.Option>
+                  <Select.Option value={true}>Private</Select.Option>
+                </Select>
+              )}
               {errors.is_private && (
                 <span className="text-red-500 text-sm">
                   {errors.is_private}
@@ -133,16 +139,20 @@ function UpdateCouponForm() {
             {/* Title */}
             <div className="flex flex-col gap-1">
               <span className="text-black-700">Title</span>
-              <input
-                type="text"
-                name="title"
-                placeholder="Enter title"
-                className={`w-full border placeholder:text-disabled ${
-                  errors.title ? "border-red-500" : "border-natural-400"
-                } text-blackLow rounded-lg outline-none py-3 px-4`}
-                value={formData.title}
-                onChange={(e) => handleChange("title", e.target.value)}
-              />
+              {isLoading ? (
+                <SkeletonBox className="w-full h-12" />
+              ) : (
+                <input
+                  type="text"
+                  name="title"
+                  placeholder="Enter title"
+                  className={`w-full border placeholder:text-disabled ${
+                    errors.title ? "border-red-500" : "border-natural-400"
+                  } text-blackLow rounded-lg outline-none py-3 px-4`}
+                  value={formData.title}
+                  onChange={(e) => handleChange("title", e.target.value)}
+                />
+              )}
               {errors.title && (
                 <span className="text-red-500 text-sm">{errors.title}</span>
               )}
@@ -151,17 +161,21 @@ function UpdateCouponForm() {
             {/* Code (disabled for update) */}
             <div className="flex flex-col gap-1">
               <span className="text-black-700">Code</span>
-              <input
-                type="text"
-                name="code"
-                placeholder="Enter code"
-                className={`w-full border placeholder:text-disabled cursor-not-allowed ${
-                  errors.code ? "border-red-500" : "border-natural-400"
-                } text-blackLow rounded-lg outline-none py-3 px-4`}
-                value={formData.code}
-                onChange={(e) => handleChange("code", e.target.value)}
-                disabled
-              />
+              {isLoading ? (
+                <SkeletonBox className="w-full h-12" />
+              ) : (
+                <input
+                  type="text"
+                  name="code"
+                  placeholder="Enter code"
+                  className={`w-full border placeholder:text-disabled cursor-not-allowed ${
+                    errors.code ? "border-red-500" : "border-natural-400"
+                  } text-blackLow rounded-lg outline-none py-3 px-4`}
+                  value={formData.code}
+                  onChange={(e) => handleChange("code", e.target.value)}
+                  disabled
+                />
+              )}
               {errors.code && (
                 <span className="text-red-500 text-sm">{errors.code}</span>
               )}
@@ -170,25 +184,29 @@ function UpdateCouponForm() {
             {/* Discount */}
             <div className="flex flex-col gap-1">
               <span className="text-black-700">Discount Amount</span>
-              <input
-                type="number"
-                name="discount.amount"
-                placeholder="Enter in % value"
-                className={`w-full border placeholder:text-disabled ${
-                  errors.discount ? "border-red-500" : "border-natural-400"
-                } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-                value={formData.discount.amount}
-                min="0"
-                max="100"
-                onChange={(e) => {
-                  let value = e.target.value;
-                  if (value !== "") {
-                    value = Math.min(100, Math.max(0, Number(value)));
-                  }
-                  handleChange("discount.amount", value);
-                }}
-                onWheel={(e) => e.target.blur()}
-              />
+              {isLoading ? (
+                <SkeletonBox className="w-full h-12" />
+              ) : (
+                <input
+                  type="number"
+                  name="discount.amount"
+                  placeholder="Enter in % value"
+                  className={`w-full border placeholder:text-disabled ${
+                    errors.discount ? "border-red-500" : "border-natural-400"
+                  } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+                  value={formData.discount.amount}
+                  min="0"
+                  max="100"
+                  onChange={(e) => {
+                    let value = e.target.value;
+                    if (value !== "") {
+                      value = Math.min(100, Math.max(0, Number(value)));
+                    }
+                    handleChange("discount.amount", value);
+                  }}
+                  onWheel={(e) => e.target.blur()}
+                />
+              )}
               {errors.discount && (
                 <span className="text-red-500 text-sm">{errors.discount}</span>
               )}
@@ -198,7 +216,7 @@ function UpdateCouponForm() {
             {!formData.is_private && (
               <div className="flex flex-col gap-1">
                 <span className="text-black-700">Coverage Countries</span>
-                {isCountryLoading ? (
+                {isCountryLoading || isLoading ? (
                   <SkeletonBox className="w-full h-12" />
                 ) : (
                   <Select
@@ -250,30 +268,34 @@ function UpdateCouponForm() {
             {/* Validity End Date */}
             <div className="flex flex-col gap-1">
               <span className="text-black-700">Validity End Date</span>
-              <DatePicker
-                className={`w-full border ${
-                  errors.validity_end_at
-                    ? "border-red-500"
-                    : "border-natural-400"
-                } rounded-lg h-12`}
-                format="YYYY-MM-DD"
-                allowClear={false}
-                onChange={(date) => {
-                  const timestamp = date
-                    ? dayjs(date).utc().endOf("day").unix()
-                    : null;
-                  handleChange("validity_end_at", timestamp);
-                }}
-                value={
-                  formData.validity_end_at
-                    ? dayjs.unix(formData.validity_end_at).utc()
-                    : null
-                }
-                disabledDate={(current) => {
-                  // Disable dates before today
-                  return current && current < dayjs().startOf("day");
-                }}
-              />
+              {isLoading ? (
+                <SkeletonBox className="w-full h-12" />
+              ) : (
+                <DatePicker
+                  className={`w-full border ${
+                    errors.validity_end_at
+                      ? "border-red-500"
+                      : "border-natural-400"
+                  } rounded-lg h-12`}
+                  format="YYYY-MM-DD"
+                  allowClear={false}
+                  onChange={(date) => {
+                    const timestamp = date
+                      ? dayjs(date).utc().endOf("day").unix()
+                      : null;
+                    handleChange("validity_end_at", timestamp);
+                  }}
+                  value={
+                    formData.validity_end_at
+                      ? dayjs.unix(formData.validity_end_at).utc()
+                      : null
+                  }
+                  disabledDate={(current) => {
+                    // Disable dates before today
+                    return current && current < dayjs().startOf("day");
+                  }}
+                />
+              )}
               {errors.validity_end_at && (
                 <span className="text-red-500 text-sm">
                   {errors.validity_end_at}
@@ -284,22 +306,26 @@ function UpdateCouponForm() {
             {/* Max Usages Limit */}
             <div className="flex flex-col gap-1">
               <span className="text-black-700">Max Usages Limit</span>
-              <input
-                type="number"
-                name="max_usages_limit"
-                placeholder="Enter max usages"
-                className={`w-full border placeholder:text-disabled ${
-                  errors.max_usages_limit
-                    ? "border-red-500"
-                    : "border-natural-400"
-                } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-                value={formData.max_usages_limit || ""}
-                min="1"
-                onChange={(e) =>
-                  handleChange("max_usages_limit", e.target.value)
-                }
-                onWheel={(e) => e.target.blur()}
-              />
+              {isLoading ? (
+                <SkeletonBox className="w-full h-12" />
+              ) : (
+                <input
+                  type="number"
+                  name="max_usages_limit"
+                  placeholder="Enter max usages"
+                  className={`w-full border placeholder:text-disabled ${
+                    errors.max_usages_limit
+                      ? "border-red-500"
+                      : "border-natural-400"
+                  } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+                  value={formData.max_usages_limit || ""}
+                  min="1"
+                  onChange={(e) =>
+                    handleChange("max_usages_limit", e.target.value)
+                  }
+                  onWheel={(e) => e.target.blur()}
+                />
+              )}
               {errors.max_usages_limit && (
                 <span className="text-red-500 text-sm">
                   {errors.max_usages_limit}
@@ -314,16 +340,16 @@ function UpdateCouponForm() {
               type="button"
               onClick={() => navigate("/coupon")}
               className="btn w-auto h-12 px-6 py-2 bg-white text-black uppercase border border-black-700 hover:bg-neutral-100 hover:text-primaryColor hover:border-black"
-              disabled={isLoading}
+              disabled={isSubmitting}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="btn w-auto h-12 px-6 py-2 bg-black hover:bg-black-900 uppercase text-white hover:text-white disabled:text-white"
-              disabled={!isFormValid || isLoading || isCountryLoading}
+              className="btn w-auto h-12 px-6 bg-black hover:bg-black-900 uppercase text-white hover:text-white disabled:text-white"
+              disabled={!isFormValid || isSubmitting || isCountryLoading || isLoading}
             >
-              {isLoading ? "Updating..." : "Update"}
+              {isSubmitting ? "Updating..." : "Update"}
             </button>
           </div>
         </form>
