@@ -12,7 +12,6 @@ const initialState = {
   data: {},
   selectedData: null,
   isConfirmModalOpen: false,
-  // Edit form data for update coupon
   editFormData: {
     id: "",
     title: "",
@@ -58,7 +57,7 @@ const couponSlice = createSlice({
     addNewCouponToList: (state, action) => {
       const newCoupon = {
         ...action.payload,
-        rankingNumber: 1, // Since it's being added at the top, it gets rank 1
+        rankingNumber: 1, 
         totalPrizeGiven: 0,
         totalRevenue: 0,
         ticketSold: 0,
@@ -75,7 +74,7 @@ const couponSlice = createSlice({
       state.data = result.data;
       state.dataList = result.dataList;
 
-      // Update ranking numbers for all items after adding new one at the top
+
       const updatedData = {};
       for (let i = 1; i <= result.meta.total_pages; i++) {
         const pageKey = `page${i}`;
@@ -88,7 +87,7 @@ const couponSlice = createSlice({
       }
 
       state.data = updatedData;
-      // Update current page data with new ranking numbers
+
       const current_pageKey = `page${state.meta.current_page}`;
       state.dataList = updatedData[current_pageKey] || [];
     },
@@ -118,7 +117,6 @@ const couponSlice = createSlice({
       state.data = result.data;
       state.dataList = result.dataList;
 
-      // Update ranking numbers for all remaining items
       const updatedData = {};
       for (let i = 1; i <= result.meta.total_pages; i++) {
         const pageKey = `page${i}`;
@@ -131,7 +129,7 @@ const couponSlice = createSlice({
       }
 
       state.data = updatedData;
-      // Update current page data with new ranking numbers
+
       const current_pageKey = `page${state.meta.current_page}`;
       state.dataList = updatedData[current_pageKey] || [];
     },
@@ -147,7 +145,6 @@ const couponSlice = createSlice({
       if (updateKey === "page_size") {
         state.meta = { ...state.meta, page_size: action.payload.page_size };
 
-        // When page size changes, we need to reorganize all data
         let allItems = [];
         for (let i = 1; i <= state.meta.total_pages; i++) {
           const pageKey = `page${i}`;
@@ -156,7 +153,6 @@ const couponSlice = createSlice({
           }
         }
 
-        // Recalculate pagination with new page size
         const newPageSize = action.payload.page_size;
         const newTotalPages = Math.ceil(allItems.length / newPageSize);
         const updatedData = {};
@@ -176,27 +172,23 @@ const couponSlice = createSlice({
           newTotalPages
         );
 
-        // Update current page data
         const current_pageKey = `page${state.meta.current_page}`;
         state.dataList = updatedData[current_pageKey] || [];
       }
     },
-    /* ============ End data setup ============ */
 
     setSelectedCouponData: (state, action) => {
       state.selectedData = action.payload;
     },
-    // Reset selectedData when needed
+
     clearSelectedCouponData: (state) => {
       state.selectedData = null;
     },
 
-    // Set edit form data
     setEditFormData: (state, action) => {
       state.editFormData = action.payload;
     },
 
-    // Reset edit form data
     resetEditFormData: (state) => {
       state.editFormData = {
         id: "",

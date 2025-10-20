@@ -38,8 +38,8 @@ export const useHome = () => {
       currency: getSymbol(),
       number: dashboardStats?.data?.total_sales?.USD || 0,
       link: "/revenue",
-      background: "bg-pinkLight",
-      svgBg: "bg-pinkColor",
+      background: "bg-main-100",
+      svgBg: "bg-main-500",
       svg: <SalesIcon />,
     },
     {

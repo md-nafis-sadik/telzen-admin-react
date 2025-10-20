@@ -69,7 +69,6 @@ export const useGetUsers = () => {
   const updatePageMeta = (value) => dispatch(setUserMetaData(value));
   const handleSetSelectedUser = (data) => dispatch(setSelectedUserData(data));
 
-  // Debounced search effect to reset current page
   useEffect(() => {
     if (isInitialRender.current) {
       isInitialRender.current = false;
@@ -77,10 +76,8 @@ export const useGetUsers = () => {
       return;
     }
     setForceRefetchTrigger((prev) => prev + 1);
-    // dispatch(setUserMetaData({ ...meta, current_page: 1 }));
   }, [debouncedSearch, filterKey]);
 
-  // Force refetch when search is cleared
   useEffect(() => {
     if (
       prevSearchRef.current !== "" &&
@@ -92,7 +89,6 @@ export const useGetUsers = () => {
     prevSearchRef.current = debouncedSearch;
   }, [debouncedSearch, dataList.length]);
 
-  // Handle delete user
   const handleDelete = async () => {
     if (!userId) {
       errorNotify("User ID is required.");
@@ -111,7 +107,6 @@ export const useGetUsers = () => {
     }
   };
 
-  // Handle navigate to edit page
   const handleNavigate = (item) => {
     dispatch(setSelectedUserData(item));
     navigate(`/users/${item._id}`);
@@ -121,7 +116,6 @@ export const useGetUsers = () => {
     navigate("/package-user-add", { state: { type: "add" } });
   };
 
-  // Handle status change
   const handleStatusChange = async (userId, newStatus) => {
     const apiStatus = newStatus === "Active" ? "active" : "inactive";
     setUpdatingUsers((prev) => ({ ...prev, [userId]: true }));

@@ -1,12 +1,5 @@
 import { errorNotify } from "./notify";
 
-/**
- * Handles validation using Zod schema and sets errors
- * @param {Object} schema - Zod schema to validate against
- * @param {Object} formData - Data to validate
- * @param {Function} setErrors - Function to set errors
- * @returns {Object|null} - Returns validated data if successful, null if validation fails
- */
 export const validateWithSchema = (schema, formData, setErrors) => {
   const result = schema.safeParse(formData);
 
@@ -32,13 +25,6 @@ export const validateWithSchema = (schema, formData, setErrors) => {
   return result.data;
 };
 
-/**
- * Creates a form validation memoized function
- * @param {Object} schema - Zod schema to validate against
- * @param {Object} formData - Form data to validate
- * @param {any} additionalCondition - Additional condition to check (optional)
- * @returns {boolean} - Whether the form is valid
- */
 export const createFormValidator = (
   schema,
   formData,
@@ -49,12 +35,6 @@ export const createFormValidator = (
   return result.success;
 };
 
-/**
- * Generic error handler for clearing field errors
- * @param {string} name - Field name
- * @param {Object} errors - Current errors object
- * @param {Function} setErrors - Function to set errors
- */
 export const clearFieldError = (name, errors, setErrors) => {
   if (errors[name]) {
     setErrors((prev) => ({
@@ -64,11 +44,7 @@ export const clearFieldError = (name, errors, setErrors) => {
   }
 };
 
-/**
- * Clears nested field errors (e.g., "parent.child")
- * @param {string} name - Field name (can be nested with dots)
- * @param {Function} setErrors - Function to set errors
- */
+
 export const clearNestedErrors = (name, setErrors) => {
   setErrors((prev) => {
     const newErrors = { ...prev };
@@ -94,12 +70,7 @@ export const clearNestedErrors = (name, setErrors) => {
   });
 };
 
-/**
- * Creates a discount type toggle handler
- * @param {Object} formData - Current form data
- * @param {Function} updateFormData - Function to update form data (dispatch action)
- * @returns {Function} - Toggle handler function
- */
+
 export const createDiscountToggleHandler = (formData, updateFormData) => {
   return (isFixed) => {
     const updatedFormData = {

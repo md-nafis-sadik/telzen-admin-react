@@ -66,24 +66,26 @@ function UpdatePackageForm() {
                 {isCountryLoading || isSinglePackageLoading ? (
                   <SkeletonBox className="w-full h-12" />
                 ) : (
+                  // Single Select Version
                   <Select
-                    mode="multiple"
                     className={`w-full border ${
                       errors.coverage_countries
                         ? "!border-red-500"
                         : "border-natural-400"
-                    } rounded-lg [&_.ant-select-selector]:!h-12 [&_.ant-select-selection-placeholder]:!px-2 [&_.ant-select-selector]:!px-3 [&_.ant-select-selector]:!flex [&_.ant-select-selector]:!items-center [&_.ant-select-selector]:!leading-[3.5rem]`}
-                    placeholder="Select Countries"
-                    value={formData.coverage_countries}
+                    } rounded-lg
+                    [&_.ant-select-selector]:!h-12
+                    [&_.ant-select-selector]:!px-4
+                    [&_.ant-select-selector]:!flex
+                    [&_.ant-select-selector]:!items-center
+                    [&_.ant-select-selector]:!leading-[3.5rem]`}
+                    placeholder="Select Country"
+                    value={formData.coverage_countries?.[0] || undefined}
                     onChange={(value) =>
-                      handleChange("coverage_countries", value)
+                      handleChange("coverage_countries", value ? [value] : [])
                     }
                     status={errors.coverage_countries ? "error" : ""}
-                    tagRender={tagRender}
-                    maxTagCount={2}
                     showSearch
                     optionFilterProp="label"
-                    dropdownRender={dropdownRender}
                     loading={isCountryLoading}
                   >
                     {sortedCountries.map((country) => (
@@ -118,24 +120,26 @@ function UpdatePackageForm() {
                 {isRegionLoading || isSinglePackageLoading ? (
                   <SkeletonBox className="w-full h-[49px] !rounded-lg" />
                 ) : (
+                  // Single Select Version
                   <Select
-                    mode="multiple"
                     className={`w-full border ${
                       errors.coverage_regions
                         ? "!border-red-500"
                         : "border-natural-400"
-                    } rounded-lg [&_.ant-select-selector]:!h-12 [&_.ant-select-selection-placeholder]:!px-2 [&_.ant-select-selector]:!px-3 [&_.ant-select-selector]:!flex [&_.ant-select-selector]:!items-center [&_.ant-select-selector]:!leading-[3.5rem]`}
-                    placeholder="Select Regions"
-                    value={formData.coverage_regions}
+                    } rounded-lg
+                    [&_.ant-select-selector]:!h-12
+                    [&_.ant-select-selector]:!px-4
+                    [&_.ant-select-selector]:!flex
+                    [&_.ant-select-selector]:!items-center
+                    [&_.ant-select-selector]:!leading-[3.5rem]`}
+                    placeholder="Select Region"
+                    value={formData.coverage_regions?.[0] || undefined}
                     onChange={(value) =>
-                      handleChange("coverage_regions", value)
+                      handleChange("coverage_regions", value ? [value] : [])
                     }
                     status={errors.coverage_regions ? "error" : ""}
-                    tagRender={tagRender}
-                    maxTagCount={2}
                     showSearch
                     optionFilterProp="label"
-                    dropdownRender={dropdownRender}
                   >
                     {sortedRegions.map((region) => (
                       <Select.Option

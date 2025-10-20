@@ -91,7 +91,6 @@ export const useGetCoupons = () => {
       return;
     }
     setForceRefetchTrigger((prev) => prev + 1);
-    // dispatch(setCouponMetaData({ ...meta, current_page: 1 }));
   }, [debouncedSearch, filterKey]);
 
   useEffect(() => {
@@ -218,7 +217,6 @@ export const useAddCoupon = () => {
       );
   }, [countries, formData.coverage_countries]);
 
-  // Generic nested value updater
   const updateNestedValue = (obj, path, value) => {
     const keys = path.split(".");
     if (keys.length === 1) return { ...obj, [keys[0]]: value };
@@ -341,7 +339,6 @@ export const useUpdateCoupon = () => {
     useGetAllActiveCountrysQuery();
   const countries = countriesResponse?.data || [];
 
-  // Fetch single coupon data when component mounts or id changes
   useEffect(() => {
     if (id) {
       dispatch(resetEditFormData());
@@ -367,10 +364,11 @@ export const useUpdateCoupon = () => {
   };
 
   const handleChange = (name, value) => {
-    const updatedFormData = name === "is_private" && value === true
-      ? { ...formData, is_private: true, coverage_countries: [] }
-      : updateNestedValue(formData, name, value);
-    
+    const updatedFormData =
+      name === "is_private" && value === true
+        ? { ...formData, is_private: true, coverage_countries: [] }
+        : updateNestedValue(formData, name, value);
+
     dispatch(setEditFormData(updatedFormData));
 
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));

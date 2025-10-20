@@ -62,7 +62,7 @@ const UserGrowthChart = ({ data, year, setYear, isLoading }) => {
             />
             <Bar
               dataKey="users"
-              fill="#FF97A4"
+              fill="#00C896"
               barSize={25}
               radius={[4, 4, 0, 0]}
             />

@@ -19,8 +19,8 @@ function AddCountryForm() {
     navigate,
     regions,
     countries,
-    isRegionLoading,
-    isCountryLoading,
+    isRegionsLoading,
+    isCountriesLoading,
     isSubmitting,
     imagePreview,
     fileInputRef,
@@ -37,7 +37,7 @@ function AddCountryForm() {
             {/* Country (Single Select) */}
             <div className="flex flex-col gap-1">
               <span className="text-black-700">Country</span>
-              {isCountryLoading ? (
+              {isCountriesLoading ? (
                 <SkeletonBox className="w-full h-12" />
               ) : (
                 <Select
@@ -53,7 +53,7 @@ function AddCountryForm() {
                   value={formData.code}
                   onChange={(value) => handleChange("code", value)}
                   status={errors.code ? "error" : ""}
-                  loading={isCountryLoading}
+                  loading={isCountriesLoading}
                   showSearch
                   optionFilterProp="label"
                 >
@@ -83,7 +83,7 @@ function AddCountryForm() {
             {/* Region */}
             <div className="flex flex-col gap-1">
               <span className="text-black-700">Region</span>
-              {isRegionLoading ? (
+              {isRegionsLoading ? (
                 <SkeletonBox className="w-full h-12" />
               ) : (
                 <Select
@@ -99,7 +99,7 @@ function AddCountryForm() {
                   value={formData.region}
                   onChange={(value) => handleChange("region", value)}
                   status={errors.region ? "error" : ""}
-                  loading={isRegionLoading}
+                  loading={isRegionsLoading}
                 >
                   {regions.map((region) => (
                     <Select.Option key={region._id} value={region._id}>
@@ -196,8 +196,8 @@ function AddCountryForm() {
               className="btn w-auto h-12 px-6 bg-black hover:bg-black-900 uppercase text-white hover:text-white disabled:text-white"
               disabled={
                 !isFormValid ||
-                isRegionLoading ||
-                isCountryLoading ||
+                isRegionsLoading ||
+                isCountriesLoading ||
                 isSubmitting
               }
             >

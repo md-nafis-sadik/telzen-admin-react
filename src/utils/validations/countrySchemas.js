@@ -23,5 +23,9 @@ export const transformFormDataToAPI = (formData, countries) => {
   };
 };
 
-export const AddCountrySchema = CountryFormSchema.omit({ id: true, name: true, image: true });
+export const AddCountrySchema = CountryFormSchema.omit({
+  id: true,
+  name: true,
+  image: true,
+});
 export const UpdateCountrySchema = CountryFormSchema.required({ id: true });

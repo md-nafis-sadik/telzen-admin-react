@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { errorNotify, successNotify } from "../../utils/notify";
 import {
@@ -84,7 +84,6 @@ export const useGetStaffs = () => {
       return;
     }
     setForceRefetchTrigger((prev) => prev + 1);
-    // dispatch(setStaffMetaData({ ...meta, current_page: 1 }));
   }, [debouncedSearch, filterKey]);
 
   useEffect(() => {
@@ -311,7 +310,6 @@ export const useUpdateStaff = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [updateStaff] = useUpdateStaffMutation();
 
-  // Fetch single staff data when component mounts or id changes
   useEffect(() => {
     if (id) {
       dispatch(resetEditFormData());
@@ -334,7 +332,7 @@ export const useUpdateStaff = () => {
         [name]: typeof value === "string" ? value.trim() : value,
       };
     }
-    
+
     dispatch(setEditFormData(updatedFormData));
 
     if (errors[name]) {

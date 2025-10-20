@@ -2,10 +2,8 @@ import {
   setPackageData,
   setPackageMetaData,
   setSelectedPackageData,
-  setAvailablePackages,
   setCachedPackages,
   setEditFormData,
-  setAddFormPackageType,
   setAddFormSelectedPackage,
 } from ".";
 import { apiSlice } from "../../api/apiSlice";
@@ -34,7 +32,7 @@ export const packagesApi = apiSlice.injectEndpoints({
       },
     }),
 
-    // GET ALL PACKAGES
+    // GET ALL ACTIVE PACKAGES
     getAllActivePackages: builder.query({
       query: (
         params = {
@@ -73,7 +71,6 @@ export const packagesApi = apiSlice.injectEndpoints({
           const packages = apiData.data || [];
           const coverageType = args.coverage_type;
           
-          // Cache packages by coverage type and set as available packages
           dispatch(setCachedPackages({ coverageType, packages }));
         } catch (err) {
           console.error(err);

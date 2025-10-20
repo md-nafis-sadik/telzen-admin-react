@@ -34,17 +34,14 @@ export const useGetUserDetails = () => {
     customer_id: userDetailsId,
   };
 
-  // Remove refetchOnMountOrArgChange and control it manually
   const { isLoading, isFetching, isError, error, refetch } =
     useGetAllUserDetailsQuery(apiParams, {
       skip: !userDetailsId,
     });
 
-  // Manual refetch when userId changes
   useEffect(() => {
     if (userDetailsId) {
       refetch();
-      // Reset to page 1 when user changes
       dispatch(setUserDetailsMetaData({ ...meta, current_page: 1 }));
     }
   }, [userDetailsId, refetch, dispatch]);
@@ -91,18 +88,16 @@ export const useGetUserDetails = () => {
         iccid: userDetails?.esim?.iccid || "ICCID",
       };
 
-      // Create a temporary div to hold our invoice HTML
       const tempDiv = document.createElement("div");
       tempDiv.id = "pdf-content";
       tempDiv.style.position = "absolute";
       tempDiv.style.left = "-9999px";
-      tempDiv.style.width = "595px"; // A4 width in pixels (approx)
+      tempDiv.style.width = "595px";
       tempDiv.style.padding = "20px";
-      tempDiv.style.fontFamily = "Helvetica, Arial, sans-serif"; // Already good
-      tempDiv.style.height = "842px"; // Add this line
+      tempDiv.style.fontFamily = "Helvetica, Arial, sans-serif";
+      tempDiv.style.height = "842px";
       tempDiv.style.boxSizing = "border-box";
 
-      // Add the invoice content to the div
       tempDiv.innerHTML = `
         <div id="pdf-content" style="padding: 20px; width: 100%; max-width: 595px;
           height: 100%; font-family: 'Inter', sans-serif; color: #000; font-size: 10px; display: flex; flex-direction: column; justify-content: space-between;">
@@ -115,16 +110,20 @@ export const useGetUserDetails = () => {
                   font-size: 10px;
                   font-style: normal;
                   font-weight: 600;
-                  line-height: 120%; margin-bottom: 3px;" margin-bottom: 3px;>E Galactic e.U.</div>
+                  line-height: 120%; margin-bottom: 3px;" margin-bottom: 3px;>Telzen Digital.</div>
                 <div style="color: #888;
                   font-size: 10px;
                   font-weight: 400;
-                  line-height: 130%; margin-bottom: 3px;">Alxingergasse 105/39 1100 Vienna, Austria</div>
+                  line-height: 130%; margin-bottom: 3px;">290/737 York House Green Lane West, Garstang,</div>
+                                  <div style="color: #888;
+                  font-size: 10px;
+                  font-weight: 400;
+                  line-height: 130%; margin-bottom: 3px;">Preston, Lancashire, England, PR3 1NJ</div>
 
                 <div style="color: #888;
                   font-size: 10px;
                   font-weight: 400;
-                  line-height: 130%;">kontakt@egalactic.com</div>
+                  line-height: 130%;">hello@netrosystems.com</div>
             </div>
         </div>
 
@@ -295,12 +294,10 @@ export const useGetUserDetails = () => {
     </div>
       `;
 
-      // Add the div to the document
       document.body.appendChild(tempDiv);
 
-      // Convert to PDF
       const canvas = await html2canvas(tempDiv, {
-        scale: 2, // Higher quality
+        scale: 2,
         logging: false,
         useCORS: true,
       });
@@ -309,12 +306,11 @@ export const useGetUserDetails = () => {
       const pdf = new jsPDF("p", "pt", "a4");
 
       const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth(); // ✅ fixed line
+      const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
       pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
 
-      // Clean up
       document.body.removeChild(tempDiv);
 
       pdf.save(`invoice_${dummyInvoiceData.invoiceNumber}.pdf`);

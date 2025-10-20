@@ -48,14 +48,13 @@ const notificationSlice = createSlice({
     addNewNotificationToList: (state, action) => {
       const newNotification = {
         ...action.payload,
-        rankingNumber: 1, // Since it's being added at the top, it gets rank 1
+        rankingNumber: 1,
         totalPrizeGiven: 0,
         totalRevenue: 0,
         ticketSold: 0,
       };
 
       const result = prependNewDataToPaginatedList({
-        // Changed to prepend
         meta: state.meta,
         data: state.data,
         dataList: state.dataList,
@@ -66,7 +65,6 @@ const notificationSlice = createSlice({
       state.data = result.data;
       state.dataList = result.dataList;
 
-      // Update ranking numbers for all items after adding new one at the top
       const updatedData = {};
       for (let i = 1; i <= result.meta.total_pages; i++) {
         const pageKey = `page${i}`;
@@ -79,7 +77,6 @@ const notificationSlice = createSlice({
       }
 
       state.data = updatedData;
-      // Update current page data with new ranking numbers
       const current_pageKey = `page${state.meta.current_page}`;
       state.dataList = updatedData[current_pageKey] || [];
     },
@@ -109,7 +106,6 @@ const notificationSlice = createSlice({
       state.data = result.data;
       state.dataList = result.dataList;
 
-      // Update ranking numbers for all remaining items
       const updatedData = {};
       for (let i = 1; i <= result.meta.total_pages; i++) {
         const pageKey = `page${i}`;
@@ -122,7 +118,6 @@ const notificationSlice = createSlice({
       }
 
       state.data = updatedData;
-      // Update current page data with new ranking numbers
       const current_pageKey = `page${state.meta.current_page}`;
       state.dataList = updatedData[current_pageKey] || [];
     },
@@ -138,7 +133,6 @@ const notificationSlice = createSlice({
       if (updateKey === "page_size") {
         state.meta = { ...state.meta, page_size: action.payload.page_size };
 
-        // When page size changes, we need to reorganize all data
         let allItems = [];
         for (let i = 1; i <= state.meta.total_pages; i++) {
           const pageKey = `page${i}`;
@@ -147,7 +141,6 @@ const notificationSlice = createSlice({
           }
         }
 
-        // Recalculate pagination with new page size
         const newPageSize = action.payload.page_size;
         const newTotalPages = Math.ceil(allItems.length / newPageSize);
         const updatedData = {};
@@ -167,21 +160,19 @@ const notificationSlice = createSlice({
           newTotalPages
         );
 
-        // Update current page data
         const current_pageKey = `page${state.meta.current_page}`;
         state.dataList = updatedData[current_pageKey] || [];
       }
     },
-    /* ============ End data setup ============ */
 
     setSelectedNotificationData: (state, action) => {
       state.selectedData = action.payload;
     },
-    // Reset selectedData when needed
+
     clearSelectedNotificationData: (state) => {
       state.selectedData = null;
     },
-    // Add the missing confirmation modal action
+
     setNotificationConfirmationModal: (state, action) => {
       state.isConfirmModalOpen = action.payload;
     },

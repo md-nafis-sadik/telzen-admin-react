@@ -7,7 +7,6 @@ import {
   setCountryMetaData,
   updateCountryInList,
   addNewCountryToList,
-  clearSelectedCountryData,
   setEditFormData,
   resetEditFormData,
 } from "../../features/packages/packageCountry/countrySlice";
@@ -382,7 +381,6 @@ export const useUpdateCountry = () => {
 
   const fileInputRef = useRef(null);
 
-  // Fetch single country data when component mounts or id changes
   useEffect(() => {
     if (id) {
       dispatch(resetEditFormData());
@@ -390,7 +388,6 @@ export const useUpdateCountry = () => {
     }
   }, [dispatch, id, getSingleCountry]);
 
-  // Set image preview when formData changes
   useEffect(() => {
     if (formData.image) {
       setImagePreview(formData.image);

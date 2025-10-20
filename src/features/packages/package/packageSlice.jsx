@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
-  prependNewDataToPaginatedList, // Changed from appendNewDataToPaginatedList
+  prependNewDataToPaginatedList,
   removeDataFromPaginatedList,
   setPaginatedDataFromApi,
   updateDataInDataList,
@@ -12,13 +12,11 @@ const initialState = {
   data: {},
   selectedData: null,
   availablePackages: [],
-  // Cache packages by coverage type
   cachedPackages: {
     country: [],
     region: [],
   },
   isConfirmModalOpen: false,
-  // Add form state
   addFormState: {
     packageType: "country",
     selectedPackageCode: null,
@@ -41,7 +39,6 @@ const initialState = {
       slug: "",
     },
   },
-  // Add form data for edit package
   editFormData: {
     id: "",
     name: "",
@@ -54,7 +51,6 @@ const initialState = {
     coverage_regions: [],
     retail_price: { USD: "" },
     selling_price: { USD: "" },
-    // vat_on_selling_price: { amount: "", is_type_percentage: true },
     discount_on_selling_price: { amount: "", is_type_percentage: true },
     is_auto_renew_available: true,
     note: "",
@@ -96,14 +92,13 @@ const packageSlice = createSlice({
     addNewPackageToList: (state, action) => {
       const newPackage = {
         ...action.payload,
-        rankingNumber: 1, // Since it's being added at the top, it gets rank 1
+        rankingNumber: 1, 
         totalPrizeGiven: 0,
         totalRevenue: 0,
         ticketSold: 0,
       };
 
       const result = prependNewDataToPaginatedList({
-        // Changed to prepend
         meta: state.meta,
         data: state.data,
         dataList: state.dataList,
@@ -114,7 +109,6 @@ const packageSlice = createSlice({
       state.data = result.data;
       state.dataList = result.dataList;
 
-      // Update ranking numbers for all items after adding new one at the top
       const updatedData = {};
       for (let i = 1; i <= result.meta.total_pages; i++) {
         const pageKey = `page${i}`;
@@ -127,7 +121,6 @@ const packageSlice = createSlice({
       }
 
       state.data = updatedData;
-      // Update current page data with new ranking numbers
       const current_pageKey = `page${state.meta.current_page}`;
       state.dataList = updatedData[current_pageKey] || [];
     },
@@ -157,7 +150,6 @@ const packageSlice = createSlice({
       state.data = result.data;
       state.dataList = result.dataList;
 
-      // Update ranking numbers for all remaining items
       const updatedData = {};
       for (let i = 1; i <= result.meta.total_pages; i++) {
         const pageKey = `page${i}`;
@@ -170,7 +162,7 @@ const packageSlice = createSlice({
       }
 
       state.data = updatedData;
-      // Update current page data with new ranking numbers
+
       const current_pageKey = `page${state.meta.current_page}`;
       state.dataList = updatedData[current_pageKey] || [];
     },
@@ -186,7 +178,6 @@ const packageSlice = createSlice({
       if (updateKey === "page_size") {
         state.meta = { ...state.meta, page_size: action.payload.page_size };
 
-        // When page size changes, we need to reorganize all data
         let allItems = [];
         for (let i = 1; i <= state.meta.total_pages; i++) {
           const pageKey = `page${i}`;
@@ -195,7 +186,6 @@ const packageSlice = createSlice({
           }
         }
 
-        // Recalculate pagination with new page size
         const newPageSize = action.payload.page_size;
         const newTotalPages = Math.ceil(allItems.length / newPageSize);
         const updatedData = {};
@@ -215,47 +205,36 @@ const packageSlice = createSlice({
           newTotalPages
         );
 
-        // Update current page data
         const current_pageKey = `page${state.meta.current_page}`;
         state.dataList = updatedData[current_pageKey] || [];
       }
     },
-    /* ============ End data setup ============ */
 
     setSelectedPackageData: (state, action) => {
       state.selectedData = action.payload;
     },
-    // Reset selectedData when needed
     clearSelectedPackageData: (state) => {
       state.selectedData = null;
     },
-    // Add the missing confirmation modal action
     setPackageConfirmationModal: (state, action) => {
       state.isConfirmModalOpen = action.payload;
     },
-    // Set available packages for add package form
     setAvailablePackages: (state, action) => {
       state.availablePackages = action.payload;
     },
-    // Set cached packages for specific coverage type
     setCachedPackages: (state, action) => {
       const { coverageType, packages } = action.payload;
       state.cachedPackages[coverageType] = packages;
-      // Also update availablePackages if this is the current package type
       if (state.addFormState.packageType === coverageType) {
         state.availablePackages = packages;
       }
     },
-    // Add form state management
     setAddFormPackageType: (state, action) => {
       state.addFormState.packageType = action.payload;
-      // Reset selection when package type changes
       state.addFormState.selectedPackageCode = null;
       state.addFormState.selectedPackageData = null;
-      // Use cached packages if available, otherwise clear
       const cachedPackages = state.cachedPackages[action.payload] || [];
       state.availablePackages = cachedPackages;
-      // Reset form data to initial state with new coverage type
       state.addFormState.formData = {
         name: "",
         type: "data",
@@ -343,7 +322,6 @@ const packageSlice = createSlice({
         coverage_regions: [],
         retail_price: { USD: "" },
         selling_price: { USD: "" },
-        // vat_on_selling_price: { amount: "", is_type_percentage: true },
         discount_on_selling_price: { amount: "", is_type_percentage: true },
         is_auto_renew_available: true,
         note: "",

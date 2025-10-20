@@ -78,7 +78,6 @@ export const useGetRegions = () => {
   const handleSetSelectedRegion = (data) =>
     dispatch(setSelectedRegionData(data));
 
-  // Reset page on search/filter change
   useEffect(() => {
     if (isInitialRender.current) {
       isInitialRender.current = false;
@@ -86,10 +85,8 @@ export const useGetRegions = () => {
       return;
     }
     setForceRefetchTrigger((prev) => prev + 1);
-    // dispatch(setRegionMetaData({ ...meta, current_page: 1 }));
   }, [debouncedSearch, filterKey]);
 
-  // Force refetch if search is cleared
   useEffect(() => {
     if (
       prevSearchRef.current !== "" &&
@@ -101,7 +98,6 @@ export const useGetRegions = () => {
     prevSearchRef.current = debouncedSearch;
   }, [debouncedSearch, dataList.length]);
 
-  // Handle delete region
   const handleDelete = async () => {
     if (!regionId) {
       errorNotify("Region ID is required.");
@@ -309,7 +305,6 @@ export const useUpdateRegion = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [typeError, setTypeError] = useState(false);
 
-  // Fetch single region data when component mounts or id changes
   useEffect(() => {
     if (id) {
       dispatch(resetEditFormData());
@@ -317,7 +312,6 @@ export const useUpdateRegion = () => {
     }
   }, [dispatch, id, getSingleRegion]);
 
-  // Set image preview when formData changes
   useEffect(() => {
     if (formData.image) {
       setImagePreview(formData.image);

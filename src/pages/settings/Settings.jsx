@@ -56,8 +56,8 @@ function Settings() {
         </div> */}
         <div
           onClick={() => handleActiveOption("admin")}
-          className={`w-full px-3 py-4 text-center cursor-pointer rounded-xl hover:bg-[#FFF0F2] transition-colors text-sm flex items-center gap-2 ${
-            activeOption === "admin" ? "bg-[#FFF0F2]" : "bg-white"
+          className={`w-full px-3 py-4 text-center cursor-pointer rounded-xl hover:bg-[#E6FFF8] transition-colors text-sm flex items-center gap-2 ${
+            activeOption === "admin" ? "bg-[#E6FFF8]" : "bg-white"
           }`}
         >
           <span>

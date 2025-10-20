@@ -17,7 +17,6 @@ export const useGetRevenues = () => {
   );
   const { current_page, page_size } = meta || {};
   const isInitialRender = useRef(true);
-  // Fetch revenue list data
   const {
     isLoading: isRevenueLoading,
     isFetching: isRevenueFetching,
@@ -37,7 +36,6 @@ export const useGetRevenues = () => {
       isInitialRender.current = false;
       return;
     }
-    // dispatch(setRevenueMetaData({ ...meta, current_page: 1 }));
   }, []);
 
   // Fetch card data
@@ -47,7 +45,6 @@ export const useGetRevenues = () => {
     isCardError,
   } = useGetRevenueCardDataQuery();
 
-  // Extract the actual data from the API response
   const cardData = apiResponse?.data || {};
 
   const revenueSummary = [

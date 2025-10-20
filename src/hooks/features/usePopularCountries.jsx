@@ -371,7 +371,7 @@ export const useUpdatePopularCountry = () => {
   useEffect(() => {
     if (selectedData) {
       setFormData({
-        country_id: selectedData._id, // This should be the full country object
+        country_id: selectedData._id,
         feature_countries:
           selectedData.feature_countries?.map((country) =>
             typeof country === "object" ? country._id : country
@@ -452,7 +452,7 @@ export const useUpdatePopularCountry = () => {
       const response = await updatePopularCountries({
         id: selectedData._id,
         data: {
-          country_id: formData.country_id._id, // Send the ID only
+          country_id: formData.country_id._id,
           feature_countries: formData.feature_countries,
         },
       }).unwrap();
@@ -495,7 +495,7 @@ export const useUpdatePopularCountry = () => {
         }}
       >
         <ReactCountryFlag
-          countryCode={label} // Use the label directly
+          countryCode={label} 
           svg
           style={{ width: "16px", height: "12px" }}
         />

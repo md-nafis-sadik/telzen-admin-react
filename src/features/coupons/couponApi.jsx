@@ -1,4 +1,9 @@
-import { setCouponData, setCouponMetaData, setSelectedCouponData, setEditFormData } from ".";
+import {
+  setCouponData,
+  setCouponMetaData,
+  setSelectedCouponData,
+  setEditFormData,
+} from ".";
 import { apiSlice } from "../api/apiSlice";
 
 export const couponApi = apiSlice.injectEndpoints({
@@ -58,9 +63,10 @@ export const couponApi = apiSlice.injectEndpoints({
             discount: { amount: couponData.discount?.amount || "" },
             is_private: couponData.is_private || false,
             validity_end_at: couponData.validity_end_at || null,
-            coverage_countries: couponData.coverage_countries?.map((c) => 
-              typeof c === "object" ? c._id : c
-            ) || [],
+            coverage_countries:
+              couponData.coverage_countries?.map((c) =>
+                typeof c === "object" ? c._id : c
+              ) || [],
             max_usages_limit: couponData.max_usages_limit || 1,
           };
 

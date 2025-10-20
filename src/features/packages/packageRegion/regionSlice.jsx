@@ -12,7 +12,6 @@ const initialState = {
   data: {},
   selectedData: null,
   isConfirmModalOpen: false,
-  // Edit form data for update region
   editFormData: {
     id: "",
     name: "",
@@ -54,7 +53,7 @@ const regionSlice = createSlice({
     addNewRegionToList: (state, action) => {
       const newRegion = {
         ...action.payload,
-        rankingNumber: 1, // top of the list
+        rankingNumber: 1,
       };
 
       const result = prependNewDataToPaginatedList({
@@ -68,7 +67,6 @@ const regionSlice = createSlice({
       state.data = result.data;
       state.dataList = result.dataList;
 
-      // Update ranking numbers across all pages
       const updatedData = {};
       for (let i = 1; i <= result.meta.total_pages; i++) {
         const pageKey = `page${i}`;
@@ -109,7 +107,6 @@ const regionSlice = createSlice({
       state.data = result.data;
       state.dataList = result.dataList;
 
-      // Update ranking numbers
       const updatedData = {};
       for (let i = 1; i <= result.meta.total_pages; i++) {
         const pageKey = `page${i}`;
@@ -137,7 +134,6 @@ const regionSlice = createSlice({
         const newPageSize = action.payload.page_size;
         state.meta.page_size = newPageSize;
 
-        // Flatten all items and reorganize pagination
         let allItems = [];
         for (let i = 1; i <= state.meta.total_pages; i++) {
           const pageKey = `page${i}`;
@@ -174,12 +170,10 @@ const regionSlice = createSlice({
       state.selectedData = null;
     },
 
-    // Set edit form data
     setEditFormData: (state, action) => {
       state.editFormData = action.payload;
     },
 
-    // Reset edit form data
     resetEditFormData: (state) => {
       state.editFormData = {
         id: "",

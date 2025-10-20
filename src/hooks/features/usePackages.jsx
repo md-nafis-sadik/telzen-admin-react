@@ -70,7 +70,7 @@ export const useGetPackages = () => {
   const [filterKey, setFilterKey] = useState(undefined);
   const [regionFilter, setRegionFilter] = useState(undefined);
   const debouncedSearch = useDebouncedSearch(searchKeyword, 1000);
-  // Add region data fetching
+
   const {
     data: regionsData,
     isLoading: isRegionsLoading,
@@ -87,7 +87,7 @@ export const useGetPackages = () => {
     limit: page_size,
     search: debouncedSearch,
     ...(filterKey !== undefined && { status: filterKey || null }),
-    ...(regionFilter !== undefined && { region: regionFilter || null }),
+    ...(regionFilter !== undefined && { region_id: regionFilter || null }),
     forceRefetch: forceRefetchTrigger,
   };
   const { isLoading, isFetching, isError, error } = useGetAllPackagesQuery(
@@ -108,7 +108,6 @@ export const useGetPackages = () => {
   const [updatingPackages, setUpdatingPackages] = useState({});
   const [updatePackagePackage] = useUpdatePackageMutation();
 
-  // Handle search and filter changes
   useEffect(() => {
     if (isInitialRender.current) {
       isInitialRender.current = false;
@@ -129,7 +128,6 @@ export const useGetPackages = () => {
     prevSearchRef.current = debouncedSearch;
   }, [debouncedSearch, dataList.length]);
 
-  // handle delete package
   const handleDelete = async () => {
     if (!packageId) {
       errorNotify("Package ID is required.");
@@ -161,7 +159,6 @@ export const useGetPackages = () => {
     });
   };
 
-  // Remove updating status
   const handleStatusChange = async (packageId, newStatus) => {
     const apiStatus = newStatus === "Active" ? "active" : "inactive";
 
@@ -218,7 +215,6 @@ export const useAddPackage = () => {
     (state) => state.package
   );
 
-  // Destructure add form state
   const { packageType, selectedPackageCode, selectedPackageData, formData } =
     addFormState;
 
@@ -244,11 +240,11 @@ export const useAddPackage = () => {
   } = useGetAllActiveRegionsQuery();
 
   const hasPackagesForType = cachedPackages[packageType]?.length > 0;
-  
+
   const { isLoading: isPackagesLoading } = useGetAllKeepgoOriginalPackagesQuery(
     { coverage_type: packageType },
-    { 
-      skip: !packageType || hasPackagesForType
+    {
+      skip: !packageType || hasPackagesForType,
     }
   );
 
@@ -300,26 +296,34 @@ export const useAddPackage = () => {
         return [];
       }
     }
-    
+
     const options = availablePackages.map((pkg) => ({
       value: pkg.package_code,
       label: `${pkg.name} (${pkg.data_plan_in_mb}MB - ${pkg.validity.amount} days)`,
       data: pkg,
     }));
-    
+
     if (selectedPackageCode && availablePackages.length > 0) {
       const isSelectedPackageValid = availablePackages.some(
-        pkg => pkg.package_code === selectedPackageCode
+        (pkg) => pkg.package_code === selectedPackageCode
       );
       if (!isSelectedPackageValid) {
         setTimeout(() => {
-          dispatch(setAddFormSelectedPackage({ packageCode: null, packageData: null }));
+          dispatch(
+            setAddFormSelectedPackage({ packageCode: null, packageData: null })
+          );
         }, 0);
       }
     }
-    
+
     return options;
-  }, [availablePackages, selectedPackageCode, packageType, cachedPackages, dispatch]);
+  }, [
+    availablePackages,
+    selectedPackageCode,
+    packageType,
+    cachedPackages,
+    dispatch,
+  ]);
 
   useEffect(() => {
     return () => {
@@ -432,7 +436,6 @@ export const useAddPackage = () => {
     );
     if (!validatedData) return;
 
-    // Validate coverage based on package type
     const coverageValidation = validatePackageCoverage(validatedData);
     if (!coverageValidation.isValid) {
       setErrors({ [coverageValidation.field]: coverageValidation.error });
@@ -444,10 +447,12 @@ export const useAddPackage = () => {
     try {
       let submitData = {
         ...validatedData,
-        vat_on_selling_price: { amount: 0 },
+        vat_on_selling_price: {
+          amount: 0,
+          is_type_percentage: true,
+        },
       };
 
-      // For regional packages, exclude coverage_countries from the API payload
       if (formData.coverage_type === "regional") {
         const { coverage_countries, ...rest } = submitData;
         submitData = rest;
@@ -479,10 +484,13 @@ export const useAddPackage = () => {
   });
 
   const isFormValid = useMemo(() => {
-    const basicValidation = createFormValidator(AddPackageSchema, formData, selectedPackageCode);
+    const basicValidation = createFormValidator(
+      AddPackageSchema,
+      formData,
+      selectedPackageCode
+    );
     if (!basicValidation) return false;
-    
-    // Add coverage validation based on package type
+
     const coverageValidation = validatePackageCoverage(formData);
     return coverageValidation.isValid;
   }, [formData, selectedPackageCode]);
@@ -535,7 +543,6 @@ export const useUpdatePackage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-
   const [updatePackageMutation] = useUpdatePackageMutation();
 
   const {
@@ -582,7 +589,6 @@ export const useUpdatePackage = () => {
     });
   }, [regions, formData.coverage_regions]);
 
-
   const handleCountrySelection = useCallback(
     (selectedCountryIds) => {
       const previousCountries = formData.coverage_countries || [];
@@ -612,7 +618,7 @@ export const useUpdatePackage = () => {
   useEffect(() => {
     if (id) {
       dispatch(resetEditFormData());
-      getSinglePackage({ package_id: id }, false); 
+      getSinglePackage({ package_id: id }, false);
     }
 
     return () => {
@@ -655,10 +661,13 @@ export const useUpdatePackage = () => {
   );
 
   const isFormValid = useMemo(() => {
-    const basicValidation = createFormValidator(UpdatePackageSchema, formData, formData.id);
+    const basicValidation = createFormValidator(
+      UpdatePackageSchema,
+      formData,
+      formData.id
+    );
     if (!basicValidation) return false;
-    
-    // Add coverage validation based on package type
+
     const coverageValidation = validatePackageCoverage(formData);
     return coverageValidation.isValid;
   }, [formData]);
@@ -673,7 +682,6 @@ export const useUpdatePackage = () => {
     );
     if (!validatedData) return;
 
-    // Validate coverage based on package type
     const coverageValidation = validatePackageCoverage(validatedData);
     if (!coverageValidation.isValid) {
       setErrors({ [coverageValidation.field]: coverageValidation.error });
@@ -692,7 +700,13 @@ export const useUpdatePackage = () => {
 
       const response = await updatePackageMutation({
         id: formData.id,
-        data: finalData,
+        data: {
+          ...finalData,
+          vat_on_selling_price: {
+            amount: 0,
+            is_type_percentage: true,
+          },
+        },
       }).unwrap();
 
       if (response.success) {
