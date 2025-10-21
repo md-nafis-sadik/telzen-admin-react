@@ -36,7 +36,7 @@ function AddPackageForm() {
     handleDiscountTypeToggle,
     tagRender,
     dropdownRender,
-    isFormValid
+    isFormValid,
   } = useAddPackage();
   return (
     <section className="px-8 py-6 h-full overflow-auto">
@@ -93,6 +93,9 @@ function AddPackageForm() {
                     setSelectedPackage(value);
                   }}
                   loading={isLoading}
+                  filterOption={(input, option) =>
+                    option?.label?.toLowerCase().includes(input.toLowerCase())
+                  }
                 />
               )}
             </div>
@@ -428,7 +431,6 @@ function AddPackageForm() {
                 <Select.Option value="inactive">Inactive</Select.Option>
               </Select>
             </div>
-
           </div>
 
           {/* Final Price Display */}
