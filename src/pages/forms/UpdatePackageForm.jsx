@@ -360,7 +360,7 @@ function UpdatePackageForm() {
             </div>
 
             {/* Note */}
-            <div className="flex flex-col gap-1">
+            {/* <div className="flex flex-col gap-1">
               <span className="text-black-700">Note (Optional)</span>
               <input
                 type="text"
@@ -369,7 +369,7 @@ function UpdatePackageForm() {
                 value={formData.note}
                 onChange={(e) => handleChange("note", e.target.value)}
               />
-            </div>
+            </div> */}
           </div>
 
           {/* Final Price Display */}

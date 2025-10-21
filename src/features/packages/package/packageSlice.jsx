@@ -53,7 +53,7 @@ const initialState = {
     selling_price: { USD: "" },
     discount_on_selling_price: { amount: "", is_type_percentage: true },
     is_auto_renew_available: true,
-    note: "",
+    // note: "",
     slug: "",
   },
 
