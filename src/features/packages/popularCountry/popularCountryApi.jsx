@@ -12,6 +12,10 @@ export const popularPopularCountryApi = apiSlice.injectEndpoints({
           method: "GET",
         };
       },
+      providesTags: (result, error, arg) => [
+        { type: 'PopularCountry', id: 'LIST' },
+        ...((result?.data || []).map(({ _id }) => ({ type: 'PopularCountry', id: _id }))),
+      ],
       async onQueryStarted(_args, { queryFulfilled, dispatch }) {
         try {
           const { data: apiData } = await queryFulfilled;
@@ -63,6 +67,7 @@ export const popularPopularCountryApi = apiSlice.injectEndpoints({
         method: "POST",
         body: { feature_countries },
       }),
+      invalidatesTags: [],
     }),
 
     // UPDATE A ADMIN
@@ -77,6 +82,7 @@ export const popularPopularCountryApi = apiSlice.injectEndpoints({
           body: formData,
         };
       },
+      invalidatesTags: [],
     }),
 
     // DELETE A NEW ADMIN
@@ -87,6 +93,7 @@ export const popularPopularCountryApi = apiSlice.injectEndpoints({
           method: "PATCH",
         };
       },
+      invalidatesTags: [],
     }),
     // Add to popularPopularCountryApi endpoints
     updatePopularCountryOrder: builder.mutation({

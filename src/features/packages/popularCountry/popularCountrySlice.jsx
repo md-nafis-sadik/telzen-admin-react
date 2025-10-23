@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
-  prependNewDataToPaginatedList, // Changed from appendNewDataToPaginatedList
+  prependNewDataToPaginatedList,
   removeDataFromPaginatedList,
   setPaginatedDataFromApi,
   updateDataInDataList,
@@ -47,42 +47,87 @@ const popularCountrySlice = createSlice({
     },
 
     addNewPopularCountryToList: (state, action) => {
-      const newPopularCountry = {
-        ...action.payload,
-        rankingNumber: 1, // Since it's being added at the top, it gets rank 1
-        totalPrizeGiven: 0,
-        totalRevenue: 0,
-        ticketSold: 0,
-      };
-
-      const result = prependNewDataToPaginatedList({
-        // Changed to prepend
-        meta: state.meta,
-        data: state.data,
-        dataList: state.dataList,
-        newItem: newPopularCountry,
-      });
-
-      state.meta = result.meta;
-      state.data = result.data;
-      state.dataList = result.dataList;
-
-      // Update ranking numbers for all items after adding new one at the top
-      const updatedData = {};
-      for (let i = 1; i <= result.meta.total_pages; i++) {
-        const pageKey = `page${i}`;
-        if (result.data[pageKey]) {
-          updatedData[pageKey] = result.data[pageKey].map((item, index) => ({
-            ...item,
-            rankingNumber: (i - 1) * state.meta.page_size + index + 1,
-          }));
+      const incomingData = action.payload;
+      
+      let existingPageKey = null;
+      let existingIndex = -1;
+      
+      existingIndex = state.dataList.findIndex(
+        (item) => item._id === incomingData._id
+      );
+      
+      if (existingIndex === -1) {
+        for (const pageKey of Object.keys(state.data)) {
+          const pageData = state.data[pageKey];
+          const foundIndex = pageData.findIndex((item) => item._id === incomingData._id);
+          if (foundIndex !== -1) {
+            existingPageKey = pageKey;
+            existingIndex = foundIndex;
+            break;
+          }
         }
+      } else {
+        existingPageKey = `page${state.meta.current_page}`;
       }
 
-      state.data = updatedData;
-      // Update current page data with new ranking numbers
-      const current_pageKey = `page${state.meta.current_page}`;
-      state.dataList = updatedData[current_pageKey] || [];
+      if (existingIndex !== -1) {
+        const updatedData = {};
+        Object.keys(state.data).forEach((pageKey) => {
+          updatedData[pageKey] = state.data[pageKey].map((item) => {
+            if (item._id === incomingData._id) {
+              return {
+                ...item,
+                ...incomingData,
+              };
+            }
+            return item;
+          });
+        });
+        state.data = updatedData;
+        
+        if (existingPageKey && existingPageKey !== `page${state.meta.current_page}`) {
+          const targetPageNumber = parseInt(existingPageKey.replace('page', ''));
+          state.meta.current_page = targetPageNumber;
+          state.dataList = updatedData[existingPageKey] || [];
+        } else {
+          const currentPageKey = `page${state.meta.current_page}`;
+          state.dataList = updatedData[currentPageKey] || [];
+        }
+      } else {
+        const newPopularCountry = {
+          ...incomingData,
+          rankingNumber: 1,
+          totalPrizeGiven: 0,
+          totalRevenue: 0,
+          ticketSold: 0,
+        };
+
+        const result = prependNewDataToPaginatedList({
+          meta: state.meta,
+          data: state.data,
+          dataList: state.dataList,
+          newItem: newPopularCountry,
+        });
+
+        state.meta = result.meta;
+        state.data = result.data;
+        state.dataList = result.dataList;
+
+        const updatedData = {};
+        for (let i = 1; i <= result.meta.total_pages; i++) {
+          const pageKey = `page${i}`;
+          if (result.data[pageKey]) {
+            updatedData[pageKey] = result.data[pageKey].map((item, index) => ({
+              ...item,
+              rankingNumber: (i - 1) * state.meta.page_size + index + 1,
+            }));
+          }
+        }
+
+        state.data = updatedData;
+        const current_pageKey = `page${state.meta.current_page}`;
+        state.dataList = updatedData[current_pageKey] || [];
+      }
     },
 
     updatePopularCountryInList: (state, action) => {
@@ -110,7 +155,6 @@ const popularCountrySlice = createSlice({
       state.data = result.data;
       state.dataList = result.dataList;
 
-      // Update ranking numbers for all remaining items
       const updatedData = {};
       for (let i = 1; i <= result.meta.total_pages; i++) {
         const pageKey = `page${i}`;
@@ -123,7 +167,6 @@ const popularCountrySlice = createSlice({
       }
 
       state.data = updatedData;
-      // Update current page data with new ranking numbers
       const current_pageKey = `page${state.meta.current_page}`;
       state.dataList = updatedData[current_pageKey] || [];
     },
@@ -131,7 +174,6 @@ const popularCountrySlice = createSlice({
     removeCountryFromFeatureList: (state, action) => {
       const { popularCountryId, countryId } = action.payload;
 
-      // Find the popular country in dataList
       const updatedDataList = state.dataList.map((popularCountry) => {
         if (popularCountry._id === popularCountryId) {
           return {
@@ -146,7 +188,6 @@ const popularCountrySlice = createSlice({
         return popularCountry;
       });
 
-      // Update the paginated data
       const updatedData = {};
       Object.keys(state.data).forEach((page) => {
         updatedData[page] = state.data[page].map((popularCountry) => {
@@ -178,8 +219,7 @@ const popularCountrySlice = createSlice({
 
       if (updateKey === "page_size") {
         state.meta = { ...state.meta, page_size: action.payload.page_size };
-
-        // When page size changes, we need to reorganize all data
+        
         let allItems = [];
         for (let i = 1; i <= state.meta.total_pages; i++) {
           const pageKey = `page${i}`;
@@ -188,7 +228,6 @@ const popularCountrySlice = createSlice({
           }
         }
 
-        // Recalculate pagination with new page size
         const newPageSize = action.payload.page_size;
         const newTotalPages = Math.ceil(allItems.length / newPageSize);
         const updatedData = {};
@@ -208,7 +247,6 @@ const popularCountrySlice = createSlice({
           newTotalPages
         );
 
-        // Update current page data
         const current_pageKey = `page${state.meta.current_page}`;
         state.dataList = updatedData[current_pageKey] || [];
       }
@@ -252,7 +290,6 @@ const popularCountrySlice = createSlice({
       state.selectedFeatureCountries = action.payload;
     },
 
-    // Add the missing confirmation modal action
     setPopularCountryConfirmationModal: (state, action) => {
       state.isConfirmModalOpen = action.payload;
     },

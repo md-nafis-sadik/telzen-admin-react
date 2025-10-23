@@ -50,26 +50,46 @@ export const useGetPopularCountrys = () => {
   const selectedFeatureCountries = useSelector(
     (state) => state.popularCountry.selectedFeatureCountries
   );
+  
+  const hasInitialData = dataList && dataList.length > 0;
   const { current_page, page_size } = meta || {};
   const [searchKeyword, setSearchKeyword] = useState("");
   const debouncedSearch = useDebouncedSearch(searchKeyword, 1000);
   const isInitialRender = useRef(true);
+  const [shouldFetch, setShouldFetch] = useState(!hasInitialData); // Only fetch if we don't have initial data
+  
   const apiParams = {
     page: current_page,
     limit: page_size,
     search: debouncedSearch,
   };
+  
+  const shouldSkipQuery = !shouldFetch && dataList.length > 0;
+  
   const { isLoading, isFetching, isError, error } =
     useGetAllPopularCountrysQuery(apiParams, {
-      refetchOnMountOrArgChange: true,
-      skip: isInitialRender.current && dataList.length > 0,
+      refetchOnMountOrArgChange: false, 
+      refetchOnFocus: false,
+      skip: shouldSkipQuery,
     });
   const [deletePopularCountry, { isLoading: deleteLoading }] =
     useDeletePopularCountryMutation();
   const [updatePopularCountry] = useUpdatePopularCountryMutation();
   const [popularCountryId, setPopularCountryId] = useState(null);
   const [deleteCountryId, setDeleteCountryId] = useState(null);
-  const updatePageMeta = (value) => dispatch(setPopularCountryMetaData(value));
+  const popularCountryData = useSelector((state) => state.popularCountry.data);
+  
+  const updatePageMeta = (value) => {
+    const newPage = value.current_page;
+    const pageKey = `page${newPage}`;
+    const pageExists = popularCountryData && popularCountryData[pageKey] && popularCountryData[pageKey].length > 0;
+    
+    if (!pageExists) {
+      setShouldFetch(true);
+    }
+    
+    dispatch(setPopularCountryMetaData(value));
+  };
   const handleSetSelectedPopularCountry = (data) =>
     dispatch(setSelectedPopularCountryData(data));
 
@@ -152,8 +172,15 @@ export const useGetPopularCountrys = () => {
       isInitialRender.current = false;
       return;
     }
+    setShouldFetch(true);
     dispatch(setPopularCountryMetaData({ ...meta, current_page: 1 }));
   }, [debouncedSearch]);
+  
+  useEffect(() => {
+    if (!isLoading && !isFetching && dataList.length > 0) {
+      setShouldFetch(false);
+    }
+  }, [isLoading, isFetching, dataList.length]);
 
   const { Option } = Select;
 
@@ -197,6 +224,7 @@ export const useGetPopularCountrys = () => {
     hasChanges,
     setCountryId,
     setDeleteCountryId,
+    setShouldFetch, 
   };
 };
 

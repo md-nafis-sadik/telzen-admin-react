@@ -148,7 +148,7 @@ const User = ({ isHome }) => {
                   {dayjs.unix(user?.created_at).format("DD/MM/YYYY")}
                 </td>
                 <td className="py-4 flex items-center gap-4">
-                  {user?.is_otp_verified ? (
+                  {user?.is_email_verified ? (
                     <div className="text-green-600">Active</div>
                   ) : (
                     <div className="text-red-500">Inactive</div>

@@ -288,7 +288,7 @@ function Sidebar({ showSidebar, setShowSidebar }) {
                   </div>
                 )}
                 {/* Popular Country */}
-                {/* <div>
+                <div>
                     <Link
                       to="/popular-country"
                       className={`${activePath === "popular-country"
@@ -303,7 +303,7 @@ function Sidebar({ showSidebar, setShowSidebar }) {
                         Popular Country
                       </span>
                     </Link>
-                  </div> */}
+                  </div>
 
                 {/* Packages Old */}
                 {/* <div>
