@@ -221,7 +221,7 @@ function AddPopularCountryForm() {
             <button
               type="submit"
               className="btn w-auto h-12 px-6 bg-black hover:bg-black-900 uppercase text-white hover:text-white disabled:text-white"
-              disabled={!isFormValid || isCountryLoading}
+              disabled={!isFormValid || isCountryLoading || isSubmitting}
             >
               {isSubmitting ? "Processing..." : "Done"}
             </button>

@@ -70,7 +70,7 @@ export const packagesApi = apiSlice.injectEndpoints({
           const { data: apiData } = await queryFulfilled;
           const packages = apiData.data || [];
           const coverageType = args.coverage_type;
-          
+
           dispatch(setCachedPackages({ coverageType, packages }));
         } catch (err) {
           console.error(err);
@@ -103,11 +103,11 @@ export const packagesApi = apiSlice.injectEndpoints({
             try {
               const countriesResult = await dispatch(
                 apiSlice.endpoints.getAllActiveCountrys.initiate({
-                  status: 'active',
-                  limit: ''
+                  status: "active",
+                  limit: "",
                 })
               );
-              
+
               if (countriesResult.data?.success) {
                 const countries = countriesResult.data.data || [];
                 regionsFromCountries = coverageCountries
@@ -116,19 +116,23 @@ export const packagesApi = apiSlice.injectEndpoints({
                     return country?.region?._id;
                   })
                   .filter((regionId) => regionId);
-                
+
                 regionsFromCountries = [...new Set(regionsFromCountries)];
               }
             } catch (error) {
-              console.error('Failed to fetch countries for region mapping:', error);
+              console.error(
+                "Failed to fetch countries for region mapping:",
+                error
+              );
             }
           }
 
-          const finalRegions = regionsFromCountries.length > 0 
-            ? regionsFromCountries 
-            : packageData.coverage_regions?.map((region) =>
-                typeof region === "object" ? region._id : region
-              ) || [];
+          const finalRegions =
+            regionsFromCountries.length > 0
+              ? regionsFromCountries
+              : packageData.coverage_regions?.map((region) =>
+                  typeof region === "object" ? region._id : region
+                ) || [];
 
           const formData = {
             id: packageData._id || packageData.id || "",
@@ -159,6 +163,8 @@ export const packagesApi = apiSlice.injectEndpoints({
             },
             is_auto_renew_available:
               packageData.is_auto_renrew_available ?? true,
+            on_purchase_reward_point:
+              packageData.on_purchase_reward_point || "",
             note: packageData.note || "",
             slug: packageData.slug || "",
           };

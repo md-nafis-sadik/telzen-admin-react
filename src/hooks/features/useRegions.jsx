@@ -185,6 +185,7 @@ export const useAddRegion = () => {
   const [addRegion, { isLoading }] = useAddRegionMutation();
   const [imagePreview, setImagePreview] = useState(null);
   const [typeError, setTypeError] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (name, value) => {
     if (name === "file") {
@@ -231,6 +232,7 @@ export const useAddRegion = () => {
       return;
     }
 
+    setIsSubmitting(true);
     try {
       const formDataToSend = new FormData();
       formDataToSend.append(
@@ -248,14 +250,17 @@ export const useAddRegion = () => {
       if (response?.success) {
         setIsModalVisible(true);
         dispatch(addNewRegionToList(response.data));
+        setIsSubmitting(false)
       } else {
         console.error(response?.message || "Failed to create region");
+        setIsSubmitting(false);
       }
     } catch (error) {
       console.error("Error creating region:", error);
       errorNotify(
         error?.data?.message || "Failed to create region. Please try again."
       );
+      setIsSubmitting(false);
     }
   };
 
@@ -282,6 +287,7 @@ export const useAddRegion = () => {
     fileInputRef,
     typeError,
     handleFileDelete,
+    isSubmitting
   };
 };
 
@@ -375,7 +381,7 @@ export const useUpdateRegion = () => {
         })
       );
 
-      if (formData.file && typeof formData.file !== 'string') {
+      if (formData.file && typeof formData.file !== "string") {
         formDataToSend.append("single", formData.file);
       }
 

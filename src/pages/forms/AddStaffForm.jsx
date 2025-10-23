@@ -18,6 +18,7 @@ function AddStaffForm() {
     navigate,
     setFormData,
     setErrors,
+    isSubmitting
   } = useAddStaff();
 
   return (
@@ -186,7 +187,7 @@ function AddStaffForm() {
             <button
               type="submit"
               className="btn w-auto h-12 px-6 py-2 bg-black hover:bg-black-900 uppercase text-white hover:text-white disabled:text-white"
-              disabled={!isFormValid || isLoading}
+              disabled={!isFormValid || isLoading || isSubmitting}
             >
               {isLoading ? "Processing..." : "Submit"}
             </button>

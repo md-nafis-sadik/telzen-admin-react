@@ -23,6 +23,7 @@ function SettingsForm() {
     isLoading,
     handleSubmit,
     handleModalOk,
+    isSubmitting
   } = useSettings();
 
   return (
@@ -91,7 +92,7 @@ function SettingsForm() {
           )}
           <button
             type="submit"
-            disabled={btnDisabled || isLoading}
+            disabled={btnDisabled || isLoading || isSubmitting}
             className="btn w-auto h-12 px-6 py-2 bg-black hover:bg-black-900 uppercase text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? "Updating..." : "Update Password"}

@@ -72,6 +72,11 @@ const BasePackageSchema = z.object({
     }, z.number().min(0, "Discount must be 0 or positive").default(0)),
     is_type_percentage: z.boolean().default(true),
   }),
+  on_purchase_reward_point: z.preprocess((val) => {
+    if (val === "" || val === null || val === undefined) return 0;
+    const num = Number(val);
+    return isNaN(num) ? 0 : num;
+  }, z.number().min(0, "Reward points must be 0 or positive").default(0)),
   package_code: z.string().min(1, "Package selection is required"),
   id: z.string(),
   coverage_type: z.string(),
@@ -137,6 +142,11 @@ const BasePackageUpKeepgoSchema = z.object({
       is_type_percentage: z.boolean().default(true),
     })
     .optional(),
+  on_purchase_reward_point: z.preprocess((val) => {
+    if (val === "" || val === null || val === undefined) return 0;
+    const num = Number(val);
+    return isNaN(num) ? 0 : num;
+  }, z.number().min(0, "Reward points must be 0 or positive").default(0)),
   note: z.string().optional(),
   id: z.string(),
 });
@@ -176,7 +186,7 @@ export const UpdatePackageSchema = BasePackageUpKeepgoSchema.required({
       return false;
     }
   } else if (data.coverage_type === "regional") {
-    // For regional packages, only regions are required
+    
     if (!data.coverage_regions || data.coverage_regions.length === 0) {
       return false;
     }
@@ -184,14 +194,12 @@ export const UpdatePackageSchema = BasePackageUpKeepgoSchema.required({
   return true;
 }, {
   message: "Coverage selection is required based on package type",
-  path: ["coverage_countries"], // This will show error on countries field by default
+  path: ["coverage_countries"], 
 });
 
-// Custom validation function for coverage based on package type
-// This provides more specific error messages than the schema .refine()
 export const validatePackageCoverage = (data) => {
   if (data.coverage_type === "country") {
-    // For country packages, both countries and regions are required
+    
     if (!data.coverage_countries || data.coverage_countries.length === 0) {
       return { 
         isValid: false, 
@@ -207,7 +215,7 @@ export const validatePackageCoverage = (data) => {
       };
     }
   } else if (data.coverage_type === "regional") {
-    // For regional packages, only regions are required
+    
     if (!data.coverage_regions || data.coverage_regions.length === 0) {
       return { 
         isValid: false, 

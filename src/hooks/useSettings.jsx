@@ -13,6 +13,7 @@ export const useSettings = () => {
   const [isShowCurrentPassword, setIsShowCurrentPassword] = useState(false);
   const [isShowNewPassword, setIsShowNewPassword] = useState(false);
   const [isShowConfirmPassword, setIsShowConfirmPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [updateOwnProfile, { isLoading }] = useUpdateOwnProfileMutation();
 
@@ -40,6 +41,7 @@ export const useSettings = () => {
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
+    setIsSubmitting(true);
     try {
       const response = await updateOwnProfile({
         current_password: currentPassword,
@@ -51,6 +53,7 @@ export const useSettings = () => {
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
+        setIsSubmitting(false);
       }
     } catch (error) {
       console.error("Update failed:", error);
@@ -68,6 +71,7 @@ export const useSettings = () => {
         setErrors({ apiError: "Failed to update password. Please try again." });
       }
     }
+    setIsSubmitting(false);
   };
 
   const handleModalOk = () => setIsModalVisible(false);
@@ -91,5 +95,6 @@ export const useSettings = () => {
     isLoading,
     handleSubmit,
     handleModalOk,
+    isSubmitting,
   };
 };

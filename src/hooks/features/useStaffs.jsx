@@ -199,6 +199,7 @@ export const useAddStaff = () => {
   const [errors, setErrors] = useState({});
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [addStaff, { isLoading }] = useAddStaffMutation();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -245,13 +246,16 @@ export const useAddStaff = () => {
       return;
     }
 
+    setIsSubmitting(true);
     try {
       const response = await addStaff({ data: formData }).unwrap();
       if (response?.success) {
         setIsModalVisible(true);
         dispatch(addNewStaffToList(response.data));
+        setIsSubmitting(false);
       } else {
         errorNotify(response?.message || "Failed to create staff");
+        setIsSubmitting(false);
       }
     } catch (error) {
       console.error("Error creating staff:", error);
@@ -267,6 +271,7 @@ export const useAddStaff = () => {
       errorNotify(
         error.data?.message || "Failed to create staff. Please try again."
       );
+      setIsSubmitting(false);
     }
   };
 
@@ -289,6 +294,7 @@ export const useAddStaff = () => {
     navigate,
     setFormData,
     setErrors,
+    isSubmitting
   };
 };
 

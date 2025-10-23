@@ -34,6 +34,7 @@ const initialState = {
       selling_price: { USD: "" },
       is_auto_renew_available: false,
       discount_on_selling_price: { amount: "", is_type_percentage: true },
+      on_purchase_reward_point: "",
       package_code: "",
       coverage_type: "country",
       slug: "",
@@ -52,6 +53,7 @@ const initialState = {
     retail_price: { USD: "" },
     selling_price: { USD: "" },
     discount_on_selling_price: { amount: "", is_type_percentage: true },
+    on_purchase_reward_point: "",
     is_auto_renew_available: true,
     // note: "",
     slug: "",
@@ -92,7 +94,7 @@ const packageSlice = createSlice({
     addNewPackageToList: (state, action) => {
       const newPackage = {
         ...action.payload,
-        rankingNumber: 1, 
+        rankingNumber: 1,
         totalPrizeGiven: 0,
         totalRevenue: 0,
         ticketSold: 0,
@@ -250,6 +252,7 @@ const packageSlice = createSlice({
         discount_on_selling_price: { amount: "", is_type_percentage: true },
         package_code: "",
         coverage_type: action.payload,
+        on_purchase_reward_point: "",
         slug: "",
       };
     },
@@ -298,6 +301,7 @@ const packageSlice = createSlice({
           selling_price: { USD: "" },
           is_auto_renew_available: false,
           discount_on_selling_price: { amount: "", is_type_percentage: true },
+          on_purchase_reward_point: "",
           package_code: "",
           coverage_type: "country",
           slug: "",

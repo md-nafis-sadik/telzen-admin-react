@@ -20,6 +20,7 @@ const AddRegionForm = () => {
     fileInputRef,
     typeError,
     handleFileDelete,
+    isSubmitting
   } = useAddRegion();
 
   return (
@@ -133,11 +134,10 @@ const AddRegionForm = () => {
             <button
               type="submit"
               className="btn w-auto h-12 px-6 bg-black hover:bg-black-900 uppercase text-white hover:text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-              disabled={!isFormValid || isLoading}
+              disabled={!isFormValid || isLoading || isSubmitting}
             >
               {isLoading ? (
                 <>
-                  <Spin size="small" className="mr-2" />
                   Processing...
                 </>
               ) : (

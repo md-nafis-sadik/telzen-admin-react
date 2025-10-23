@@ -337,6 +337,34 @@ function UpdatePackageForm() {
               )}
             </div>
 
+            {/* Reward Point */}
+            <div className="flex flex-col gap-1">
+              <span className="text-black-700">Reward Point (On Purchase)</span>
+              {isSinglePackageLoading ? (
+                <SkeletonBox className="w-full h-12" />
+              ) : (
+                <input
+                  type="number"
+                  placeholder="Enter reward point"
+                  className={`w-full border placeholder:text-disabled ${
+                    errors.on_purchase_reward_point
+                      ? "border-red-500"
+                      : "border-natural-400"
+                  } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+                  value={formData.on_purchase_reward_point}
+                  onChange={(e) =>
+                    handleChange("on_purchase_reward_point", e.target.value)
+                  }
+                  onWheel={(e) => e.target.blur()}
+                />
+              )}
+              {errors.on_purchase_reward_point && (
+                <span className="text-red-500 text-sm">
+                  {errors.on_purchase_reward_point}
+                </span>
+              )}
+            </div>
+
             {/* Status */}
             <div className="flex flex-col gap-1">
               <span className="text-black-700">Status</span>

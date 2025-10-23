@@ -201,6 +201,7 @@ export const useAddCoupon = () => {
   });
   const [errors, setErrors] = useState({});
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [addCoupon, { isLoading }] = useAddCouponMutation();
 
   const { data: countriesResponse, isLoading: isCountryLoading } =
@@ -260,6 +261,7 @@ export const useAddCoupon = () => {
     if (!validateForm())
       return errorNotify("Please fix the errors in the form");
 
+    setIsSubmitting(true);
     try {
       const payload = {
         ...formData,
@@ -274,8 +276,10 @@ export const useAddCoupon = () => {
       if (response?.success) {
         setIsModalVisible(true);
         dispatch(addNewCouponToList(response.data));
+        setIsSubmitting(false);
       } else {
         errorNotify(response?.message || "Failed to create coupon");
+        setIsSubmitting(false);
       }
     } catch (error) {
       console.error("Error creating coupon:", error);
@@ -291,6 +295,7 @@ export const useAddCoupon = () => {
       errorNotify(
         error.data?.message || "Failed to create coupon. Please try again."
       );
+      setIsSubmitting(false);
     }
   };
 
@@ -314,6 +319,7 @@ export const useAddCoupon = () => {
     isCountryLoading,
     sortedCountries,
     countries,
+    isSubmitting
   };
 };
 

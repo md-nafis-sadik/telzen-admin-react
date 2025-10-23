@@ -409,6 +409,31 @@ function AddPackageForm() {
               )}
             </div>
 
+            {/* Reward Point */}
+            <div className="flex flex-col gap-1">
+              <span className="text-black-700">Reward Point (On Purchase)</span>
+              <input
+                type="number"
+                placeholder="Enter number"
+                className={`w-full border placeholder:text-disabled ${
+                  errors["on_purchase_reward_point"]
+                    ? "border-red-500"
+                    : "border-natural-400"
+                } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+                value={formData.on_purchase_reward_point}
+                onChange={(e) =>
+                  handleChange("on_purchase_reward_point", e.target.value)
+                }
+                onWheel={(e) => e.target.blur()}
+                disabled={!selectedPackage}
+              />
+              {errors["on_purchase_reward_point"] && (
+                <span className="text-red-500 text-sm">
+                  {errors["on_purchase_reward_point"]}
+                </span>
+              )}
+            </div>
+
             {/* Status */}
             <div className="flex flex-col gap-1">
               <span className="text-black-700">Status</span>
@@ -468,7 +493,7 @@ function AddPackageForm() {
             <button
               type="submit"
               className="btn w-auto h-12 px-6 py-2 bg-black hover:bg-black-900 uppercase text-white hover:text-white disabled:text-white"
-              disabled={!isFormValid || isCountryLoading}
+              disabled={!isFormValid || isCountryLoading || isSubmitting}
             >
               {isSubmitting ? "Processing..." : "Done"}
             </button>
