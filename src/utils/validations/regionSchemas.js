@@ -7,7 +7,5 @@ export const regionSchema = z.object({
     .max(50, "Region name must be less than 50 characters")
     .trim(),
   status: z.enum(["active", "inactive"]).optional(),
-  id: z.string().optional(), // Changed from _id to id to match editFormData
-  image: z.string().optional(), // Allow image field
-  file: z.any().optional(), // Allow file upload field
+  id: z.string().optional(),
 });

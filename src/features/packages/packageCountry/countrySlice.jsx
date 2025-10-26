@@ -17,7 +17,8 @@ const initialState = {
     code: "",
     name: "",
     region: "",
-    image: "",
+    image: null,
+    cover_image: null,
   },
   meta: {
     total_items: 1,
@@ -178,7 +179,8 @@ const countrySlice = createSlice({
         code: "",
         name: "",
         region: "",
-        image: "",
+        image: null,
+        cover_image: null,
       };
     },
   },

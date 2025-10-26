@@ -7,8 +7,6 @@ export const CountryFormSchema = z.object({
   region: z.string().min(1, "Region is required"),
   id: z.string().optional(),
   name: z.string().optional(), // Allow name field
-  image: z.string().optional(), // Allow image field
-  file: z.any().optional(), // Allow file upload field
 });
 
 // For API data transformation

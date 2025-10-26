@@ -209,10 +209,12 @@ export const useAddCountry = () => {
     code: null,
     region: null,
     file: null,
+    cover_image: null,
   });
   const [errors, setErrors] = useState({});
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
+  const [coverImagePreview, setCoverImagePreview] = useState(null);
   const [typeError, setTypeError] = useState(false);
   const [addCountry, { isLoading: isSubmitting }] = useAddCountryMutation();
 
@@ -224,25 +226,41 @@ export const useAddCountry = () => {
     useGetAllApiCountrysQuery();
   const countries = countriesResponse?.data || [];
 
-  const fileInputRef = useRef(null);
+  const imageInputRef = useRef(null);
+  const coverImageInputRef = useRef(null);
 
-  const handleFileDelete = () => {
-    setFormData((prev) => ({ ...prev, file: null }));
-    setImagePreview(null);
-    setTypeError(false);
-    setErrors((prev) => ({ ...prev, file: null }));
-    if (fileInputRef.current) fileInputRef.current.value = "";
+  const handleFileDelete = (name) => {
+    if (name === "image") {
+      setFormData((prev) => ({ ...prev, image: null }));
+      setImagePreview(null);
+      setTypeError(false);
+      setErrors((prev) => ({ ...prev, image: null }));
+      if (imageInputRef.current) imageInputRef.current.value = "";
+    } else if (name === "cover_image") {
+      setFormData((prev) => ({ ...prev, cover_image: null }));
+      setCoverImagePreview(null);
+      setTypeError(false);
+      setErrors((prev) => ({ ...prev, cover_image: null }));
+      if (coverImageInputRef.current) coverImageInputRef.current.value = "";
+    }
   };
 
   const handleChange = (name, value) => {
     let processedValue = value;
 
-    if (name === "file") {
+    if (name === "image") {
       const file = value;
       if (file) {
-        setFormData((prev) => ({ ...prev, file }));
+        setFormData((prev) => ({ ...prev, image: file }));
         setImagePreview(URL.createObjectURL(file));
-        setErrors((prev) => ({ ...prev, file: null }));
+        setErrors((prev) => ({ ...prev, image: null }));
+      }
+    } else if (name === "cover_image") {
+      const file = value;
+      if (file) {
+        setFormData((prev) => ({ ...prev, cover_image: file }));
+        setCoverImagePreview(URL.createObjectURL(file));
+        setErrors((prev) => ({ ...prev, cover_image: null }));
       }
     }
 
@@ -295,8 +313,11 @@ export const useAddCountry = () => {
         })
       );
 
-      if (formData.file) {
-        formDataToSend.append("single", formData.file);
+      if (formData.image) {
+        formDataToSend.append("single", formData.image);
+      }
+      if (formData.cover_image) {
+        formDataToSend.append("cover_single", formData.cover_image);
       }
 
       const response = await addCountry(formDataToSend).unwrap();
@@ -345,7 +366,9 @@ export const useAddCountry = () => {
     isCountriesLoading,
     isSubmitting,
     imagePreview,
-    fileInputRef,
+    coverImagePreview,
+    imageInputRef,
+    coverImageInputRef,
     typeError,
     handleFileDelete,
   };
@@ -368,6 +391,7 @@ export const useUpdateCountry = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
+  const [coverImagePreview, setCoverImagePreview] = useState(null);
   const [typeError, setTypeError] = useState(false);
   const [updateCountry] = useUpdateCountryMutation();
 
@@ -379,7 +403,8 @@ export const useUpdateCountry = () => {
     useGetAllApiCountrysQuery();
   const countries = countriesResponse?.data || [];
 
-  const fileInputRef = useRef(null);
+  const imageInputRef = useRef(null);
+  const coverImageInputRef = useRef(null);
 
   useEffect(() => {
     if (id) {
@@ -390,27 +415,59 @@ export const useUpdateCountry = () => {
 
   useEffect(() => {
     if (formData.image) {
-      setImagePreview(formData.image);
+      if (formData.image instanceof File) {
+        setImagePreview(URL.createObjectURL(formData.image));
+      } else if (typeof formData.image === "string") {
+        setImagePreview(formData.image);
+      }
+    } else {
+      setImagePreview(null);
     }
-  }, [formData.image]);
 
-  const handleFileDelete = () => {
-    dispatch(setEditFormData({ ...formData, file: null }));
-    setImagePreview(null);
-    setTypeError(false);
-    setErrors((prev) => ({ ...prev, file: null }));
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (formData.cover_image) {
+      if (formData.cover_image instanceof File) {
+        setCoverImagePreview(URL.createObjectURL(formData.cover_image));
+      } else if (typeof formData.cover_image === "string") {
+        setCoverImagePreview(formData.cover_image);
+      }
+    } else {
+      setCoverImagePreview(null);
+    }
+  }, [formData.image, formData.cover_image]);
+
+  const handleFileDelete = (name) => {
+    if (name === "image") {
+      dispatch(setEditFormData({ ...formData, image: null }));
+      setImagePreview(null);
+      setTypeError(false);
+      setErrors((prev) => ({ ...prev, image: null }));
+      if (imageInputRef.current) imageInputRef.current.value = "";
+    } else if (name === "cover_image") {
+      dispatch(setEditFormData({ ...formData, cover_image: null }));
+      setCoverImagePreview(null);
+      setTypeError(false);
+      setErrors((prev) => ({ ...prev, cover_image: null }));
+      if (coverImageInputRef.current) coverImageInputRef.current.value = "";
+    }
   };
 
   const handleChange = (name, value) => {
     let processedValue = value;
-    
-    if (name === "file") {
+
+    if (name === "image") {
       const file = value;
       if (file) {
-        dispatch(setEditFormData({ ...formData, file }));
+        dispatch(setEditFormData({ ...formData, image: file }));
         setImagePreview(URL.createObjectURL(file));
-        setErrors((prev) => ({ ...prev, file: null }));
+        setErrors((prev) => ({ ...prev, image: null }));
+      }
+      return;
+    } else if (name === "cover_image") {
+      const file = value;
+      if (file) {
+        dispatch(setEditFormData({ ...formData, cover_image: file }));
+        setCoverImagePreview(URL.createObjectURL(file));
+        setErrors((prev) => ({ ...prev, cover_image: null }));
       }
       return;
     }
@@ -460,8 +517,11 @@ export const useUpdateCountry = () => {
         })
       );
 
-      if (formData.file && typeof formData.file !== 'string') {
-        formDataToSend.append("single", formData.file);
+      if (formData.image && typeof formData.image !== "string") {
+        formDataToSend.append("single", formData.image);
+      }
+      if (formData.cover_image && typeof formData.cover_image !== "string") {
+        formDataToSend.append("cover_single", formData.cover_image);
       }
 
       const response = await updateCountry({
@@ -531,7 +591,9 @@ export const useUpdateCountry = () => {
     isCountriesLoading,
     isSubmitting,
     imagePreview,
-    fileInputRef,
+    coverImagePreview,
+    imageInputRef,
+    coverImageInputRef,
     typeError,
     handleFileDelete,
     selectedData,

@@ -16,7 +16,8 @@ const initialState = {
     id: "",
     name: "",
     status: "active",
-    image: "",
+    image: null,
+    cover_image: null,
   },
   meta: {
     total_items: 1,
@@ -179,7 +180,8 @@ const regionSlice = createSlice({
         id: "",
         name: "",
         status: "active",
-        image: "",
+        image: null,
+        cover_image: null,
       };
     },
   },

@@ -179,21 +179,33 @@ export const useGetRegions = () => {
 export const useAddRegion = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ name: "", file: null });
+  const [formData, setFormData] = useState({
+    name: "",
+    image: null,
+    cover_image: null,
+  });
   const [errors, setErrors] = useState({});
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [addRegion, { isLoading }] = useAddRegionMutation();
   const [imagePreview, setImagePreview] = useState(null);
+  const [coverImagePreview, setCoverImagePreview] = useState(null);
   const [typeError, setTypeError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (name, value) => {
-    if (name === "file") {
+    if (name === "image") {
       const file = value;
       if (file) {
-        setFormData((prev) => ({ ...prev, file }));
+        setFormData((prev) => ({ ...prev, image: file }));
         setImagePreview(URL.createObjectURL(file));
-        setErrors((prev) => ({ ...prev, file: null }));
+        setErrors((prev) => ({ ...prev, image: null }));
+      }
+    } else if (name === "cover_image") {
+      const file = value;
+      if (file) {
+        setFormData((prev) => ({ ...prev, cover_image: file }));
+        setCoverImagePreview(URL.createObjectURL(file));
+        setErrors((prev) => ({ ...prev, cover_image: null }));
       }
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
@@ -202,14 +214,24 @@ export const useAddRegion = () => {
     }
   };
 
-  const fileInputRef = useRef(null);
+  const imageInputRef = useRef(null);
+  const coverImageInputRef = useRef(null);
 
-  const handleFileDelete = () => {
-    setFormData((prev) => ({ ...prev, file: null }));
-    setImagePreview(null);
-    setTypeError(false);
-    setErrors((prev) => ({ ...prev, file: null }));
-    if (fileInputRef.current) fileInputRef.current.value = "";
+  const handleFileDelete = (name) => {
+    if (name === "image") {
+      setFormData((prev) => ({ ...prev, image: null }));
+      setImagePreview(null);
+      setTypeError(false);
+      setErrors((prev) => ({ ...prev, image: null }));
+      if (imageInputRef.current) imageInputRef.current.value = "";
+    }
+    if (name === "cover_image") {
+      setFormData((prev) => ({ ...prev, cover_image: null }));
+      setCoverImagePreview(null);
+      setTypeError(false);
+      setErrors((prev) => ({ ...prev, cover_image: null }));
+      if (coverImageInputRef.current) coverImageInputRef.current.value = "";
+    }
   };
 
   const validateForm = () => {
@@ -242,15 +264,18 @@ export const useAddRegion = () => {
         })
       );
 
-      if (formData.file) {
-        formDataToSend.append("single", formData.file);
+      if (formData.image) {
+        formDataToSend.append("single", formData.image);
+      }
+      if (formData.cover_image) {
+        formDataToSend.append("cover_single", formData.cover_image);
       }
       const response = await addRegion(formDataToSend).unwrap();
 
       if (response?.success) {
         setIsModalVisible(true);
         dispatch(addNewRegionToList(response.data));
-        setIsSubmitting(false)
+        setIsSubmitting(false);
       } else {
         console.error(response?.message || "Failed to create region");
         setIsSubmitting(false);
@@ -284,10 +309,12 @@ export const useAddRegion = () => {
     isFormValid,
     navigate,
     imagePreview,
-    fileInputRef,
+    coverImagePreview,
+    imageInputRef,
+    coverImageInputRef,
     typeError,
     handleFileDelete,
-    isSubmitting
+    isSubmitting,
   };
 };
 
@@ -309,6 +336,7 @@ export const useUpdateRegion = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [updateRegion] = useUpdateRegionMutation();
   const [imagePreview, setImagePreview] = useState(null);
+  const [coverImagePreview, setCoverImagePreview] = useState(null);
   const [typeError, setTypeError] = useState(false);
 
   useEffect(() => {
@@ -320,17 +348,40 @@ export const useUpdateRegion = () => {
 
   useEffect(() => {
     if (formData.image) {
-      setImagePreview(formData.image);
+      if (formData.image instanceof File) {
+        setImagePreview(URL.createObjectURL(formData.image));
+      } else if (typeof formData.image === "string") {
+        setImagePreview(formData.image);
+      }
+    } else {
+      setImagePreview(null);
     }
-  }, [formData.image]);
+
+    if (formData.cover_image) {
+      if (formData.cover_image instanceof File) {
+        setCoverImagePreview(URL.createObjectURL(formData.cover_image));
+      } else if (typeof formData.cover_image === "string") {
+        setCoverImagePreview(formData.cover_image);
+      }
+    } else {
+      setCoverImagePreview(null);
+    }
+  }, [formData.image, formData.cover_image]);
 
   const handleChange = (name, value) => {
-    if (name === "file") {
+    if (name === "image") {
       const file = value;
       if (file) {
-        dispatch(setEditFormData({ ...formData, file }));
+        dispatch(setEditFormData({ ...formData, image: file }));
         setImagePreview(URL.createObjectURL(file));
-        setErrors((prev) => ({ ...prev, file: null }));
+        setErrors((prev) => ({ ...prev, image: null }));
+      }
+    } else if (name === "cover_image") {
+      const file = value;
+      if (file) {
+        dispatch(setEditFormData({ ...formData, cover_image: file }));
+        setCoverImagePreview(URL.createObjectURL(file));
+        setErrors((prev) => ({ ...prev, cover_image: null }));
       }
     } else {
       dispatch(setEditFormData({ ...formData, [name]: value }));
@@ -339,14 +390,24 @@ export const useUpdateRegion = () => {
     }
   };
 
-  const fileInputRef = useRef(null);
+  const imageInputRef = useRef(null);
+  const coverImageInputRef = useRef(null);
 
-  const handleFileDelete = () => {
-    dispatch(setEditFormData({ ...formData, file: null }));
-    setImagePreview(null);
-    setTypeError(false);
-    setErrors((prev) => ({ ...prev, file: null }));
-    if (fileInputRef.current) fileInputRef.current.value = "";
+  const handleFileDelete = (name) => {
+    if (name === "image") {
+      dispatch(setEditFormData({ ...formData, image: null }));
+      setImagePreview(null);
+      setTypeError(false);
+      setErrors((prev) => ({ ...prev, image: null }));
+      if (imageInputRef.current) imageInputRef.current.value = "";
+    }
+    if (name === "cover_image") {
+      dispatch(setEditFormData({ ...formData, cover_image: null }));
+      setCoverImagePreview(null);
+      setTypeError(false);
+      setErrors((prev) => ({ ...prev, cover_image: null }));
+      if (coverImageInputRef.current) coverImageInputRef.current.value = "";
+    }
   };
 
   const validateForm = () => {
@@ -381,8 +442,11 @@ export const useUpdateRegion = () => {
         })
       );
 
-      if (formData.file && typeof formData.file !== "string") {
-        formDataToSend.append("single", formData.file);
+      if (formData.image) {
+        formDataToSend.append("single", formData.image);
+      }
+      if (formData.cover_image) {
+        formDataToSend.append("cover_single", formData.cover_image);
       }
 
       const result = await updateRegion({
@@ -437,7 +501,9 @@ export const useUpdateRegion = () => {
     isFormValid,
     navigate,
     imagePreview,
-    fileInputRef,
+    coverImagePreview,
+    imageInputRef,
+    coverImageInputRef,
     typeError,
     handleFileDelete,
     selectedData,

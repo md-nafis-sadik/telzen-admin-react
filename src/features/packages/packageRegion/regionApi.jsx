@@ -1,4 +1,9 @@
-import { setRegionData, setRegionMetaData, setSelectedRegionData, setEditFormData } from ".";
+import {
+  setRegionData,
+  setRegionMetaData,
+  setSelectedRegionData,
+  setEditFormData,
+} from ".";
 import { apiSlice } from "../api/../../api/apiSlice";
 
 export const regionApi = apiSlice.injectEndpoints({
@@ -57,6 +62,7 @@ export const regionApi = apiSlice.injectEndpoints({
             name: regionData.name || "",
             status: regionData.status || "active",
             image: regionData.image || "",
+            cover_image: regionData.cover_image || "",
           };
 
           dispatch(setEditFormData(formData));

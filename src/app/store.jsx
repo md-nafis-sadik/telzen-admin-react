@@ -34,5 +34,7 @@ export const store = configureStore({
     popularCountry: popularCountrySlice,
   },
   middleware: (getDefaultMiddlewares) =>
-    getDefaultMiddlewares().concat(apiSlice.middleware),
+    getDefaultMiddlewares({
+      serializableCheck: false,
+    }).concat(apiSlice.middleware),
 });

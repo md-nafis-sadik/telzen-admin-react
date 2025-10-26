@@ -56,6 +56,7 @@ export const countryApi = apiSlice.injectEndpoints({
             name: countryData.name || "",
             region: countryData.region?._id || countryData.region || "",
             image: countryData.image || "",
+            cover_image: countryData.cover_image || "",
           };
 
           dispatch(setEditFormData(formData));

@@ -1,4 +1,3 @@
-import { Spin } from "antd";
 import BackToPrev from "../../components/shared/back/BackToPrev";
 import SuccessModal from "../../components/modals/SuccessModal";
 import NotifyContainer from "../../utils/getNotify";
@@ -17,10 +16,12 @@ const AddRegionForm = () => {
     formData,
     navigate,
     imagePreview,
-    fileInputRef,
+    coverImagePreview,
+    imageInputRef,
+    coverImageInputRef,
     typeError,
     handleFileDelete,
-    isSubmitting
+    isSubmitting,
   } = useAddRegion();
 
   return (
@@ -53,21 +54,22 @@ const AddRegionForm = () => {
               )}
             </div>
 
-            {/* Image */}
+            {/* Thumbnail */}
             <div className="flex flex-col gap-1">
-              <span className="text-blackHigh">Image</span>
+              <span className="text-blackHigh">Thumbnail</span>
               <div>
                 <div className="w-full relative">
                   <input
                     type="file"
                     id="imageId"
                     className="absolute opacity-0"
-                    ref={fileInputRef}
+                    ref={imageInputRef}
                     onChange={(e) => {
                       e.stopPropagation();
-                      handleChange("file", e.target.files[0]);
+                      handleChange("image", e.target.files[0]);
                     }}
                   />
+
                   <label
                     htmlFor="imageId"
                     className={`flex items-center gap-2 py-1.5 px-1.5 border ${
@@ -75,47 +77,127 @@ const AddRegionForm = () => {
                     } rounded-lg cursor-pointer`}
                   >
                     {!imagePreview && (
-                      <span className="inline-block px-4 py-2 bg-fadeColor text-white text-sm rounded-lg">
-                        Choose File
-                      </span>
-                    )}
-                    {!imagePreview ? (
-                      <span className="text-xs text-blackSemi">
-                        Upload Image
-                      </span>
-                    ) : (
-                      <span className="flex justify-between w-full items-center">
-                        <span className="flex items-center gap-2">
-                          <img
-                            src={imagePreview}
-                            alt="Preview"
-                            className="w-9 h-9 rounded-sm bg-center object-cover"
-                          />
-                          <p className="text-blackSemi text-base whitespace-nowrap overflow-hidden text-ellipsis">
-                            {formData.file?.name?.substring(0, 25)}
-                          </p>
+                      <>
+                        <span className="inline-block px-4 py-2 bg-fadeColor text-white text-sm rounded-lg">
+                          Choose File
                         </span>
-                        <button
-                          type="button"
-                          className="flex items-center justify-center"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleFileDelete();
-                          }}
-                        >
-                          <NotificationDeleteIcon />
-                        </button>
+                        <span className="text-xs text-blackSemi">
+                          Upload Thumbnail
+                        </span>
+                      </>
+                    )}
+
+                    {imagePreview && (
+                      <span className="flex items-center gap-2">
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="w-9 h-9 rounded-sm bg-center object-cover"
+                        />
+                        <p className="text-blackSemi text-base whitespace-nowrap overflow-hidden text-ellipsis">
+                          {formData.image?.name?.substring(0, 25)}
+                        </p>
                       </span>
                     )}
                   </label>
+
+                  {/* Delete button moved outside the label */}
+                  {imagePreview && (
+                    <button
+                      type="button"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleFileDelete("image");
+                      }}
+                    >
+                      <NotificationDeleteIcon />
+                    </button>
+                  )}
+                </div>
+
+                {typeError && (
+                  <p className="text-xs text-errorColor mt-1 font-medium">
+                    Only JPG, JPEG or PNG file are supported
+                  </p>
+                )}
+                {errors.image && (
+                  <span className="text-red-500 text-sm">{errors.image}</span>
+                )}
+              </div>
+            </div>
+
+            {/* Cover Image */}
+            <div className="flex flex-col gap-1">
+              <span className="text-blackHigh">Cover Image</span>
+              <div>
+                <div className="w-full relative">
+                  <input
+                    type="file"
+                    id="coverImageId"
+                    className="absolute opacity-0"
+                    ref={coverImageInputRef}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      handleChange("cover_image", e.target.files[0]);
+                    }}
+                  />
+
+                  <label
+                    htmlFor="coverImageId"
+                    className={`flex items-center gap-2 py-1.5 px-1.5 border ${
+                      errors.cover_image ? "border-red-500" : "border-slateLow"
+                    } rounded-lg cursor-pointer`}
+                  >
+                    {!coverImagePreview && (
+                      <>
+                        <span className="inline-block px-4 py-2 bg-fadeColor text-white text-sm rounded-lg">
+                          Choose File
+                        </span>
+                        <span className="text-xs text-blackSemi">
+                          Upload Thumbnail
+                        </span>
+                      </>
+                    )}
+
+                    {coverImagePreview && (
+                      <span className="flex items-center gap-2">
+                        <img
+                          src={coverImagePreview}
+                          alt="Preview"
+                          className="w-9 h-9 rounded-sm bg-center object-cover"
+                        />
+                        <p className="text-blackSemi text-base whitespace-nowrap overflow-hidden text-ellipsis">
+                          {formData.cover_image?.name?.substring(0, 25)}
+                        </p>
+                      </span>
+                    )}
+                  </label>
+
+                  {coverImagePreview && (
+                    <button
+                      type="button"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleFileDelete("cover_image");
+                      }}
+                    >
+                      <NotificationDeleteIcon />
+                    </button>
+                  )}
                 </div>
                 {typeError && (
                   <p className="text-xs text-errorColor mt-1 font-medium">
                     Only JPG, JPEG or PNG file are supported
                   </p>
                 )}
-                {errors.file && (
-                  <span className="text-red-500 text-sm">{errors.file}</span>
+                {errors.cover_image && (
+                  <span className="text-red-500 text-sm">
+                    {errors.cover_image}
+                  </span>
                 )}
               </div>
             </div>
@@ -136,13 +218,7 @@ const AddRegionForm = () => {
               className="btn w-auto h-12 px-6 bg-black hover:bg-black-900 uppercase text-white hover:text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               disabled={!isFormValid || isLoading || isSubmitting}
             >
-              {isLoading ? (
-                <>
-                  Processing...
-                </>
-              ) : (
-                "Done"
-              )}
+              {isLoading ? <>Processing...</> : "Done"}
             </button>
           </div>
         </form>
