@@ -208,6 +208,7 @@ export const useAddCountry = () => {
   const [formData, setFormData] = useState({
     code: null,
     region: null,
+    is_popular: false,
     file: null,
     cover_image: null,
   });

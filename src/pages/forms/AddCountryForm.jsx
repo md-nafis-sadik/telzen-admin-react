@@ -115,6 +115,30 @@ function AddCountryForm() {
               )}
             </div>
 
+            {/* Popular */}
+            <div className="flex flex-col gap-1">
+              <span className="text-black-700">Popular</span>
+              <Select
+                className={`w-full border ${
+                  errors.popular ? "!border-red-500" : "border-natural-400"
+                } rounded-lg
+                  [&_.ant-select-selector]:!h-12
+                  [&_.ant-select-selector]:!px-4
+                  [&_.ant-select-selector]:!flex
+                  [&_.ant-select-selector]:!items-center
+                  [&_.ant-select-selector]:!leading-[3.5rem]`}
+                placeholder="Select one"
+                value={formData.is_popular}
+                onChange={(value) => handleChange("is_popular", value)}
+              >
+                <Select.Option value={true}>Yes</Select.Option>
+                <Select.Option value={false}>No</Select.Option>
+              </Select>
+              {errors.is_popular && (
+                <span className="text-red-500 text-sm">{errors.is_popular}</span>
+              )}
+            </div>
+
             {/* Image */}
             <div className="flex flex-col gap-1">
               <span className="text-blackHigh">Thumbnail</span>

@@ -17,6 +17,7 @@ const initialState = {
     code: "",
     name: "",
     region: "",
+    is_popular: false,
     image: null,
     cover_image: null,
   },
@@ -179,6 +180,7 @@ const countrySlice = createSlice({
         code: "",
         name: "",
         region: "",
+        is_popular: false,
         image: null,
         cover_image: null,
       };

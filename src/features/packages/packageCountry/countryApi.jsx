@@ -55,6 +55,7 @@ export const countryApi = apiSlice.injectEndpoints({
             code: countryData.code || "",
             name: countryData.name || "",
             region: countryData.region?._id || countryData.region || "",
+            is_popular: countryData.is_popular || false,
             image: countryData.image || "",
             cover_image: countryData.cover_image || "",
           };

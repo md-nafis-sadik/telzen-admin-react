@@ -6,7 +6,8 @@ export const CountryFormSchema = z.object({
   code: z.string().min(1, "Country is required"),
   region: z.string().min(1, "Region is required"),
   id: z.string().optional(),
-  name: z.string().optional(), // Allow name field
+  name: z.string().optional(),
+  is_popular: z.boolean().optional(),
 });
 
 // For API data transformation
@@ -18,6 +19,7 @@ export const transformFormDataToAPI = (formData, countries) => {
     name: selectedCountry?.name || "",
     flag: selectedCountry?.flag || "",
     region: formData.region,
+    is_popular: formData.is_popular || false,
   };
 };
 
