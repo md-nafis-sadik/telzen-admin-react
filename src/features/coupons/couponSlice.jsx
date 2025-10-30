@@ -21,6 +21,8 @@ const initialState = {
     validity_end_at: null,
     coverage_countries: [],
     max_usages_limit: 1,
+    minimum_order_amount: "",
+    maximum_order_amount: "",
   },
   meta: {
     total_items: 1,
@@ -57,7 +59,7 @@ const couponSlice = createSlice({
     addNewCouponToList: (state, action) => {
       const newCoupon = {
         ...action.payload,
-        rankingNumber: 1, 
+        rankingNumber: 1,
         totalPrizeGiven: 0,
         totalRevenue: 0,
         ticketSold: 0,
@@ -73,7 +75,6 @@ const couponSlice = createSlice({
       state.meta = result.meta;
       state.data = result.data;
       state.dataList = result.dataList;
-
 
       const updatedData = {};
       for (let i = 1; i <= result.meta.total_pages; i++) {
@@ -199,6 +200,8 @@ const couponSlice = createSlice({
         validity_end_at: null,
         coverage_countries: [],
         max_usages_limit: 1,
+        minimum_order_amount: "",
+        maximum_order_amount: "",
       };
     },
   },

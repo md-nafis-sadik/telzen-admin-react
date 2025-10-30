@@ -24,7 +24,7 @@ function AddCouponForm() {
     isCountryLoading,
     sortedCountries,
     countries,
-    isSubmitting
+    isSubmitting,
   } = useAddCoupon();
 
   const tagRender = (props) => {
@@ -197,6 +197,54 @@ function AddCouponForm() {
               )}
             </div>
 
+            <div className="flex flex-col gap-1">
+              <span className="text-black-700">Minimum Order Amount</span>
+              <input
+                type="number"
+                name="minimum_order_amount"
+                placeholder="Enter amount in USD"
+                className={`w-full border placeholder:text-disabled ${
+                  errors.minimum_order_amount
+                    ? "border-red-500"
+                    : "border-natural-400"
+                } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+                value={formData.minimum_order_amount}
+                onChange={(e) =>
+                  handleChange("minimum_order_amount", e.target.value)
+                }
+                onWheel={(e) => e.target.blur()}
+              />
+              {errors.minimum_order_amount && (
+                <span className="text-red-500 text-sm">
+                  {errors.minimum_order_amount}
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <span className="text-black-700">Maximum Order Amount</span>
+              <input
+                type="number"
+                name="maximum_order_amount"
+                placeholder="Enter amount in USD"
+                className={`w-full border placeholder:text-disabled ${
+                  errors.maximum_order_amount
+                    ? "border-red-500"
+                    : "border-natural-400"
+                } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+                value={formData.maximum_order_amount}
+                onChange={(e) =>
+                  handleChange("maximum_order_amount", e.target.value)
+                }
+                onWheel={(e) => e.target.blur()}
+              />
+              {errors.maximum_order_amount && (
+                <span className="text-red-500 text-sm">
+                  {errors.maximum_order_amount}
+                </span>
+              )}
+            </div>
+
             {/* Coverage Countries */}
             {!formData.is_private && (
               <div className="flex flex-col gap-1">
@@ -324,7 +372,9 @@ function AddCouponForm() {
             <button
               type="submit"
               className="btn w-auto h-12 px-6 py-2 bg-black hover:bg-black-900 uppercase text-white hover:text-white disabled:text-white"
-              disabled={!isFormValid || isLoading || isCountryLoading || isSubmitting}
+              disabled={
+                !isFormValid || isLoading || isCountryLoading || isSubmitting
+              }
             >
               {isLoading ? "Processing..." : "Submit"}
             </button>

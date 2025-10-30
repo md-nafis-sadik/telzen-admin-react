@@ -57,17 +57,19 @@ export const couponApi = apiSlice.injectEndpoints({
           dispatch(setSelectedCouponData(couponData));
 
           const formData = {
-            id: couponData._id || couponData.id || "",
-            title: couponData.title || "",
-            code: couponData.code || "",
-            discount: { amount: couponData.discount?.amount || "" },
+            id: couponData._id || couponData.id,
+            title: couponData.title,
+            code: couponData.code,
+            discount: { amount: couponData.discount?.amount },
             is_private: couponData.is_private || false,
             validity_end_at: couponData.validity_end_at || null,
             coverage_countries:
               couponData.coverage_countries?.map((c) =>
                 typeof c === "object" ? c._id : c
               ) || [],
-            max_usages_limit: couponData.max_usages_limit || 1,
+            max_usages_limit: couponData.max_usages_limit,
+            minimum_order_amount: couponData.minimum_order_amount,
+            maximum_order_amount: couponData.maximum_order_amount,
           };
 
           dispatch(setEditFormData(formData));

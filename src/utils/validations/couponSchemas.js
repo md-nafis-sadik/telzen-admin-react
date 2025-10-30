@@ -24,6 +24,28 @@ const BaseCouponSchema = z.object({
         message: "Usage limit must be at least 1",
       }),
   ]),
+  minimum_order_amount: z
+    .union([
+      z.number().min(0, "Minimum order amount must be at least 0"),
+      z
+        .string()
+        .transform((val) => (val === "" ? 0 : Number(val)))
+        .refine((val) => !isNaN(val) && val >= 0, {
+          message: "Minimum order amount must be at least 0",
+        }),
+    ])
+    .optional(),
+  maximum_order_amount: z
+    .union([
+      z.number().min(0, "Maximum order amount must be at least 0"),
+      z
+        .string()
+        .transform((val) => (val === "" ? 0 : Number(val)))
+        .refine((val) => !isNaN(val) && val >= 0, {
+          message: "Maximum order amount must be at least 0",
+        }),
+    ])
+    .optional(),
 });
 
 const validateCoverageCountries = (data) => {

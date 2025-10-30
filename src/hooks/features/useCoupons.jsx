@@ -198,6 +198,8 @@ export const useAddCoupon = () => {
     validity_end_at: dayjs().utc().endOf("day").unix(),
     coverage_countries: [],
     max_usages_limit: 1,
+    minimum_order_amount: "",
+    maximum_order_amount: "",
   });
   const [errors, setErrors] = useState({});
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -270,6 +272,14 @@ export const useAddCoupon = () => {
           max_usages_limit: Number(formData.max_usages_limit),
         }),
         validity_end_at: formData.validity_end_at,
+        minimum_order_amount:
+          formData.minimum_order_amount === ""
+            ? 0
+            : Number(formData.minimum_order_amount),
+        maximum_order_amount:
+          formData.maximum_order_amount === ""
+            ? 0
+            : Number(formData.maximum_order_amount),
       };
 
       const response = await addCoupon({ data: payload }).unwrap();
@@ -319,7 +329,7 @@ export const useAddCoupon = () => {
     isCountryLoading,
     sortedCountries,
     countries,
-    isSubmitting
+    isSubmitting,
   };
 };
 
@@ -421,6 +431,14 @@ export const useUpdateCoupon = () => {
         is_private: formData.is_private,
         validity_end_at: formData.validity_end_at,
         coverage_countries: formData.coverage_countries,
+        minimum_order_amount:
+          formData.minimum_order_amount === ""
+            ? 0
+            : Number(formData.minimum_order_amount),
+        maximum_order_amount:
+          formData.maximum_order_amount === ""
+            ? 0
+            : Number(formData.maximum_order_amount),
         ...(formData.max_usages_limit && {
           max_usages_limit: Number(formData.max_usages_limit),
         }),
