@@ -220,7 +220,7 @@ function UpdateCouponForm() {
                 <input
                   type="number"
                   name="minimum_order_amount"
-                  placeholder="Enter amount in USD"
+                  placeholder="Enter amount"
                   className={`w-full border placeholder:text-disabled ${
                     errors.minimum_order_amount
                       ? "border-red-500"
@@ -248,7 +248,7 @@ function UpdateCouponForm() {
                 <input
                   type="number"
                   name="maximum_order_amount"
-                  placeholder="Enter amount in USD"
+                  placeholder="Enter amount"
                   className={`w-full border placeholder:text-disabled ${
                     errors.maximum_order_amount
                       ? "border-red-500"
