@@ -76,6 +76,8 @@ const Coupon = () => {
               "End Time",
               "Usage",
               "Usage Limit",
+              "Minimum",
+              "Maximum",
               "Privacy Type",
               "Status",
               "Action",
@@ -137,6 +139,8 @@ const Coupon = () => {
                 </td>
                 <td>{coupon?.usages_count}</td>
                 <td>{coupon?.max_usages_limit}</td>
+                <td>{coupon?.minimum_order_amount || "-"}</td>
+                <td>{coupon?.maximum_order_amount || "-"}</td>
                 <td>{coupon?.is_private ? "Private" : "Public"}</td>
                 <td className="py-3">
                   {updatingCoupons[coupon._id] ? (
