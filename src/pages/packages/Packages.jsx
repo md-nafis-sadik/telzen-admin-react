@@ -85,9 +85,9 @@ const PackageKeepGo = () => {
                       <Select
                         value={regionFilter === undefined ? "" : regionFilter}
                         onChange={(value) => {
-                          console.log(value)
-                          setRegionFilter(value === "" ? undefined : value)}
-                        }
+                          console.log(value);
+                          setRegionFilter(value === "" ? undefined : value);
+                        }}
                         placeholder="Region"
                         popupMatchSelectWidth={false}
                         className={`
@@ -150,6 +150,7 @@ const PackageKeepGo = () => {
               "Validity",
               "Coverage",
               "Retail Price ($)",
+              "Final Price ($)",
               "Discount",
               "Status",
               "Action",
@@ -230,6 +231,11 @@ const PackageKeepGo = () => {
                   {getSymbol()}
                   {singlePackage?.retail_price?.USD}
                 </td>
+                <td className="py-3 text-center">
+                  {getSymbol()}
+                  {singlePackage?.grand_total_selling_price?.USD}
+                </td>
+
                 <td className="py-3 text-center">
                   {singlePackage?.discount_on_selling_price != null ||
                   (singlePackage?.discount_on_selling_price != 0 &&
