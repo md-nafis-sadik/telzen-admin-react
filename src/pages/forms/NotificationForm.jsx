@@ -35,8 +35,9 @@ function NotificationForm() {
             placeholder="Title here"
             value={formData.title}
             onChange={(e) => handleChange("title", e.target.value)}
-            className={`w-full border placeholder:text-disabled ${errors.title ? "border-red-500" : "border-natural-400"
-              } text-blackLow rounded-lg outline-none py-3 px-4`}
+            className={`w-full border placeholder:text-disabled ${
+              errors.title ? "border-red-500" : "border-natural-400"
+            } text-blackLow rounded-lg outline-none py-3 px-4`}
           />
           {errors.title && (
             <span className="text-red-500 text-sm">{errors.title}</span>
@@ -51,8 +52,9 @@ function NotificationForm() {
             placeholder="Message body here"
             value={formData.message}
             onChange={(e) => handleChange("message", e.target.value)}
-            className={`w-full border placeholder:text-disabled ${errors.message ? "border-red-500" : "border-natural-400"
-              } text-blackLow rounded-lg outline-none py-3 px-4`}
+            className={`w-full border placeholder:text-disabled ${
+              errors.message ? "border-red-500" : "border-natural-400"
+            } text-blackLow rounded-lg outline-none py-3 px-4`}
           />
           {errors.message && (
             <span className="text-red-500 text-sm">{errors.message}</span>
@@ -94,8 +96,9 @@ function NotificationForm() {
               />
               <label
                 htmlFor="imageId"
-                className={`flex items-center gap-2 py-1.5 px-1.5 border ${errors.file ? "border-red-500" : "border-slateLow"
-                  } rounded-lg cursor-pointer`}
+                className={`flex items-center gap-2 py-1.5 px-1.5 border ${
+                  errors.file ? "border-red-500" : "border-slateLow"
+                } rounded-lg cursor-pointer`}
               >
                 {!imagePreview && (
                   <span className="inline-block px-4 py-2 bg-fadeColor text-white text-sm rounded-lg">
@@ -150,16 +153,18 @@ function NotificationForm() {
             ) : (
               <Select
                 mode="multiple"
-                className={`w-full border ${errors.userIds ? "!border-red-500" : "border-natural-400"
-                  } rounded-lg
+                className={`w-full border ${
+                  errors.recipients ? "!border-red-500" : "border-natural-400"
+                } rounded-lg
                     [&_.ant-select-selector]:!h-12
-                    [&_.ant-select-selector]:!px-4
+                    [&_.ant-select-selector]:!pr-4
+                    [&_.ant-select-selector]:!pl-1
                     [&_.ant-select-selector]:!flex
                     [&_.ant-select-selector]:!items-center
                     [&_.ant-select-selector]:!leading-[3.5rem]`}
                 placeholder="Select users"
-                value={formData.userIds}
-                onChange={(value) => handleChange("userIds", value)}
+                value={formData.recipients}
+                onChange={(value) => handleChange("recipients", value)}
                 loading={isUsersLoading}
                 tagRender={tagRender}
                 dropdownRender={dropdownRender}
@@ -174,15 +179,15 @@ function NotificationForm() {
                   <Select.Option
                     key={user._id}
                     value={user._id}
-                    label={user.full_name}
+                    label={user.name}
                   >
-                    {user.full_name}
+                    {user.name} ( {user.email} )
                   </Select.Option>
                 ))}
               </Select>
             )}
-            {errors.userIds && (
-              <span className="text-red-500 text-sm">{errors.userIds}</span>
+            {errors.recipients && (
+              <span className="text-red-500 text-sm">{errors.recipients}</span>
             )}
           </div>
         )}
@@ -192,8 +197,9 @@ function NotificationForm() {
         <button
           type="submit"
           disabled={isLoading || !isFormValid}
-          className={`btn w-24 h-13 bg-black text-white hover:bg-black-900 hover:text-white uppercase ${isLoading || !isFormValid ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+          className={`btn w-24 h-13 bg-black text-white hover:bg-black-900 hover:text-white uppercase ${
+            isLoading || !isFormValid ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         >
           {isLoading ? "Sending..." : "Send"}
         </button>

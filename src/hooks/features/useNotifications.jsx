@@ -97,7 +97,7 @@ export const useAddNotification = () => {
     title: "",
     message: "",
     recipientType: "all", // 'all' or 'custom'
-    userIds: [],
+    recipients: [],
     file: null,
   });
   const [errors, setErrors] = useState({});
@@ -116,12 +116,12 @@ export const useAddNotification = () => {
     if (formData.recipientType === "all" && users.length > 0) {
       setFormData((prev) => ({
         ...prev,
-        userIds: users.map((user) => user._id),
+        recipients: users.map((user) => user._id),
       }));
     } else if (formData.recipientType === "custom") {
       setFormData((prev) => ({
         ...prev,
-        userIds: [],
+        recipients: [],
       }));
     }
   }, [formData.recipientType, users]);
@@ -129,13 +129,13 @@ export const useAddNotification = () => {
   useEffect(() => {
     if (users.length > 0) {
       const sorted = [...users].sort((a, b) => {
-        const aSelected = formData.userIds.includes(a._id);
-        const bSelected = formData.userIds.includes(b._id);
+        const aSelected = formData.recipients.includes(a._id);
+        const bSelected = formData.recipients.includes(b._id);
         return bSelected - aSelected;
       });
       setSortedUsers(sorted);
     }
-  }, [users, formData.userIds]);
+  }, [users, formData.recipients]);
 
   const tagRender = (props) => {
     const { label, value, closable, onClose } = props;
@@ -153,32 +153,33 @@ export const useAddNotification = () => {
           padding: "0 6px",
         }}
       >
-        <span>{user?.full_name || label}</span>
+        <span>
+          {user?.name} ({user?.email})
+        </span>
       </Tag>
     );
   };
 
   const dropdownRender = (menu) => (
     <>
-      {formData.userIds.length > 0 && (
+      {formData.recipients.length > 0 && (
         <div className="p-2 border-b border-neutral-200">
           <div className="text-xs font-medium text-neutral-500 mb-1">
             Selected Users
           </div>
           <div className="flex flex-wrap gap-2">
-            {formData.userIds.map((userId) => {
+            {formData.recipients.map((userId) => {
               const user = users.find((u) => u._id === userId);
               if (!user) return null;
               return (
                 <Tag
                   key={user._id}
                   closable
-                  label={user.full_name}
                   onClose={(e) => {
                     e.stopPropagation();
                     handleChange(
-                      "userIds",
-                      formData.userIds.filter((id) => id !== user._id)
+                      "recipients",
+                      formData.recipients.filter((id) => id !== user._id)
                     );
                   }}
                   style={{
@@ -189,7 +190,9 @@ export const useAddNotification = () => {
                     padding: "0 6px",
                   }}
                 >
-                  <span>{user.full_name}</span>
+                  <span>
+                    {user.name} ({user.email})
+                  </span>
                 </Tag>
               );
             })}
@@ -224,7 +227,7 @@ export const useAddNotification = () => {
         return {
           ...prev,
           recipientType: value,
-          userIds: newUserIds,
+          recipients: newUserIds,
         };
       });
     } else {
@@ -242,7 +245,7 @@ export const useAddNotification = () => {
         title: formData.title.trim(),
         message: formData.message.trim(),
         recipient_type: formData.recipientType,
-        userIds: formData.userIds,
+        recipients: formData.recipients,
         file: formData.file,
       };
 
@@ -287,10 +290,10 @@ export const useAddNotification = () => {
     }
 
     try {
-      const userIds =
+      const recipients =
         formData.recipientType === "all"
           ? users.map((user) => user._id)
-          : formData.userIds;
+          : formData.recipients;
 
       const formDataToSend = new FormData();
       formDataToSend.append(
@@ -299,7 +302,7 @@ export const useAddNotification = () => {
           title: formData.title,
           message: formData.message,
           recipient_type: formData.recipientType,
-          userIds: userIds,
+          recipients: recipients,
         })
       );
 
@@ -315,7 +318,7 @@ export const useAddNotification = () => {
         title: "",
         message: "",
         recipientType: "all",
-        userIds: users.map((user) => user._id),
+        recipients: users.map((user) => user._id),
         file: null,
       });
       setImagePreview(null);
@@ -368,7 +371,8 @@ export const useAddNotification = () => {
     formData.message.trim() &&
     formData.recipientType &&
     (formData.recipientType === "all" ||
-      (formData.recipientType === "custom" && formData.userIds.length > 0)) &&
+      (formData.recipientType === "custom" &&
+        formData.recipients.length > 0)) &&
     formData.file !== null;
 
   return {
