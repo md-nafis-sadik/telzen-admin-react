@@ -289,21 +289,22 @@ function Sidebar({ showSidebar, setShowSidebar }) {
                 )}
                 {/* Popular Country */}
                 <div>
-                    <Link
-                      to="/popular-country"
-                      className={`${activePath === "popular-country"
+                  <Link
+                    to="/popular-country"
+                    className={`${
+                      activePath === "popular-country"
                         ? "py-3 pl-6 font-medium text-main-500"
                         : "py-3 pl-6"
-                        } flex items-center gap-4 w-full rounded-lg`}
-                      onClick={() => dispatch(setActivePath("popular-country"))}
+                    } flex items-center gap-4 w-full rounded-lg`}
+                    onClick={() => dispatch(setActivePath("popular-country"))}
+                  >
+                    <span
+                      className={`duration-300 ${showSidebar ? "" : "hidden"}`}
                     >
-                      <span
-                        className={`duration-300 ${showSidebar ? "" : "hidden"}`}
-                      >
-                        Popular Country
-                      </span>
-                    </Link>
-                  </div>
+                      Popular Country
+                    </span>
+                  </Link>
+                </div>
 
                 {/* Packages Old */}
                 {/* <div>

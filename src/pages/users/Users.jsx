@@ -105,7 +105,7 @@ const User = ({ isHome }) => {
             columns={[
               "ID",
               "Country",
-              "Mobile No.",
+              "Name",
               "Email",
               "Join Date",
               "Status",

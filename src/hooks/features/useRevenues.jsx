@@ -71,6 +71,12 @@ export const useGetRevenues = () => {
       currency: getSymbol(),
       bgColor: "bg-[#FFE0DF]",
     },
+    {
+      title: "Current Vendor Balance (USD)",
+      number: cardData?.esim_access_balance || 0,
+      currency: getSymbol(),
+      bgColor: "bg-yellowLight",
+    },
   ];
 
   const updatePageMeta = (value) => dispatch(setRevenueMetaData(value));
@@ -87,7 +93,7 @@ export const useGetRevenues = () => {
       Package: item?.package?.name || "",
       "Customer Name": item.customer.name,
       "Customer Email": item.customer.email,
-      Amount: `${getSymbol()}${item.payment_amount.USD}`, 
+      Amount: `${getSymbol()}${item.payment_amount.USD}`,
       "Payment Status": formatStatusStr(item.payment_status),
     }));
 

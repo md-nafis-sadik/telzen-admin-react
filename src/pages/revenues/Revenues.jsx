@@ -27,10 +27,10 @@ const Revenue = () => {
           <div className="bg-white">
             <h4 className="text-[20px] text-blackHigh font-bold">Revenue</h4>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 items-stretch gap-4 mt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 items-stretch gap-4 mt-4">
               {isLoading
                 ? // Skeleton for loading state
-                  Array.from({ length: 4 }).map((_, i) => (
+                  Array.from({ length: 5 }).map((_, i) => (
                     <div
                       key={i}
                       className="bg-neutral-100 p-5 rounded-lg animate-pulse"
@@ -41,8 +41,11 @@ const Revenue = () => {
                   ))
                 : // Actual content when loaded
                   revenueSummary?.map((item, i) => (
-                    <div key={i} className={`${item.bgColor} p-5 rounded-lg`}>
-                      <div className="mb-2">{item?.title}</div>
+                    <div
+                      key={i}
+                      className={`${item.bgColor} p-5 rounded-lg flex flex-col justify-between h-full`}
+                    >
+                      <div className="mb-2 text-sm">{item?.title}</div>
                       <div className="text-lg font-semibold">
                         {item?.currency && <span>{item.currency}</span>}
                         {item?.number}
@@ -122,9 +125,7 @@ const Revenue = () => {
                   {/* <td className="print:text-xs">
                     {formatStatusStr(revenue?.vendor_name)}
                   </td> */}
-                  <td className="print:text-xs">
-                    {revenue?.customer.name}
-                  </td>
+                  <td className="print:text-xs">{revenue?.customer.name}</td>
                   <td className="print:text-xs">{revenue?.customer?.email}</td>
                   {/* <td className="print:text-xs">{revenue?.customer?.phone}</td> */}
                   {/* <td className="print:text-xs">
@@ -149,8 +150,16 @@ const Revenue = () => {
                     {getSymbol(revenue?.payment_currency)}
                     {revenue?.payment_amount?.USD}
                   </td>
-                  <td className="text-[#2CC672] text-center print:text-xs">
-                    {formatStatusStr(revenue?.payment_status)}
+                  <td className=" text-center print:text-xs">
+                    {revenue?.payment_status === "refunded" ? (
+                      <span className="text-orange-400 print:text-xs">
+                        {formatStatusStr(revenue?.payment_status)}
+                      </span>
+                    ) : (
+                      <span className="text-[#2CC672] print:text-xs">
+                        {formatStatusStr(revenue?.payment_status)}
+                      </span>
+                    )}
                   </td>
                 </tr>
               ))}

@@ -85,7 +85,6 @@ const PackageKeepGo = () => {
                       <Select
                         value={regionFilter === undefined ? "" : regionFilter}
                         onChange={(value) => {
-                          console.log(value);
                           setRegionFilter(value === "" ? undefined : value);
                         }}
                         placeholder="Region"
