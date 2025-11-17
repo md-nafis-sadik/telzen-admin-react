@@ -1,6 +1,8 @@
 import NotifyContainer from "../../utils/notify";
 import { CustomTable } from "../../shared/custom";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+dayjs.extend(utc);
 import { useGetRevenues } from "../../hooks/features/useRevenues";
 import { ExportIcon, LoadingSpinner, PrintIcon } from "../../utils/svgs";
 import { formatStatusStr } from "../../utils/helper";
@@ -118,7 +120,9 @@ const Revenue = () => {
                 >
                   <td className="print:text-xs">{revenue?.order_id}</td>
                   <td className="print:text-xs">
-                    {dayjs.unix(revenue?.selling_date).format("YYYY-MM-DD")}
+                    {revenue?.selling_date
+                      ? dayjs.unix(revenue?.selling_date).format("DD-MM-YYYY")
+                      : "-"}
                   </td>
 
                   <td className="print:text-xs">{revenue?.package?.name}</td>

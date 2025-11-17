@@ -1,5 +1,11 @@
 import FormInput from "../../shared/forms/FormInput";
-import { EyeSvgIcon, SearchSvg } from "../../utils/svgs";
+import {
+  EyeSvgIcon,
+  SearchSvg,
+  BlockIcon,
+  UnblockIcon,
+  LoadingSpinner,
+} from "../../utils/svgs";
 import SecondaryButton from "../../shared/buttons/SecondaryButton";
 import { useGetUsers } from "../../hooks/features/useUsers";
 import NotifyContainer from "../../utils/notify";
@@ -11,6 +17,8 @@ import { dialCodeToCountryCode } from "../../utils/countryCodes";
 import { setSelectedUserData } from "../../features/users";
 import { Select } from "antd";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+dayjs.extend(utc);
 
 const User = ({ isHome }) => {
   const {
@@ -27,6 +35,8 @@ const User = ({ isHome }) => {
     setFilterKey,
     searchKeyword,
     setSearchKeyword,
+    handleBlockToggle,
+    updatingUsers,
   } = useGetUsers();
 
   return (
@@ -145,13 +155,18 @@ const User = ({ isHome }) => {
                 {/* <td className="py-4">{user?.phone}</td> */}
                 <td className="py-4">{user?.email}</td>
                 <td className="py-4">
-                  {dayjs.unix(user?.created_at).format("DD/MM/YYYY")}
+                  {user.created_at
+                    ? `${dayjs
+                        .unix(user.created_at)
+                        .utc()
+                        .format("DD-MM-YYYY")}`
+                    : "-"}
                 </td>
                 <td className="py-4 flex items-center gap-4">
-                  {user?.is_email_verified ? (
-                    <div className="text-green-600">Active</div>
+                  {user?.is_blocked ? (
+                    <span className="text-[#FF4646]">Blocked</span>
                   ) : (
-                    <div className="text-red-500">Inactive</div>
+                    <span className="text-[#00AE5B]">Active</span>
                   )}
                 </td>
                 <th className="py-3 w-[120px]">
@@ -164,6 +179,23 @@ const User = ({ isHome }) => {
                       }}
                     >
                       <EyeSvgIcon />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleBlockToggle(user._id, user.is_blocked)
+                      }
+                      disabled={updatingUsers[user._id]}
+                      className="p-1 rounded transition-colors"
+                    >
+                      {updatingUsers[user._id] ? (
+                        <LoadingSpinner />
+                      ) : user.is_blocked ? (
+                        <UnblockIcon />
+                      ) : (
+                        <BlockIcon />
+                      )}
                     </button>
                   </div>
                 </th>

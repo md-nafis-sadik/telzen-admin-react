@@ -4,6 +4,9 @@ import NotifyContainer from "../../utils/notify";
 import ConfirmationModal from "../../components/modals/ConfirmationModal";
 import { CustomTable } from "../../shared/custom";
 import { getSymbol } from "../../utils/currency";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+dayjs.extend(utc);
 
 const UserDetails = ({ isHome }) => {
   const {
@@ -79,9 +82,12 @@ const UserDetails = ({ isHome }) => {
                   {userDetails?.order?.payment_amount.USD}
                 </td>
                 <td className="py-4 flex items-center gap-4">
-                  {new Date(
-                    userDetails?.order?.created_at * 1000
-                  ).toLocaleDateString("en-US")}
+                  {userDetails?.order?.created_at
+                    ? `${dayjs
+                        .unix(userDetails?.order?.created_at)
+                        .utc()
+                        .format("DD-MM-YYYY")}`
+                    : "-"}
                 </td>
                 <th className="py-3 w-[150px]">
                   <div className="flex items-center justify-center gap-2">

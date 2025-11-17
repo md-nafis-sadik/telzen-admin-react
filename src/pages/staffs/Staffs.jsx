@@ -85,9 +85,9 @@ const Staff = () => {
                 <td className="py-3">{staff?.phone}</td>
                 <td className="py-3">
                   {staff?.is_blocked ? (
-                    <span className="text-red-500">Blocked</span>
+                    <span className="text-[#FF4646]">Blocked</span>
                   ) : (
-                    <span className="text-green-600">Active</span>
+                    <span className="text-[#00AE5B]">Active</span>
                   )}
                 </td>
                 <th className="py-3 w-[120px]">

@@ -126,7 +126,7 @@ const Coupon = () => {
                     ? `${dayjs
                         .unix(coupon.validity_end_at)
                         .utc()
-                        .format("YYYY-MM-DD")}`
+                        .format("DD-MM-YYYY")}`
                     : "-"}
                 </td>
                 <td>

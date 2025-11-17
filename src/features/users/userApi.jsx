@@ -50,13 +50,10 @@ export const userApi = apiSlice.injectEndpoints({
     // UPDATE A USER
     updateUser: builder.mutation({
       query: ({ data, id }) => {
-        const formData = new FormData();
-        formData.append("data", JSON.stringify(data));
-
         return {
-          url: `user/update?user_id=${id}`,
+          url: `customer/update?customer_id=${id}`,
           method: "PATCH",
-          body: formData,
+          body: data,
         };
       },
     }),

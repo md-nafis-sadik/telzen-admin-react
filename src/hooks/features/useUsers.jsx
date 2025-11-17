@@ -140,6 +140,32 @@ export const useGetUsers = () => {
     }
   };
 
+  const handleBlockToggle = async (userId, isBlocked) => {
+    setUpdatingUsers((prev) => ({ ...prev, [userId]: true }));
+
+    try {
+      const result = await updatePackageUser({
+        id: userId,
+        data: { is_blocked: !isBlocked },
+      }).unwrap();
+
+      if (result?.success) {
+        dispatch(updateUserInList({ ...result?.data, _id: result?.data._id }));
+        successNotify(result?.message || "User status updated successfully");
+      } else {
+        errorNotify(result?.message || "Failed to update user status");
+      }
+    } catch (error) {
+      errorNotify(error?.data?.message || "Failed to update user status");
+    } finally {
+      setUpdatingUsers((prev) => {
+        const newState = { ...prev };
+        delete newState[userId];
+        return newState;
+      });
+    }
+  };
+
   return {
     dataList,
     meta,
@@ -159,6 +185,7 @@ export const useGetUsers = () => {
     handleNavigate,
     handleOpenAddUserModal,
     handleStatusChange,
+    handleBlockToggle,
     updatingUsers,
     dispatch,
     navigate,

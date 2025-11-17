@@ -5,6 +5,9 @@ import { CustomTable } from "../../shared/custom";
 import NotificationForm from "../forms/NotificationForm";
 import { formatStatusStr } from "../../utils/helper";
 import SuccessModal from "../../components/modals/SuccessModal";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+dayjs.extend(utc);
 
 const Notification = () => {
   const {
@@ -78,18 +81,10 @@ const Notification = () => {
                 <td className="py-3">{index + 1}</td>
 
                 <td className="py-3">
-                  <img
-                    src={notification?.icon}
-                    alt=""
-                    className="w-12 h-12"
-                  />
+                  <img src={notification?.icon} alt="" className="w-12 h-12" />
                 </td>
-                <td className="py-3 max-w-[300px]">
-                  {notification?.title}
-                </td>
-                <td className="py-3 max-w-[400px]">
-                  {notification?.message}
-                </td>
+                <td className="py-3 max-w-[300px]">{notification?.title}</td>
+                <td className="py-3 max-w-[400px]">{notification?.message}</td>
                 <td className="py-3">
                   {notification?.recipient_type
                     ? formatStatusStr(notification?.recipient_type)
@@ -97,9 +92,12 @@ const Notification = () => {
                 </td>
 
                 <td className="py-3">
-                  {new Date(notification?.created_at * 1000).toLocaleDateString(
-                    "en-US"
-                  )}
+                  {notification?.created_at
+                    ? `${dayjs
+                        .unix(notification?.created_at)
+                        .utc()
+                        .format("DD-MM-YYYY")}`
+                    : "-"}
                 </td>
                 <th className="py-3 w-[120px]">
                   <label
