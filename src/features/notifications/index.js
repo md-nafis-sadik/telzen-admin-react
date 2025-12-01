@@ -1,2 +1,2 @@
-export * from "./notificationApi";
+export * from "./NotificationApi";
 export * from "./notificationSlice";
