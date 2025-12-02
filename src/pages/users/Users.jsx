@@ -118,6 +118,10 @@ const User = ({ isHome }) => {
               "Name",
               "Email",
               "Join Date",
+              "IP",
+              "Purchased",
+              "Device",
+              "Platform",
               "Status",
               "Actions",
             ]}
@@ -151,20 +155,34 @@ const User = ({ isHome }) => {
                     <span className="truncate">{user?.country?.name}</span>
                   </div>
                 </td>
-                <td className="py-4">{user?.name}</td>
+                <td className="py-4">{user?.name || "N/A"}</td>
                 {/* <td className="py-4">{user?.phone}</td> */}
                 <td className="py-4">{user?.email}</td>
+
                 <td className="py-4">
-                  {user.created_at
-                    ? `${dayjs
-                        .unix(user.created_at)
-                        .utc()
-                        .format("DD-MM-YYYY")}`
+                  {user?.created_at
+                    ? dayjs.unix(user.created_at).format("DD-MM-YYYY (HH:mm A)")
                     : "-"}
                 </td>
+
+                <td className="py-4">
+                  {user?.is_registered_via_web
+                    ? user?.device?.web_ip_address || "N/A"
+                    : user?.device?.app_ip_address || "N/A"}
+                </td>
+                <td className="py-4 flex items-center justify-center">
+                  {user?.total_purchased_data_packages || 0}
+                </td>
+                <td className="py-4 capitalize">
+                  {user?.device?.app_brand_name || "N/A"}
+                </td>
+                <td className="py-4 capitalize">
+                  {user?.device?.app_os_platform || "N/A"}
+                </td>
+
                 <td className="py-4 flex items-center gap-4">
                   {user?.is_blocked ? (
-                    <span className="text-[#FF4646]">Blocked</span>
+                    <span className="text-[#9E9E9E]">Blocked</span>
                   ) : (
                     <span className="text-[#00AE5B]">Active</span>
                   )}
@@ -175,7 +193,7 @@ const User = ({ isHome }) => {
                       type="button"
                       onClick={() => {
                         dispatch(setSelectedUserData(user));
-                        navigate(`/users/${user._id}`);
+                        navigate(`/users/${user?._id}`);
                       }}
                     >
                       <EyeSvgIcon />
@@ -184,14 +202,14 @@ const User = ({ isHome }) => {
                     <button
                       type="button"
                       onClick={() =>
-                        handleBlockToggle(user._id, user.is_blocked)
+                        handleBlockToggle(user?._id, user?.is_blocked)
                       }
-                      disabled={updatingUsers[user._id]}
+                      disabled={updatingUsers[user?._id]}
                       className="p-1 rounded transition-colors"
                     >
-                      {updatingUsers[user._id] ? (
+                      {updatingUsers[user?._id] ? (
                         <LoadingSpinner />
-                      ) : user.is_blocked ? (
+                      ) : user?.is_blocked ? (
                         <UnblockIcon />
                       ) : (
                         <BlockIcon />

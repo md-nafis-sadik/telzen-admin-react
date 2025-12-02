@@ -6,6 +6,7 @@ import { CustomTable } from "../../shared/custom";
 import { getSymbol } from "../../utils/currency";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { formatFromMB } from "../../utils/helper";
 dayjs.extend(utc);
 
 const UserDetails = ({ isHome }) => {
@@ -50,6 +51,7 @@ const UserDetails = ({ isHome }) => {
               "ID",
               "Bundle",
               "Data Limit",
+              "Data Used",
               "Date",
               "Price",
               "Bundle Purchased",
@@ -69,7 +71,10 @@ const UserDetails = ({ isHome }) => {
                 <td className="py-4">{userDetails?.esim?.iccid}</td>
                 <td className="py-4">{userDetails?.static_package?.name}</td>
                 <td className="py-4">
-                  {userDetails?.static_package?.data_plan_in_mb}
+                  {formatFromMB(userDetails?.static_package?.data_plan_in_mb)}
+                </td>
+                <td className="py-4">
+                  {formatFromMB(userDetails?.esim?.data_package?.total_data_usages)}
                 </td>
                 <td className="py-4">
                   {userDetails?.static_package?.validity.amount}{" "}

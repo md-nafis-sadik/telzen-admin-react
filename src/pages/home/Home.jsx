@@ -2,7 +2,7 @@ import { Select } from "antd";
 import Charts from "../../components/Charts/Charts";
 import Card from "../../components/shared/cards/Card";
 import NotifyContainer from "../../utils/getNotify";
-import User from "../users/Users";
+import TopCustomers from "../topCustomers/TopCustomers";
 import { useHome } from "../../hooks/features/useHome";
 
 const { Option } = Select;
@@ -77,7 +77,7 @@ export default function Home() {
           </div>
         )}
 
-        <User isHome={isHome} />
+        <TopCustomers />
         <NotifyContainer></NotifyContainer>
       </div>
     </section>

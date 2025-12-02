@@ -110,20 +110,20 @@ export const useGetUserDetails = () => {
                   font-size: 10px;
                   font-style: normal;
                   font-weight: 600;
-                  line-height: 120%; margin-bottom: 4px;" margin-bottom: 3px;>Netro Systems Limited</div>
+                  line-height: 120%; margin-bottom: 4px;" margin-bottom: 3px;>Kloud Apps LLC</div>
                 <div style="color: #888;
                   font-size: 10px;
                   font-weight: 400;
-                  line-height: 130%; margin-bottom: 3px;">290/737 York House Green Lane West, Garstang,</div>
+                  line-height: 130%; margin-bottom: 3px;">254 Chapman Rd, Suite 101-B, Newark,</div>
                                   <div style="color: #888;
                   font-size: 10px;
                   font-weight: 400;
-                  line-height: 130%; margin-bottom: 3px;">Preston, Lancashire, England, PR3 1NJ</div>
+                  line-height: 130%; margin-bottom: 3px;">DE 19702</div>
 
                 <div style="color: #888;
                   font-size: 10px;
                   font-weight: 400;
-                  line-height: 130%;">hello@telzen.digital</div>
+                  line-height: 130%;">support@telzen.net</div>
             </div>
         </div>
 
