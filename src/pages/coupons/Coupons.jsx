@@ -103,17 +103,17 @@ const Coupon = () => {
                     ) : (
                       <>
                         {coupon.coverage_countries
-                          .slice(0, 2)
+                          .slice(0, 1)
                           .map((c) => c.name)
                           .join(", ")}
                         <span
                           className="text-neutral-500 ml-1"
                           title={coupon.coverage_countries
-                            .slice(2)
+                            .slice(1)
                             .map((c) => c.name)
                             .join(", ")}
                         >
-                          +{coupon.coverage_countries.length - 2} more
+                          +{coupon.coverage_countries.length - 1} more
                         </span>
                       </>
                     )
@@ -130,17 +130,35 @@ const Coupon = () => {
                     : "-"}
                 </td>
                 <td>
-                  {coupon?.validity_end_at
-                    ? `${dayjs
-                        .unix(coupon.validity_end_at)
-                        .utc()
-                        .format("HH:mm")}`
-                    : "-"}
+                  <span className="flex items-center justify-center">
+                    {coupon?.validity_end_at
+                      ? `${dayjs
+                          .unix(coupon.validity_end_at)
+                          .utc()
+                          .format("HH:mm")}`
+                      : "-"}
+                  </span>
                 </td>
-                <td>{coupon?.usages_count}</td>
-                <td>{coupon?.max_usages_limit}</td>
-                <td>{coupon?.minimum_order_amount || "-"}</td>
-                <td>{coupon?.maximum_order_amount || "-"}</td>
+                <td>
+                  <span className="flex items-center justify-center">
+                    {coupon?.usages_count}
+                  </span>
+                </td>
+                <td>
+                  <span className="flex items-center justify-center">
+                    {coupon?.max_usages_limit}
+                  </span>
+                </td>
+                <td>
+                  <span className="flex items-center justify-center">
+                    {coupon?.minimum_order_amount || "-"}
+                  </span>
+                </td>
+                <td>
+                  <span className="flex items-center justify-center">
+                    {coupon?.maximum_order_amount || "-"}
+                  </span>
+                </td>
                 <td>{coupon?.is_private ? "Private" : "Public"}</td>
                 <td className="py-3">
                   {updatingCoupons[coupon._id] ? (
@@ -167,7 +185,7 @@ const Coupon = () => {
                   )}
                 </td>
 
-                <th className="py-3 w-[120px]">
+                <th className="py-3 w-[100px] border-l border-natural-100">
                   <span className="flex items-center justify-center gap-2">
                     <button
                       type="button"

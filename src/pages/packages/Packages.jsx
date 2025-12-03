@@ -271,7 +271,7 @@ const PackageKeepGo = () => {
                   )}
                 </td>
 
-                <th className="py-3 w-[120px]">
+                <th className="py-3 w-[100px] border-l border-natural-100">
                   <div className="flex items-center justify-center gap-2">
                     <button
                       type="button"

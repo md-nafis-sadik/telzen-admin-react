@@ -39,3 +39,25 @@ export function formatFromMB(mbValue) {
 
   return `${formatted} ${unit}`;
 }
+
+export const getStatusUI = (status) => {
+  switch (status) {
+    case "registered":
+      return <span className="text-[#9E9E9E] font-normal">Registered</span>;
+
+    case "onboard":
+      return <span className="text-[#75c780] font-normal">Onboard</span>;
+
+    case "activated":
+      return <span className="text-[#00AE5B] font-normal">Activated</span>;
+
+    case "expired":
+      return <span className="text-red-500 font-normal">Expired</span>;
+
+    case "deleted":
+      return <span className="text-red-500 font-normal">Deleted</span>;
+
+    default:
+      return <span className="text-[#9E9E9E] font-normal">Registered</span>;
+  }
+};

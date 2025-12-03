@@ -6,7 +6,7 @@ import { CustomTable } from "../../shared/custom";
 import { getSymbol } from "../../utils/currency";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { formatFromMB } from "../../utils/helper";
+import { formatFromMB, getStatusUI } from "../../utils/helper";
 dayjs.extend(utc);
 
 const UserDetails = ({ isHome }) => {
@@ -35,7 +35,7 @@ const UserDetails = ({ isHome }) => {
         <div className="bg-white shadow-sm w-full min-h-[720px] rounded-2xl flex flex-col p-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
             <h2 className="title-cmn text-[18px] font-semibold">
-              {selectedUserdata?.full_name}
+              {selectedUserdata?.name}
             </h2>
           </div>
           <CustomTable
@@ -55,6 +55,7 @@ const UserDetails = ({ isHome }) => {
               "Date",
               "Price",
               "Bundle Purchased",
+              "SMDP Status",
               "Line Status",
             ]}
             dataLength={dataList?.length || 0}
@@ -74,7 +75,9 @@ const UserDetails = ({ isHome }) => {
                   {formatFromMB(userDetails?.static_package?.data_plan_in_mb)}
                 </td>
                 <td className="py-4">
-                  {formatFromMB(userDetails?.esim?.data_package?.total_data_usages)}
+                  {formatFromMB(
+                    userDetails?.esim?.data_package?.total_data_usages
+                  )}
                 </td>
                 <td className="py-4">
                   {userDetails?.static_package?.validity.amount}{" "}
@@ -88,12 +91,12 @@ const UserDetails = ({ isHome }) => {
                 </td>
                 <td className="py-4 flex items-center gap-4">
                   {userDetails?.order?.created_at
-                    ? `${dayjs
+                    ? dayjs
                         .unix(userDetails?.order?.created_at)
-                        .utc()
-                        .format("DD-MM-YYYY")}`
+                        .format("DD-MM-YYYY (HH:mm)")
                     : "-"}
                 </td>
+                <td className="py-4">{userDetails?.esim?.esim_access?.smdp_status || "N/A"}</td>
                 <th className="py-3 w-[150px]">
                   <div className="flex items-center justify-center gap-2">
                     <button
@@ -106,16 +109,8 @@ const UserDetails = ({ isHome }) => {
                         })
                       }
                     >
-                      {userDetails?.keep_go_data_bundle_status ===
-                      "Non-active" ? (
-                        <span className={`text-black-900 font-normal`}>
-                          Inactive
-                        </span>
-                      ) : (
-                        <span className={`text-[#56AD7E] font-normal`}>
-                          Activated
-                        </span>
-                      )}
+                      {getStatusUI(userDetails?.esim?.status)}
+
                       <DownloadSvgIcon />
                     </button>
                   </div>

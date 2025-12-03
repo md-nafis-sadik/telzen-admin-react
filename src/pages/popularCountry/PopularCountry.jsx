@@ -93,7 +93,7 @@ const PopularCountry = () => {
                 <td>{country?.country_id?.region?.name || "-"}</td>
                 <td>{country?.total_feature_countries || 0}</td>
 
-                <th className="py-3 w-[120px]">
+                <th className="py-3  w-[120px] border-l border-natural-100">
                   <div className="flex items-center justify-center gap-2">
                     <button
                       type="button"

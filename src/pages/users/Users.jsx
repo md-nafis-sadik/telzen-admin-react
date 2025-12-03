@@ -117,7 +117,7 @@ const User = ({ isHome }) => {
               "Country",
               "Name",
               "Email",
-              "Join Date",
+              "Join Time",
               "IP",
               "Purchased",
               "Device",
@@ -161,7 +161,7 @@ const User = ({ isHome }) => {
 
                 <td className="py-4">
                   {user?.created_at
-                    ? dayjs.unix(user.created_at).format("DD-MM-YYYY (HH:mm A)")
+                    ? dayjs.unix(user.created_at).format("DD-MM-YYYY (HH:mm)")
                     : "-"}
                 </td>
 
@@ -174,10 +174,10 @@ const User = ({ isHome }) => {
                   {user?.total_purchased_data_packages || 0}
                 </td>
                 <td className="py-4 capitalize">
-                  {user?.device?.app_brand_name || "N/A"}
+                  {user?.device?.app_brand_name || "Web"}
                 </td>
                 <td className="py-4 capitalize">
-                  {user?.device?.app_os_platform || "N/A"}
+                  {user?.device?.app_os_platform || "Web"}
                 </td>
 
                 <td className="py-4 flex items-center gap-4">
@@ -187,7 +187,7 @@ const User = ({ isHome }) => {
                     <span className="text-[#00AE5B]">Active</span>
                   )}
                 </td>
-                <th className="py-3 w-[120px]">
+                <th className="py-3 w-[100px] border-l border-natural-100">
                   <div className="flex items-center justify-center gap-2">
                     <button
                       type="button"

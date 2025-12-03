@@ -99,7 +99,7 @@ const Notification = () => {
                         .format("DD-MM-YYYY")}`
                     : "-"}
                 </td>
-                <th className="py-3 w-[120px]">
+                <th className="py-3 w-[100px] border-l border-natural-100">
                   <label
                     htmlFor="confirmationPopup"
                     onClick={() => setNotificationId(notification._id)}

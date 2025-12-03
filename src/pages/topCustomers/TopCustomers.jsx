@@ -1,9 +1,15 @@
 import { CustomTable } from "../../shared/custom";
 import { useTopCustomers } from "../../hooks/features/useTopCustomers";
 import ReactCountryFlag from "react-country-flag";
+import { EyeSvgIcon } from "../../utils/svgs";
 import dayjs from "dayjs";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { setSelectedUserData } from "../../features/users/userSlice";
 
 const TopCustomers = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { dataList, isLoading, isError } = useTopCustomers();
 
   return (
@@ -22,9 +28,8 @@ const TopCustomers = () => {
         isError={isError}
         status={isError ? "failed" : "succeeded"}
         columns={[
-          "Customer ID",
-          "Country",
           "Name",
+          "Country",
           "Email",
           "Join Date",
           "IP",
@@ -32,6 +37,7 @@ const TopCustomers = () => {
           "Device",
           "Platform",
           "Status",
+          "Action",
         ]}
         dataLength={dataList?.length || 0}
         isPagination={false}
@@ -45,7 +51,20 @@ const TopCustomers = () => {
             }`}
             key={customer?._id}
           >
-            <td className="print:text-xs">{customer?.customer_id}</td>
+            <td className="print:text-xs">
+              <div className="flex items-center gap-2">
+                {/* <img
+                  src={customer?.image}
+                  alt={customer?.name}
+                  className="w-8 h-8 rounded-full object-cover"
+                  onError={(e) => {
+                    e.target.src =
+                      "http://46.250.238.64:9000/public/default/default.jpg";
+                  }}
+                /> */}
+                {customer?.name}
+              </div>
+            </td>
             <td className="print:text-xs">
               <div className="flex gap-2 items-center">
                 <ReactCountryFlag
@@ -64,25 +83,12 @@ const TopCustomers = () => {
                 {customer?.country?.name}
               </div>
             </td>
-            <td className="print:text-xs">
-              <div className="flex items-center gap-2">
-                {/* <img
-                  src={customer?.image}
-                  alt={customer?.name}
-                  className="w-8 h-8 rounded-full object-cover"
-                  onError={(e) => {
-                    e.target.src =
-                      "http://46.250.238.64:9000/public/default/default.jpg";
-                  }}
-                /> */}
-                {customer?.name}
-              </div>
-            </td>
+
             <td className="print:text-xs">{customer?.email}</td>
 
             <td className="print:text-xs">
               {customer?.created_at
-                ? dayjs.unix(customer.created_at).format("DD-MM-YYYY (HH:mm A)")
+                ? dayjs.unix(customer.created_at).format("DD-MM-YYYY")
                 : "-"}
             </td>
             <td className="print:text-xs">
@@ -95,10 +101,10 @@ const TopCustomers = () => {
             </td>
 
             <td className="py-4 capitalize">
-              {customer?.device?.app_brand_name || "N/A"}
+              {customer?.device?.app_brand_name || "Web"}
             </td>
             <td className="py-4 capitalize">
-              {customer?.device?.app_os_platform || "N/A"}
+              {customer?.device?.app_os_platform || "Web"}
             </td>
 
             <td className="py-4 flex items-center gap-4">
@@ -108,6 +114,19 @@ const TopCustomers = () => {
                 <span className="text-[#00AE5B]">Active</span>
               )}
             </td>
+            <th className="py-3 w-[100px] border-l border-natural-100">
+              <div className="flex items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    dispatch(setSelectedUserData(customer));
+                    navigate(`/users/${customer?._id}`);
+                  }}
+                >
+                  <EyeSvgIcon />
+                </button>
+              </div>
+            </th>
           </tr>
         ))}
       </CustomTable>
