@@ -101,10 +101,14 @@ const TopCustomers = () => {
             </td>
 
             <td className="py-4 capitalize">
-              {customer?.device?.app_brand_name || "Web"}
+              {customer?.is_registered_via_web
+                ? "Web"
+                : customer?.device?.app_brand_name || "N/A"}
             </td>
             <td className="py-4 capitalize">
-              {customer?.device?.app_os_platform || "Web"}
+              {customer?.is_registered_via_web
+                ? "Web"
+                : customer?.device?.app_os_platform || "N/A"}
             </td>
 
             <td className="py-4 flex items-center gap-4">

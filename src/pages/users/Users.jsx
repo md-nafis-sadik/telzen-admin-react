@@ -174,12 +174,15 @@ const User = ({ isHome }) => {
                   {user?.total_purchased_data_packages || 0}
                 </td>
                 <td className="py-4 capitalize">
-                  {user?.device?.app_brand_name || "Web"}
+                  {user?.is_registered_via_web
+                    ? "Web"
+                    : user?.device?.app_brand_name || "N/A"}
                 </td>
                 <td className="py-4 capitalize">
-                  {user?.device?.app_os_platform || "Web"}
+                  {user?.is_registered_via_web
+                    ? "Web"
+                    : user?.device?.app_os_platform || "N/A"}
                 </td>
-
                 <td className="py-4 flex items-center gap-4">
                   {user?.is_blocked ? (
                     <span className="text-[#9E9E9E]">Blocked</span>
