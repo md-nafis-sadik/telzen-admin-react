@@ -92,6 +92,7 @@ export default {
 
         "black-600": "#888888",
         "black-700": "#4F4F4F",
+        "black-800": "#131313",
         "black-900": "#191919",
         "white-50": "#FFFFFF",
         "white-100": "#E7E7E7",

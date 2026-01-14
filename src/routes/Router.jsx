@@ -32,6 +32,9 @@ import PopularCountrySub from "../pages/popularCountry/PopularCountrySub";
 import UpdatePopularCountryForm from "../pages/forms/UpdatePopularCountryForm";
 import AddPopularCountryForm from "../pages/forms/AddPopularCountryForm";
 import UserDetails from "../pages/users/UserDetails";
+import ActiveBusiness from "../pages/business/ActiveBusiness";
+import PendingBusiness from "../pages/business/PendingBusiness";
+import BusinessDetails from "../pages/business/BusinessDetails";
 
 export const routes = createBrowserRouter([
   {
@@ -92,6 +95,51 @@ export const routes = createBrowserRouter([
         element: (
           <PrivateRouter allowedRoles={["manager", "sales-manager", "admin"]}>
             <UserDetails />
+          </PrivateRouter>
+        ),
+      },
+      {
+        path: "/business/active",
+        element: (
+          <PrivateRouter
+            allowedRoles={[
+              "manager",
+              "sales-manager",
+              "customer-manager",
+              "admin",
+            ]}
+          >
+            <ActiveBusiness />
+          </PrivateRouter>
+        ),
+      },
+      {
+        path: "/business/pending",
+        element: (
+          <PrivateRouter
+            allowedRoles={[
+              "manager",
+              "sales-manager",
+              "customer-manager",
+              "admin",
+            ]}
+          >
+            <PendingBusiness />
+          </PrivateRouter>
+        ),
+      },
+      {
+        path: "/business/:Id",
+        element: (
+          <PrivateRouter
+            allowedRoles={[
+              "manager",
+              "sales-manager",
+              "customer-manager",
+              "admin",
+            ]}
+          >
+            <BusinessDetails />
           </PrivateRouter>
         ),
       },

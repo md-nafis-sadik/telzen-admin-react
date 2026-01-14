@@ -14,14 +14,14 @@ import ActiveSettingIcon from "../../../assets/svgs/ActiveSettingIcon";
 import InactiveSettingIcon from "../../../assets/svgs/InactiveSettingIcon";
 import ActivePackageIcon from "../../../assets/svgs/ActivePackageIcon";
 import InactivePackageIcon from "../../../assets/svgs/InactivePackageIcon";
-import ActiveSellerIcon from "../../../assets/svgs/ActiveSellerIcon";
-import InactiveSellerIcon from "../../../assets/svgs/InactiveSellerIcon";
 import ActiveCouponIcon from "../../../assets/svgs/ActiveCouponIcon";
 import InactiveCouponIcon from "../../../assets/svgs/InactiveCouponIcon";
 import ActiveStaffIcon from "../../../assets/svgs/ActiveStaffIcon";
 import InactiveStaffIcon from "../../../assets/svgs/InactiveStaffIcon";
 import ActiveRevenueIcon from "../../../assets/svgs/ActiveRevenueIcon";
 import InactiveRevenueIcon from "../../../assets/svgs/InactiveRevenueIcon";
+import ActiveBusinessIcon from "../../../assets/svgs/ActiveBusinessIcon";
+import InactiveBusinessIcon from "../../../assets/svgs/InactiveBusinessIcon";
 import { logout } from "../../../features/auth/authSlice";
 import { setActivePath } from "../../../features/nav/navSlice";
 import LogoutModal from "../../modals/LogoutModal";
@@ -40,8 +40,9 @@ function Sidebar({ showSidebar, setShowSidebar }) {
       "package-countries",
       "popular-country",
     ].includes(path);
+    const isBusinessOpen = ["business"].includes(path);
 
-    return { packages: isPackagesOpen };
+    return { packages: isPackagesOpen, business: isBusinessOpen };
   });
   const activePath = location.pathname.split("/").filter(Boolean)[0] || "/";
   const isPackagesActive = [
@@ -51,6 +52,7 @@ function Sidebar({ showSidebar, setShowSidebar }) {
     "package-countries",
     "popular-country",
   ].includes(activePath);
+  const isBusinessActive = ["business"].includes(activePath);
 
   const submenuStyle = {
     maxHeight: isSubmenuOpen["packages"] && showSidebar ? "1000px" : "0",
@@ -59,12 +61,19 @@ function Sidebar({ showSidebar, setShowSidebar }) {
     willChange: "max-height",
   };
 
+  const businessSubmenuStyle = {
+    maxHeight: isSubmenuOpen["business"] && showSidebar ? "1000px" : "0",
+    transition: "max-height 300ms ease-in-out",
+    overflow: "hidden",
+    willChange: "max-height",
+  };
+
   const handleDropdown = useCallback(
     (menu) => {
-      setIsSubmenuOpen((prev) => ({
-        ...prev,
-        [menu]: !prev[menu],
-      }));
+      setIsSubmenuOpen((prev) => {
+        const currentState = prev[menu] || false;
+        return { [menu]: !currentState };
+      });
 
       if (!showSidebar) setShowSidebar(true);
     },
@@ -136,7 +145,7 @@ function Sidebar({ showSidebar, setShowSidebar }) {
               } flex items-center gap-4 w-full rounded-lg`}
               onClick={() => {
                 dispatch(setActivePath("/"));
-                setIsSubmenuOpen((prev) => !prev);
+                setIsSubmenuOpen({});
               }}
             >
               {activePath === "/" && (
@@ -163,7 +172,7 @@ function Sidebar({ showSidebar, setShowSidebar }) {
               } flex items-center gap-4 w-full rounded-lg`}
               onClick={() => {
                 dispatch(setActivePath("users"));
-                setIsSubmenuOpen((prev) => !prev);
+                setIsSubmenuOpen({});
               }}
             >
               {activePath === "users" && (
@@ -179,6 +188,99 @@ function Sidebar({ showSidebar, setShowSidebar }) {
                 Users
               </span>
             </Link>
+          </li>
+
+          {/* Business */}
+          <li>
+            <div
+              className={`${
+                isBusinessActive ? "active py-3 pr-4" : "p-4 pl-5"
+              } flex items-center gap-4 w-full rounded-lg cursor-pointer`}
+              onClick={() => {
+                if (!showSidebar) {
+                  setShowSidebar(true);
+                }
+                handleDropdown("business");
+              }}
+            >
+              {isBusinessActive && (
+                <div className="border-2 rounded-full border-main-500 w-1 h-[24px] bg-main-500"></div>
+              )}
+              {isBusinessActive ? (
+                <ActiveBusinessIcon className="shrink-0" />
+              ) : (
+                <InactiveBusinessIcon className="shrink-0" />
+              )}
+
+              <span className={`duration-300 ${showSidebar ? "" : "hidden"}`}>
+                Business
+              </span>
+
+              {/* Dropdown icon */}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className={`ml-auto transform transition-transform ${
+                  isSubmenuOpen["business"] ? "rotate-180" : ""
+                }`}
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <path
+                  d="M19 9L12 16L5 9"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+
+            {/* Submenu */}
+            <div
+              ref={(ref) => (submenuRef.current["business"] = ref)}
+              className="flex flex-col ml-8"
+              style={businessSubmenuStyle}
+            >
+              {/* Active */}
+              <div>
+                <Link
+                  to="/business/active"
+                  className={`${
+                    location.pathname === "/business/active"
+                      ? "py-3 pl-6 font-medium text-main-500"
+                      : "py-3 pl-6"
+                  } flex items-center gap-4 w-full rounded-lg`}
+                  onClick={() => dispatch(setActivePath("business"))}
+                >
+                  <span
+                    className={`duration-300 ${showSidebar ? "" : "hidden"}`}
+                  >
+                    Active
+                  </span>
+                </Link>
+              </div>
+
+              {/* Pending */}
+              <div>
+                <Link
+                  to="/business/pending"
+                  className={`${
+                    location.pathname === "/business/pending"
+                      ? "py-3 pl-6 font-medium text-main-500"
+                      : "py-3 pl-6"
+                  } flex items-center gap-4 w-full rounded-lg`}
+                  onClick={() => dispatch(setActivePath("business"))}
+                >
+                  <span
+                    className={`duration-300 ${showSidebar ? "" : "hidden"}`}
+                  >
+                    Pending
+                  </span>
+                </Link>
+              </div>
+            </div>
           </li>
 
           {/* Packages(Setup */}
@@ -393,7 +495,7 @@ function Sidebar({ showSidebar, setShowSidebar }) {
                 } flex items-center gap-4 w-full rounded-lg`}
                 onClick={() => {
                   dispatch(setActivePath("coupon"));
-                  setIsSubmenuOpen((prev) => !prev);
+                  setIsSubmenuOpen({});
                 }}
               >
                 {activePath === "coupon" && (
@@ -423,7 +525,7 @@ function Sidebar({ showSidebar, setShowSidebar }) {
                 } flex items-center gap-4 w-full rounded-lg`}
                 onClick={() => {
                   dispatch(setActivePath("revenue"));
-                  setIsSubmenuOpen((prev) => !prev);
+                  setIsSubmenuOpen({});
                 }}
               >
                 {activePath === "revenue" && (
@@ -457,7 +559,7 @@ function Sidebar({ showSidebar, setShowSidebar }) {
                   } flex items-center gap-4 w-full rounded-lg`}
                   onClick={() => {
                     dispatch(setActivePath("notification"));
-                    setIsSubmenuOpen((prev) => !prev);
+                    setIsSubmenuOpen({});
                   }}
                 >
                   {activePath === "notification" && (
@@ -489,7 +591,7 @@ function Sidebar({ showSidebar, setShowSidebar }) {
                 } flex items-center gap-4 w-full rounded-lg`}
                 onClick={() => {
                   dispatch(setActivePath("staffs"));
-                  setIsSubmenuOpen((prev) => !prev);
+                  setIsSubmenuOpen({});
                 }}
               >
                 {activePath === "staffs" && (
@@ -519,7 +621,7 @@ function Sidebar({ showSidebar, setShowSidebar }) {
                 } flex items-center gap-4 w-full rounded-lg`}
                 onClick={() => {
                   dispatch(setActivePath("settings"));
-                  setIsSubmenuOpen((prev) => !prev);
+                  setIsSubmenuOpen({});
                 }}
               >
                 {activePath === "settings" && (

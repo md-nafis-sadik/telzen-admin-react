@@ -4,7 +4,12 @@ const LogoutModal = ({ handleStatus, modalClose, title }) => {
   return (
     <section>
       <input type="checkbox" id="logoutPopup" className="modal-toggle" />
-      <div className="modal modal-bottom sm:modal-middle">
+      <div className="modal modal-bottom sm:modal-middle" onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          document.getElementById('logoutPopup').checked = false;
+          if (modalClose) modalClose();
+        }
+      }}>
         <div className="modal-box w-[550px] flex flex-col items-center justify-center gap-6 bg-white px-12 py-8">
           <div>
             <svg

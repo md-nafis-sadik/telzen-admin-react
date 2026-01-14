@@ -15,6 +15,7 @@ import statSlice from "../features/stats/statSlice";
 import notificationSlice from "../features/notifications/notificationSlice";
 import popularCountrySlice from "../features/packages/popularCountry/popularCountrySlice";
 import topCustomersSlice from "../features/topCustomers/topCustomersSlice";
+import businessSlice from "../features/business/businessSlice";
 
 export const store = configureStore({
   reducer: {
@@ -34,6 +35,7 @@ export const store = configureStore({
     notification: notificationSlice,
     popularCountry: popularCountrySlice,
     topCustomers: topCustomersSlice,
+    business: businessSlice,
   },
   middleware: (getDefaultMiddlewares) =>
     getDefaultMiddlewares({
