@@ -75,9 +75,7 @@ const UserDetails = ({ isHome }) => {
                   {formatFromMB(userDetails?.static_package?.data_plan_in_mb)}
                 </td>
                 <td className="py-4">
-                  {formatFromMB(
-                    userDetails?.esim?.data_package?.total_data_usages
-                  )}
+                  {formatFromMB(userDetails?.package_stats?.remaining_data)}
                 </td>
                 <td className="py-4">
                   {userDetails?.static_package?.validity.amount}{" "}
@@ -96,7 +94,9 @@ const UserDetails = ({ isHome }) => {
                         .format("DD-MM-YYYY (HH:mm)")
                     : "-"}
                 </td>
-                <td className="py-4">{userDetails?.esim?.esim_access?.smdp_status || "N/A"}</td>
+                <td className="py-4">
+                  {userDetails?.esim?.esim_access?.smdp_status || "N/A"}
+                </td>
                 <th className="py-3 w-[150px]">
                   <div className="flex items-center justify-center gap-2">
                     <button
