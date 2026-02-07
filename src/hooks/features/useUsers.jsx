@@ -46,7 +46,7 @@ export const useGetUsers = () => {
     page: current_page,
     limit: page_size,
     search: debouncedSearch,
-    ...(filterKey !== undefined && { filter_type: filterKey || null }),
+    ...(filterKey !== undefined && { filter: filterKey || null }),
     forceRefetch: forceRefetchTrigger,
   };
 

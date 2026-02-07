@@ -4,18 +4,21 @@ import Card from "../../components/shared/cards/Card";
 import NotifyContainer from "../../utils/getNotify";
 import TopCustomers from "../topCustomers/TopCustomers";
 import { useHome } from "../../hooks/features/useHome";
+import { getFilterOptions } from "../../utils/chartFilters";
 
 const { Option } = Select;
 
 export default function Home() {
   const {
     isHome,
-    overviewTimeRange,
-    handleRangeChange,
+    statsFilter,
+    handleFilterChange,
     showSkeleton,
     data,
     auth,
   } = useHome();
+
+  const filterOptions = getFilterOptions();
 
   return (
     <section className="h-full relative overflow-auto p-6">
@@ -34,18 +37,20 @@ export default function Home() {
                     className={`
                     text-sm rounded-md inline-block w-auto ml-1
                     [&_.ant-select-selector]:!h-7
-                    [&_.ant-select-selector]:!w-28
+                    [&_.ant-select-selector]:!min-w-[120px]
                     [&_.ant-select-selector]:!px-2
                     [&_.ant-select-selector]:!flex
                     [&_.ant-select-selector]:!items-center
                   `}
-                    value={overviewTimeRange}
-                    onChange={handleRangeChange}
+                    value={statsFilter}
+                    onChange={handleFilterChange}
                     disabled={showSkeleton}
                   >
-                    <Option value="this-year">This Year</Option>
-                    <Option value="this-month">This Month</Option>
-                    <Option value="this-week">This Week</Option>
+                    {filterOptions.map((option) => (
+                      <Option key={option.value} value={option.value}>
+                        {option.label}
+                      </Option>
+                    ))}
                   </Select>
                 </div>
               </div>

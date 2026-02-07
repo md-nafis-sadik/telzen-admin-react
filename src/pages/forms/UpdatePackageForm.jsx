@@ -273,6 +273,34 @@ function UpdatePackageForm() {
               )}
             </div>
 
+            {/* Selling Price - BDT */}
+            <div className="flex flex-col gap-1">
+              <span className="text-black-700">Selling Price (BDT)</span>
+              {isSinglePackageLoading ? (
+                <SkeletonBox className="w-full h-12" />
+              ) : (
+                <input
+                  type="number"
+                  placeholder="Enter selling price in BDT"
+                  className={`w-full border placeholder:text-disabled ${
+                    errors.selling_price
+                      ? "border-red-500"
+                      : "border-natural-400"
+                  } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+                  value={formData.selling_price.BDT}
+                  onChange={(e) =>
+                    handleChange("selling_price.BDT", e.target.value)
+                  }
+                  onWheel={(e) => e.target.blur()}
+                />
+              )}
+              {errors.selling_price && (
+                <span className="text-red-500 text-sm">
+                  {errors.selling_price}
+                </span>
+              )}
+            </div>
+
             {/* Discount Amount */}
             <div className="flex flex-col gap-1">
               <span className="text-black-700">Discount Amount (Optional)</span>

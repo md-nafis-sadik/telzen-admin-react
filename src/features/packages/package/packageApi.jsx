@@ -153,6 +153,7 @@ export const packagesApi = apiSlice.injectEndpoints({
             },
             selling_price: {
               USD: packageData.selling_price?.USD?.toString() || "",
+              BDT: packageData.selling_price?.BDT?.toString() || "",
             },
             discount_on_selling_price: {
               amount:

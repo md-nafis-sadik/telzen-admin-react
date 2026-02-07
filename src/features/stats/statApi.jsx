@@ -5,8 +5,8 @@ export const statsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // GET DASHBOARD STATS
     getDashboardStats: builder.query({
-      query: (timeRange = "this-year") => ({
-        url: `dashboard/stats?search=${timeRange}`,
+      query: (filter = "6_months") => ({
+        url: `dashboard/stats?filter=${filter}`,
         method: "GET",
       }),
       async onQueryStarted(_args, { queryFulfilled, dispatch }) {
@@ -21,14 +21,14 @@ export const statsApi = apiSlice.injectEndpoints({
 
     // GET SALES DATA
 getSalesData: builder.query({
-  query: ({ year = new Date().getFullYear(), currency_code = 'EUR' }) => ({
-    url: `dashboard/sales?year=${year}&currency_code=${currency_code}`,
+  query: ({ filter = '6_months' }) => ({
+    url: `dashboard/sales?filter=${filter}`,
     method: "GET",
   }),
   async onQueryStarted(_args, { queryFulfilled, dispatch }) {
     try {
       const { data } = await queryFulfilled;
-      dispatch(setSalesData(data.data));
+      dispatch(setSalesData(data));
     } catch (err) {
       console.error(err);
     }
@@ -38,14 +38,14 @@ getSalesData: builder.query({
 
     // GET USER GROWTH DATA
     getUserGrowthData: builder.query({
-      query: (year = new Date().getFullYear()) => ({
-        url: `dashboard/user-growth?year=${year}`,
+      query: ({ filter = '6_months' }) => ({
+        url: `dashboard/user-growth?filter=${filter}`,
         method: "GET",
       }),
       async onQueryStarted(_args, { queryFulfilled, dispatch }) {
         try {
           const { data } = await queryFulfilled;
-          dispatch(setUserGrowthData(data.data));
+          dispatch(setUserGrowthData(data));
         } catch (err) {
           console.error(err);
         }

@@ -148,3 +148,7 @@ html {
 .modal-content-closing {
   animation: modalContentScaleOut 0.2s cubic-bezier(0.4, 0, 1, 1);
 }
+
+.recharts-cartesian-axis-tick-value tspan {
+  font-size: 12px;
+}

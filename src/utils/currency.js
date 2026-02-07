@@ -9,6 +9,7 @@ const CURRENCY_SYMBOLS = {
   EUR: '€',
   GBP: '£',
   JPY: '¥',
+  BDT: '৳',
 };
 
 // Setter for currency

@@ -304,14 +304,14 @@ function AddPackageForm() {
 
             {/* Display package coverage countries */}
             {selectedPackage && packageCountries.length > 0 && (
-              <div className="flex-col gap-1 col-span-1 md:col-span-2 mt-2 md:hidden flex">
+              <div className="flex-col gap-1 col-span-1 md:col-span-2 mt-2">
                 <div className="text-xs p-2 border border-neutral-300 rounded-lg bg-neutral-50">
                   Available Coverage: {packageCountries.join(", ")}
                 </div>
               </div>
             )}
 
-            {/* Selling Price */}
+            {/* Selling Price USD */}
             <div className="flex flex-col gap-1">
               <span className="text-black-700">Selling Price (USD)</span>
               <input
@@ -336,14 +336,31 @@ function AddPackageForm() {
               )}
             </div>
 
-            {/* Display package coverage countries */}
-            {selectedPackage && packageCountries.length > 0 && (
-              <div className="flex-col gap-1 col-span-1 md:col-span-2 mt-2 hidden md:flex">
-                <div className="text-xs p-2 border border-neutral-300 rounded-lg bg-neutral-50">
-                  Available Coverage: {packageCountries.join(", ")}
-                </div>
-              </div>
-            )}
+            {/* Selling Price BDT */}
+            <div className="flex flex-col gap-1">
+              <span className="text-black-700">Selling Price (BDT)</span>
+              <input
+                type="number"
+                placeholder="Enter selling price in BDT"
+                className={`w-full border placeholder:text-disabled ${
+                  errors["selling_price.BDT"]
+                    ? "border-red-500"
+                    : "border-natural-400"
+                } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+                value={formData.selling_price.BDT}
+                onChange={(e) =>
+                  handleChange("selling_price.BDT", e.target.value)
+                }
+                onWheel={(e) => e.target.blur()}
+                disabled={!selectedPackage}
+              />
+              {errors["selling_price.BDT"] && (
+                <span className="text-red-500 text-sm">
+                  {errors["selling_price.BDT"]}
+                </span>
+              )}
+            </div>
+
 
             {/* Discount on Selling Price */}
             <div className="flex flex-col gap-1">

@@ -10,32 +10,36 @@ import {
   CartesianGrid,
 } from "recharts";
 import { getSymbol } from "../../../utils/currency";
+import { getFilterOptions } from "../../../utils/chartFilters";
 
 const { Option } = Select;
 
 const SalesLineChart = ({
   data,
-  year,
-  currencyCode,
-  setYear,
-  setCurrency,
+  filter,
+  currency,
+  setFilter,
   isLoading,
 }) => {
-  const currency = getSymbol(currencyCode);
-  const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 4 }, (_, i) => currentYear - i);
+  const currencySymbol = getSymbol(currency);
+  const filterOptions = getFilterOptions();
 
   const formatYAxisValue = (value) => {
     if (value >= 1000000000) {
-      return `${currency}${(value / 1000000000).toFixed(0)}B`;
+      return `${currencySymbol}${(value / 1000000000).toFixed(0)}B`;
     }
     if (value >= 1000000) {
-      return `${currency}${(value / 1000000).toFixed(0)}M`;
+      return `${currencySymbol}${(value / 1000000).toFixed(0)}M`;
     }
     if (value >= 1000) {
-      return `${currency}${(value / 1000).toFixed(0)}k`;
+      return `${currencySymbol}${(value / 1000).toFixed(0)}k`;
     }
-    return `${currency}${value}`;
+    return `${currencySymbol}${value}`;
+  };
+
+  const formatXAxisLabel = (value) => {
+    if (!value) return '';
+    return String(value).substring(0, 3);
   };
 
   return (
@@ -44,52 +48,28 @@ const SalesLineChart = ({
         <h2 className="text-lg font-bold text-neutral-800">Sales</h2>
         <div className="flex gap-2">
           <div>
-            <span className="text-black-600">Year :</span>
+            <span className="text-black-600">Filter:</span>
             <Select
               popupMatchSelectWidth={false}
               className={`
               text-sm rounded-md inline-block w-auto ml-1
               [&_.ant-select-selector]:!h-7
-              [&_.ant-select-selector]:!w-[66px]
+              [&_.ant-select-selector]:!min-w-[120px]
               [&_.ant-select-selector]:!px-2
               [&_.ant-select-selector]:!flex
               [&_.ant-select-selector]:!items-center
             `}
-              value={year.toString()}
-              onChange={(value) => setYear(Number(value))}
+              value={filter}
+              onChange={(value) => setFilter(value)}
               disabled={isLoading}
             >
-              {years.map((yr) => (
-                <Option key={yr} value={yr.toString()}>
-                  {yr}
+              {filterOptions.map((option) => (
+                <Option key={option.value} value={option.value}>
+                  {option.label}
                 </Option>
               ))}
             </Select>
           </div>
-          {/* <div>
-            <span className="text-black-600">Currency :</span>
-            <Select
-              popupMatchSelectWidth={false}
-              className={`
-                text-sm rounded-md inline-block w-auto ml-1
-                [&_.ant-select-selector]:!h-7
-                [&_.ant-select-selector]:!w-[66px]
-                [&_.ant-select-selector]:!px-2
-                [&_.ant-select-selector]:!flex
-                [&_.ant-select-selector]:!items-center
-              `}
-              value={currencyCode}
-              onChange={(value) => setCurrency(value)}
-              disabled={isLoading}
-            >
-              <Option key="USD" value="USD">
-                USD
-              </Option>
-              <Option key="EUR" value="EUR">
-                EUR
-              </Option>
-            </Select>
-          </div> */}
         </div>
       </div>
 
@@ -102,6 +82,7 @@ const SalesLineChart = ({
               tick={{ fontSize: 12 }}
               axisLine={false}
               tickLine={false}
+              tickFormatter={formatXAxisLabel}
             />
             <YAxis
               tickFormatter={formatYAxisValue}
@@ -111,10 +92,10 @@ const SalesLineChart = ({
             />
             <Tooltip
               formatter={(value) => [
-                `${currency}${value.toLocaleString()}`,
+                `${currencySymbol}${value.toLocaleString()}`,
                 "Sales",
               ]}
-              labelFormatter={(name) => `Month: ${name}`}
+              labelFormatter={(name) => `${name}`}
               labelStyle={{ fontWeight: 600 }}
             />
             <Line

@@ -3,6 +3,7 @@ import NotifyContainer from "../../utils/notify";
 import { CustomTable } from "../../shared/custom";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import BusinessDetailsForm from "../forms/BusinessDetailsForm";
 dayjs.extend(utc);
 
 const BusinessDetails = () => {
@@ -27,23 +28,24 @@ const BusinessDetails = () => {
   return (
     <>
       <section className="h-full w-full min-h-[95%] px-4 md:px-6 py-6">
+      <BusinessDetailsForm/>
         {/* Business Info Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="bg-white rounded-2xl p-4 h-32">
-            <p className="text-base text-[#475467] mb-1">Regular Users</p>
-            <p className="text-2xl font-semibold text-blackHigh">
+            <p className="text-base text-black-700 mb-1">Regular Users</p>
+            <p className="text-2xl font-semibold text-black-900">
               100
             </p>
           </div>
           <div className="bg-white rounded-2xl p-4 h-32">
-            <p className="text-base text-[#475467] mb-1">Group Users</p>
-            <p className="text-2xl font-semibold text-blackHigh">
+            <p className="text-base text-black-700 mb-1">Group Users</p>
+            <p className="text-2xl font-semibold text-black-900">
               80
             </p>
           </div>
           <div className="bg-white rounded-2xl p-4 h-32">
-            <p className="text-base text-[#475467] mb-1">Staffs</p>
-            <p className="text-2xl font-semibold text-blackHigh">
+            <p className="text-base text-black-700 mb-1">Staffs</p>
+            <p className="text-2xl font-semibold text-black-900">
               6
             </p>
           </div>

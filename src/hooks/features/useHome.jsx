@@ -8,28 +8,27 @@ import {
 } from "../../utils/svgs";
 import { useGetDashboardStatsQuery } from "../../features/stats";
 import { useSelector } from "react-redux";
+import { DEFAULT_FILTER } from "../../utils/chartFilters";
 
 export const useHome = () => {
   const { auth } = useSelector((state) => state.auth);
   const isHome = true;
-  const [overviewTimeRange, setOverviewTimeRange] = useState("this-year");
-  const prevOverviewTimeRange = useRef(overviewTimeRange);
+  const [statsFilter, setStatsFilter] = useState(DEFAULT_FILTER);
+  const prevStatsFilter = useRef(statsFilter);
   const {
     data: dashboardStats,
     isLoading: isStatsLoading,
     isFetching,
-  } = useGetDashboardStatsQuery(overviewTimeRange);
+  } = useGetDashboardStatsQuery(statsFilter);
   const currency = getSymbol();
 
-  const handleRangeChange = (value) => {
-    prevOverviewTimeRange.current = overviewTimeRange;
-    setOverviewTimeRange(value);
+  const handleFilterChange = (value) => {
+    prevStatsFilter.current = statsFilter;
+    setStatsFilter(value);
   };
 
-  // Only show skeleton when initially loading or when fetching new data for a different time range
-  const showSkeleton =
-    isStatsLoading ||
-    (isFetching && overviewTimeRange !== prevOverviewTimeRange.current);
+  // Only show skeleton when initially loading
+  const showSkeleton = isStatsLoading;
 
   const data = [
     {
@@ -76,8 +75,8 @@ export const useHome = () => {
 
   return {
     isHome,
-    overviewTimeRange,
-    handleRangeChange,
+    statsFilter,
+    handleFilterChange,
     showSkeleton,
     data,
     auth,

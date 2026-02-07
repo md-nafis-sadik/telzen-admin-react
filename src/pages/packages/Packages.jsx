@@ -150,6 +150,7 @@ const PackageKeepGo = () => {
               "Coverage",
               "Retail Price ($)",
               "Final Price ($)",
+              "Final Price (৳)",
               "Discount",
               "Status",
               "Action",
@@ -233,6 +234,10 @@ const PackageKeepGo = () => {
                 <td className="py-3 text-center">
                   {getSymbol()}
                   {singlePackage?.grand_total_selling_price?.USD}
+                </td>
+                <td className="py-3 text-center">
+                  {getSymbol("BDT")}
+                  {singlePackage?.grand_total_selling_price?.BDT}
                 </td>
 
                 <td className="py-3 text-center">

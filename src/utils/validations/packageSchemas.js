@@ -62,6 +62,7 @@ const BasePackageSchema = z.object({
   }),
   selling_price: z.object({
     USD: positiveNumber("Selling price is required and must be positive", 0.01),
+    BDT: positiveNumber("Selling price (BDT) is required and must be positive", 0.01),
   }),
   is_auto_renew_available: z.boolean().default(false),
   discount_on_selling_price: z.object({
@@ -120,6 +121,7 @@ const BasePackageUpKeepgoSchema = z.object({
   }),
   selling_price: z.object({
     USD: positiveNumber("Price is required and must be positive", 0.01),
+    BDT: positiveNumber("Price (BDT) is required and must be positive", 0.01),
   }),
   // vat_on_selling_price: z
   //   .object({

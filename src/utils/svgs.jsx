@@ -1018,9 +1018,9 @@ export const UnblockIcon = ({ w = "20", h = "20" }) => {
       <path
         d="M4 12L8.8 17L20 7"
         stroke="#00AE5B"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );

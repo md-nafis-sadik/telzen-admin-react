@@ -1,68 +1,63 @@
 import { useState, useRef } from "react";
 import { useGetSalesDataQuery, useGetUserGrowthDataQuery } from "../../features/stats";
+import { DEFAULT_FILTER } from "../../utils/chartFilters";
 
 export const useCharts = () => {
-    const currentYear = new Date().getFullYear();
-    const [salesYear, setSalesYear] = useState(currentYear);
-    const [currencyCode, setCurrencyCode] = useState("USD");
-    const [userGrowthYear, setUserGrowthYear] = useState(currentYear);
+    const [salesFilter, setSalesFilter] = useState(DEFAULT_FILTER);
+    const [userGrowthFilter, setUserGrowthFilter] = useState(DEFAULT_FILTER);
 
-    const prevSalesYear = useRef(salesYear);
-    const prevCurrencyCode = useRef(currencyCode);
-    const prevUserGrowthYear = useRef(userGrowthYear);
+    const prevSalesFilter = useRef(salesFilter);
+    const prevUserGrowthFilter = useRef(userGrowthFilter);
 
     const {
         data: salesData,
         isLoading: isSalesLoading,
         isFetching: isSalesFetching
-    } = useGetSalesDataQuery({ year: salesYear, currency_code: currencyCode });
+    } = useGetSalesDataQuery({ filter: salesFilter });
 
     const {
         data: userGrowthData,
         isLoading: isUserGrowthLoading,
         isFetching: isUserGrowthFetching
-    } = useGetUserGrowthDataQuery(userGrowthYear);
+    } = useGetUserGrowthDataQuery({ filter: userGrowthFilter });
 
-    const showSalesSkeleton = isSalesLoading ||
-        (isSalesFetching && salesYear !== prevSalesYear.current);
+    const showSalesSkeleton = isSalesLoading;
 
-    const showUserSkeleton = isUserGrowthLoading ||
-        (isUserGrowthFetching && userGrowthYear !== prevUserGrowthYear.current);
+    const showUserSkeleton = isUserGrowthLoading;
 
-    const handleSalesYearChange = (year) => {
-        prevSalesYear.current = salesYear;
-        setSalesYear(year);
+    const handleSalesFilterChange = (filter) => {
+        prevSalesFilter.current = salesFilter;
+        setSalesFilter(filter);
     };
 
-    const handleCurrencyChange = (year) => {
-        prevCurrencyCode.current = currencyCode;
-        setCurrencyCode(year);
-    };
-
-    const handleUserGrowthYearChange = (year) => {
-        prevUserGrowthYear.current = userGrowthYear;
-        setUserGrowthYear(year);
+    const handleUserGrowthFilterChange = (filter) => {
+        prevUserGrowthFilter.current = userGrowthFilter;
+        setUserGrowthFilter(filter);
     };
 
     const salesChartData = salesData?.data?.chart_data?.map(item => ({
         name: item.name,
-        sales: item.amount
+        sales: item.value,
+        year: item.year,
+        currency: item.currency
     })) || [];
 
     const userChartData = userGrowthData?.data?.chart_data?.map(item => ({
         name: item.name,
-        users: item.count
+        users: item.value || item.count,
+        year: item.year
     })) || [];
+
     return {
-        salesYear,
-        userGrowthYear,
+        salesFilter,
+        userGrowthFilter,
         showSalesSkeleton,
         showUserSkeleton,
-        handleSalesYearChange,
-        handleUserGrowthYearChange,
-        handleCurrencyChange,
+        handleSalesFilterChange,
+        handleUserGrowthFilterChange,
         salesChartData,
         userChartData,
-        currencyCode
+        salesData,
+        userGrowthData
     };
 };
