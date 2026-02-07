@@ -1,129 +1,88 @@
 import { apiSlice } from "../api/apiSlice";
-
-// Dummy data generator
-const generateDummyBusinesses = (count, status) => {
-  const countries = [
-    { code: "US", name: "USA", flag: "🇺🇸" },
-    { code: "GB", name: "UK", flag: "🇬🇧" },
-    { code: "CA", name: "Canada", flag: "🇨🇦" },
-    { code: "JP", name: "Japan", flag: "🇯🇵" },
-    { code: "MY", name: "Malaysia", flag: "🇲🇾" },
-    { code: "IT", name: "Italy", flag: "🇮🇹" },
-    { code: "DE", name: "Germany", flag: "🇩🇪" },
-    { code: "DK", name: "Denmark", flag: "🇩🇰" },
-    { code: "CN", name: "China", flag: "🇨🇳" },
-  ];
-
-  return Array.from({ length: count }, (_, i) => {
-    const country = countries[i % countries.length];
-    const timestamp = Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000;
-    
-    return {
-      _id: `BZ${1225 + i}`,
-      businessId: `TZ${1225 + i}`,
-      country: country.code,
-      countryName: country.name,
-      name: "Lorem ipsum dolor",
-      email: "xyzname@gmail.com",
-      contactPerson: "Samsung S25",
-      timestamp: Math.floor(timestamp / 1000),
-      createdAt: Math.floor(timestamp / 1000),
-      hasDocument: true,
-      status: status,
-    };
-  });
-};
+import {
+  setActiveBusinessData,
+  setPendingBusinessData,
+} from "./businessSlice";
 
 const businessApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
+    // Get Active Businesses
     getActiveBusinesses: builder.query({
-      queryFn: () => {
-        const mockData = generateDummyBusinesses(10, "active");
-        return {
-          data: {
-            data: mockData,
-            meta: {
-              total_items: mockData.length,
-              total_pages: Math.ceil(mockData.length / 10),
-              current_page: 1,
-              page_size: 10,
-              has_next_page: mockData.length > 10,
-              has_previous_page: false,
-            },
-          },
-        };
-      },
+      query: ({ page = 1, limit = 10 }) => ({
+        url: `/business?page=${page}&limit=${limit}`,
+        method: "GET",
+      }),
       async onQueryStarted(args, { queryFulfilled, dispatch }) {
         try {
           const result = await queryFulfilled;
           if (result?.data) {
             dispatch(
-              apiSlice.util.updateQueryData(
-                "getActiveBusinesses",
-                undefined,
-                (draft) => {
-                  return result.data;
-                }
-              )
+              setActiveBusinessData({
+                data: result.data.data,
+                meta: result.data.meta,
+              })
             );
           }
         } catch (error) {
-          console.log(error);
+          console.error(error);
         }
       },
     }),
 
+    // Get Pending Businesses
     getPendingBusinesses: builder.query({
-      queryFn: () => {
-        const mockData = generateDummyBusinesses(10, "pending");
-        return {
-          data: {
-            data: mockData,
-            meta: {
-              total_items: mockData.length,
-              total_pages: Math.ceil(mockData.length / 10),
-              current_page: 1,
-              page_size: 10,
-              has_next_page: mockData.length > 10,
-              has_previous_page: false,
-            },
-          },
-        };
-      },
+      query: ({ page = 1, limit = 10 }) => ({
+        url: `/business?page=${page}&limit=${limit}&status=pending`,
+        method: "GET",
+      }),
       async onQueryStarted(args, { queryFulfilled, dispatch }) {
         try {
           const result = await queryFulfilled;
           if (result?.data) {
             dispatch(
-              apiSlice.util.updateQueryData(
-                "getPendingBusinesses",
-                undefined,
-                (draft) => {
-                  return result.data;
-                }
-              )
+              setPendingBusinessData({
+                data: result.data.data,
+                meta: result.data.meta,
+              })
             );
           }
         } catch (error) {
-          console.log(error);
+          console.error(error);
         }
       },
     }),
 
-    approveBusiness: builder.mutation({
-      queryFn: async ({ id }) => {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        return { data: { success: true, id } };
-      },
+    // Get Single Business Details
+    getSingleBusiness: builder.query({
+      query: (businessId) => ({
+        url: `/business/single?business_id=${businessId}`,
+        method: "GET",
+      }),
     }),
 
-    deleteBusiness: builder.mutation({
-      queryFn: async ({ id }) => {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        return { data: { success: true, id } };
-      },
+    // Block/Unblock Business
+    blockBusiness: builder.mutation({
+      query: ({ businessId, isBlocked }) => ({
+        url: `/business/block?business_id=${businessId}`,
+        method: "PATCH",
+        body: { is_blocked: isBlocked },
+      }),
+    }),
+
+    // Approve Business
+    approveBusiness: builder.mutation({
+      query: (businessId) => ({
+        url: `/business/approve?business_id=${businessId}`,
+        method: "PATCH",
+      }),
+    }),
+
+    // Reject Business
+    rejectBusiness: builder.mutation({
+      query: (businessId) => ({
+        url: `/business/reject?business_id=${businessId}`,
+        method: "PATCH",
+      }),
     }),
   }),
 });
@@ -131,8 +90,10 @@ const businessApi = apiSlice.injectEndpoints({
 export const {
   useGetActiveBusinessesQuery,
   useGetPendingBusinessesQuery,
+  useGetSingleBusinessQuery,
+  useBlockBusinessMutation,
   useApproveBusinessMutation,
-  useDeleteBusinessMutation,
+  useRejectBusinessMutation,
 } = businessApi;
 
 export default businessApi;

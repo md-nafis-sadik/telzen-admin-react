@@ -1,4 +1,4 @@
-import { BlockIcon, EyeSvgIcon, LoadingSpinner } from "../../utils/svgs";
+import { BlockIcon, EyeSvgIcon, LoadingSpinner, UnblockIcon } from "../../utils/svgs";
 import { useGetActiveBusinesses } from "../../hooks/features/useBusiness";
 import NotifyContainer from "../../utils/notify";
 import { CustomTable } from "../../shared/custom";
@@ -16,6 +16,8 @@ const ActiveBusiness = () => {
     dataList,
     updatePageMeta,
     handleViewDetails,
+    handleBlockBusiness,
+    updatingBusinesses,
   } = useGetActiveBusinesses();
 
   return (
@@ -56,11 +58,11 @@ const ActiveBusiness = () => {
                 }`}
                 key={business._id}
               >
-                <td className="py-4">{business.businessId}</td>
+                <td className="py-4">{business.uid}</td>
                 <td className="py-4">
                   <div className="flex items-center gap-2">
                     <ReactCountryFlag
-                      countryCode={business.country}
+                      countryCode={business.country?.code}
                       svg
                       style={{
                         width: "20px",
@@ -69,17 +71,21 @@ const ActiveBusiness = () => {
                         objectFit: "cover",
                       }}
                     />
-                    <span>{business.countryName}</span>
+                    <span>{business.country?.name}</span>
                   </div>
                 </td>
-                <td className="py-4">{business.name}</td>
+                <td className="py-4">{business.business_name}</td>
                 <td className="py-4">{business.email}</td>
-                <td className="py-4">{business.contactPerson}</td>
+                <td className="py-4">{business.contact_person_name}</td>
                 <td className="py-4">
-                  {dayjs.unix(business.timestamp).format("DD/MM/YYYY HH:mm")}
+                  {dayjs.unix(business.created_at).format("DD/MM/YYYY HH:mm")}
                 </td>
                 <td className="py-4 text-[#56AD7E]">
-                  Active
+                  {business.status === "blocked" ? (
+                    <span className="text-red-500">Blocked</span>
+                  ) : (
+                    <span className="text-[#56AD7E]">Active</span>
+                  )}
                 </td>
                 <td className="py-4">
                   <div className="flex items-center justify-center gap-2">
@@ -93,10 +99,23 @@ const ActiveBusiness = () => {
                     </button>
                     <button
                       type="button"
-                      className=""
-                      title="Delete"
+                      className="p-1 rounded transition-colors"
+                      onClick={() =>
+                        handleBlockBusiness(
+                          business._id,
+                          business.status !== "blocked"
+                        )
+                      }
+                      disabled={updatingBusinesses[business._id]}
+                      title={business.status === "blocked" ? "Unblock" : "Block"}
                     >
-                      <BlockIcon/>
+                      {updatingBusinesses[business._id] ? (
+                        <LoadingSpinner />
+                      ) : business.status === "blocked" ? (
+                        <UnblockIcon />
+                      ) : (
+                        <BlockIcon />
+                      )}
                     </button>
                   </div>
                 </td>

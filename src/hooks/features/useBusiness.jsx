@@ -14,8 +14,10 @@ import {
 import {
   useGetActiveBusinessesQuery,
   useGetPendingBusinessesQuery,
+  useGetSingleBusinessQuery,
+  useBlockBusinessMutation,
   useApproveBusinessMutation,
-  useDeleteBusinessMutation,
+  useRejectBusinessMutation,
 } from "../../features/business/businessApi";
 import { getSymbol } from "../../utils/currency";
 
@@ -25,10 +27,18 @@ export const useGetActiveBusinesses = () => {
   const navigate = useNavigate();
   const { activeBusinesses } = useSelector((state) => state.business);
   const { dataList, meta } = activeBusinesses;
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const [updatingBusinesses, setUpdatingBusinesses] = useState({});
 
-  const { data, isLoading, isError, error } = useGetActiveBusinessesQuery(undefined, {
-    refetchOnMountOrArgChange: false,
-  });
+  const { data, isLoading, isError, error, refetch } = useGetActiveBusinessesQuery(
+    { page, limit },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
+
+  const [blockBusiness] = useBlockBusinessMutation();
 
   useEffect(() => {
     if (data?.data) {
@@ -37,13 +47,31 @@ export const useGetActiveBusinesses = () => {
   }, [data, dispatch]);
 
   const updatePageMeta = (value) => {
-    // Handle pagination if needed
-    console.log("Update page meta:", value);
+    setPage(value);
   };
 
   const handleViewDetails = (business) => {
     dispatch(setSelectedBusiness(business));
     navigate(`/business/${business._id}`);
+  };
+
+  const handleBlockBusiness = async (businessId, isBlocked) => {
+    setUpdatingBusinesses((prev) => ({ ...prev, [businessId]: true }));
+    try {
+      await blockBusiness({ businessId, isBlocked }).unwrap();
+      successNotify(
+        isBlocked
+          ? "Business blocked successfully!"
+          : "Business unblocked successfully!"
+      );
+      refetch();
+    } catch (error) {
+      errorNotify(
+        error?.data?.message || "Failed to update business status. Please try again."
+      );
+    } finally {
+      setUpdatingBusinesses((prev) => ({ ...prev, [businessId]: false }));
+    }
   };
 
   return {
@@ -54,6 +82,8 @@ export const useGetActiveBusinesses = () => {
     dataList,
     updatePageMeta,
     handleViewDetails,
+    handleBlockBusiness,
+    updatingBusinesses,
   };
 };
 
@@ -63,10 +93,15 @@ export const useGetPendingBusinesses = () => {
   const { pendingBusinesses, isConfirmModalOpen, selectedBusiness, confirmModalType } =
     useSelector((state) => state.business);
   const { dataList, meta } = pendingBusinesses;
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
 
-  const { data, isLoading, isError, error } = useGetPendingBusinessesQuery(undefined, {
-    refetchOnMountOrArgChange: false,
-  });
+  const { data, isLoading, isError, error, refetch } = useGetPendingBusinessesQuery(
+    { page, limit },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
 
   useEffect(() => {
     if (data?.data) {
@@ -76,20 +111,19 @@ export const useGetPendingBusinesses = () => {
 
   const [approveBusiness, { isLoading: approveLoading }] =
     useApproveBusinessMutation();
-  const [deleteBusiness, { isLoading: deleteLoading }] =
-    useDeleteBusinessMutation();
+  const [rejectBusiness, { isLoading: rejectLoading }] =
+    useRejectBusinessMutation();
 
   const updatePageMeta = (value) => {
-    // Handle pagination if needed
-    console.log("Update page meta:", value);
+    setPage(value);
   };
 
   const handleOpenApproveModal = (business) => {
     dispatch(openConfirmModal({ business, type: "approve" }));
   };
 
-  const handleOpenDeleteModal = (business) => {
-    dispatch(openConfirmModal({ business, type: "delete" }));
+  const handleOpenRejectModal = (business) => {
+    dispatch(openConfirmModal({ business, type: "reject" }));
   };
 
   const handleCloseModal = () => {
@@ -101,15 +135,18 @@ export const useGetPendingBusinesses = () => {
 
     try {
       if (confirmModalType === "approve") {
-        await approveBusiness({ id: selectedBusiness._id }).unwrap();
+        await approveBusiness(selectedBusiness._id).unwrap();
         dispatch(approveBusinessAction(selectedBusiness._id));
         successNotify("Business approved successfully!");
-      } else if (confirmModalType === "delete") {
-        await deleteBusiness({ id: selectedBusiness._id }).unwrap();
+        refetch();
+        handleCloseModal();
+      } else if (confirmModalType === "reject") {
+        await rejectBusiness(selectedBusiness._id).unwrap();
         dispatch(deleteBusinessAction(selectedBusiness._id));
-        successNotify("Business deleted successfully!");
+        successNotify("Business rejected successfully!");
+        refetch();
+        handleCloseModal();
       }
-      handleCloseModal();
     } catch (error) {
       errorNotify(
         error?.data?.message ||
@@ -126,100 +163,76 @@ export const useGetPendingBusinesses = () => {
     dataList,
     updatePageMeta,
     handleOpenApproveModal,
-    handleOpenDeleteModal,
+    handleOpenRejectModal,
     handleConfirm,
     handleCloseModal,
     isConfirmModalOpen,
     selectedBusiness,
     confirmModalType,
     approveLoading,
-    deleteLoading,
+    rejectLoading,
   };
 };
 
 // Hook for Business Details
-export const useGetBusinessDetails = () => {
-  const { selectedBusiness } = useSelector((state) => state.business);
+export const useGetBusinessDetails = (businessId) => {
   const navigate = useNavigate();
 
-  // Mock transaction data for the business
-  const [transactionData] = useState([
-    {
-      id: "1",
-      date: "25-10-2024",
-      package: "Package 1",
-      customer: "Cust Name 1",
-      groupName: "-",
-      customerEmail: "cust@gmail.com",
-      customerPhone: "+88 0215521552",
-      amount: "$299",
-      revenue: "$88",
-    },
-    {
-      id: "2",
-      date: "25-10-2024",
-      package: "Package 1",
-      customer: "Cust Name 1",
-      groupName: "-",
-      customerEmail: "cust@gmail.com",
-      customerPhone: "+88 0215521552",
-      amount: "$299",
-      revenue: "$10",
-    },
-    {
-      id: "3",
-      date: "25-10-2024",
-      package: "Package 1",
-      customer: "Cust Name 1",
-      groupName: "-",
-      customerEmail: "cust@gmail.com",
-      customerPhone: "+88 0215521552",
-      amount: "$299",
-      revenue: "$1",
-    },
-  ]);
+  const {
+    data: businessData,
+    isLoading,
+    isError,
+  } = useGetSingleBusinessQuery(businessId, {
+    skip: !businessId,
+  });
 
-    const businessSummary = [
-      {
-        title: "Package Sold",
-        number:  0,
-        bgColor: "bg-[#CDFFE9]",
-      },
-      {
-        title: "Selling Value",
-        number:  0,
-        currency: getSymbol(),
-        bgColor: "bg-[#FFE5CC]",
-      },
-      {
-        title: "Package Fee",
-        number:  0,
-        currency: getSymbol(),
-        bgColor: "bg-[#C9ECFF]",
-      },
-      {
-        title: "Gross Revenue",
-        number:  0,
-        currency: getSymbol(),
-        bgColor: "bg-[#FFE0DF]",
-      },
-      {
-        title: "Withdrawn",
-        number: 0,
-        currency: getSymbol(),
-        bgColor: "bg-yellowLight",
-      },
-    ];
+  const business = businessData?.data;
+  const stats = business?.details?.stats;
+  const orders = business?.details?.orders || [];
+
+  const businessSummary = [
+    {
+      title: "Package Sold",
+      number: stats?.total_package_sold || 0,
+      bgColor: "bg-[#CDFFE9]",
+    },
+    {
+      title: "Selling Value",
+      number: stats?.total_selling_value || 0,
+      currency: getSymbol(stats?.currency),
+      bgColor: "bg-[#FFE5CC]",
+    },
+    {
+      title: "Package Fee",
+      number: stats?.total_retailer_fee || 0,
+      currency: getSymbol(stats?.currency),
+      bgColor: "bg-[#C9ECFF]",
+    },
+    {
+      title: "Gross Revenue",
+      number: stats?.revenue || 0,
+      currency: getSymbol(stats?.currency),
+      bgColor: "bg-[#FFE0DF]",
+    },
+    {
+      title: "Withdrawn",
+      number: stats?.withdrawn_amount || 0,
+      currency: getSymbol(stats?.currency),
+      bgColor: "bg-yellowLight",
+    },
+  ];
 
   const handleBack = () => {
     navigate("/business/active");
   };
 
   return {
-    selectedBusiness,
-    transactionData,
+    selectedBusiness: business,
+    transactionData: orders,
     handleBack,
     businessSummary,
-    isLoading: false,
+    isLoading,
+    isError,
+    stats,
   };
 };

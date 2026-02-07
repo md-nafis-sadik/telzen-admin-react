@@ -191,7 +191,7 @@ function Sidebar({ showSidebar, setShowSidebar }) {
           </li>
 
           {/* Business */}
-          {/* <li>
+          <li>
             <div
               className={`${
                 isBusinessActive ? "active py-3 pr-4" : "p-4 pl-5"
@@ -214,10 +214,10 @@ function Sidebar({ showSidebar, setShowSidebar }) {
 
               <span className={`duration-300 ${showSidebar ? "" : "hidden"}`}>
                 Business
-              </span> */}
+              </span>
 
               {/* Dropdown icon */}
-              {/* <svg
+              <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className={`ml-auto transform transition-transform ${
                   isSubmenuOpen["business"] ? "rotate-180" : ""
@@ -235,16 +235,16 @@ function Sidebar({ showSidebar, setShowSidebar }) {
                   strokeLinejoin="round"
                 />
               </svg>
-            </div> */}
+            </div>
 
             {/* Submenu */}
-            {/* <div
+            <div
               ref={(ref) => (submenuRef.current["business"] = ref)}
               className="flex flex-col ml-8"
               style={businessSubmenuStyle}
-            > */}
+            >
               {/* Active */}
-              {/* <div>
+              <div>
                 <Link
                   to="/business/active"
                   className={`${
@@ -260,10 +260,10 @@ function Sidebar({ showSidebar, setShowSidebar }) {
                     Active
                   </span>
                 </Link>
-              </div> */}
+              </div>
 
               {/* Pending */}
-              {/* <div>
+              <div>
                 <Link
                   to="/business/pending"
                   className={`${
@@ -281,7 +281,7 @@ function Sidebar({ showSidebar, setShowSidebar }) {
                 </Link>
               </div>
             </div>
-          </li> */}
+          </li>
 
           {/* Packages(Setup */}
 

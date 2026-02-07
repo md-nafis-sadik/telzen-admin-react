@@ -13,8 +13,10 @@ const DeleteConfirmationModal = ({
 
   if (!isOpen && !isClosing) return null;
 
-  const handleClose = () => {
-    setIsClosing(true);
+  const handleConfirm = () => {
+    if (!isLoading) {
+      onConfirm();
+    }
   };
 
   const handleAnimationEnd = () => {
@@ -24,24 +26,13 @@ const DeleteConfirmationModal = ({
     }
   };
 
-  const handleConfirm = () => {
-    setIsClosing(true);
-  };
-
-  const handleConfirmAnimationEnd = () => {
-    if (isClosing) {
-      setIsClosing(false);
-      onConfirm();
-    }
-  };
-
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
       <div
         className={`absolute inset-0 bg-black bg-opacity-50 ${
           isClosing ? "modal-backdrop-closing" : "modal-backdrop-animate"
         }`}
-        onClick={handleClose}
+        onClick={() => !isLoading && setIsClosing(true)}
         onAnimationEnd={handleAnimationEnd}
       ></div>
 
@@ -63,10 +54,9 @@ const DeleteConfirmationModal = ({
         <button
           onClick={handleConfirm}
           disabled={isLoading}
-          onAnimationEnd={handleConfirmAnimationEnd}
           className="w-full bg-black-800 hover:bg-black text-white text-base font-semibold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isLoading ? "Processing..." : "Got it"}
+          {isLoading ? "Requesting..." : "Got it"}
         </button>
       </div>
     </div>

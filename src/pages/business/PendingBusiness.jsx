@@ -5,11 +5,14 @@ import { CustomTable } from "../../shared/custom";
 import ReactCountryFlag from "react-country-flag";
 import ApproveModal from "../../components/modals/ApproveBusinessModal";
 import DeleteConfirmationModal from "../../components/modals/DeleteConfirmationModal";
+import DocumentShow from "../../shared/ui/DocumentShow";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { useState } from "react";
 dayjs.extend(utc);
 
 const PendingBusiness = () => {
+  const [documentModal, setDocumentModal] = useState({ isOpen: false, title: "", fileUrl: "" });
   const {
     isLoading,
     isError,
@@ -18,15 +21,27 @@ const PendingBusiness = () => {
     dataList,
     updatePageMeta,
     handleOpenApproveModal,
-    handleOpenDeleteModal,
+    handleOpenRejectModal,
     handleConfirm,
     handleCloseModal,
     isConfirmModalOpen,
     selectedBusiness,
     confirmModalType,
     approveLoading,
-    deleteLoading,
+    rejectLoading,
   } = useGetPendingBusinesses();
+
+  const handleOpenDocumentModal = (document) => {
+    setDocumentModal({
+      isOpen: true,
+      title: document.original_name,
+      fileUrl: document.path,
+    });
+  };
+
+  const handleCloseDocumentModal = () => {
+    setDocumentModal({ isOpen: false, title: "", fileUrl: "" });
+  };
 
   return (
     <>
@@ -66,11 +81,11 @@ const PendingBusiness = () => {
                 }`}
                 key={business._id}
               >
-                <td className="py-4">{business.businessId}</td>
+                <td className="py-4">{business.uid}</td>
                 <td className="py-4">
                   <div className="flex items-center gap-2">
                     <ReactCountryFlag
-                      countryCode={business.country}
+                      countryCode={business.country?.code}
                       svg
                       style={{
                         width: "20px",
@@ -79,20 +94,22 @@ const PendingBusiness = () => {
                         objectFit: "cover",
                       }}
                     />
-                    <span>{business.countryName}</span>
+                    <span>{business.country?.name}</span>
                   </div>
                 </td>
-                <td className="py-4">{business.name}</td>
+                <td className="py-4">{business.business_name}</td>
                 <td className="py-4">{business.email}</td>
-                <td className="py-4">{business.contactPerson}</td>
+                <td className="py-4">{business.contact_person_name}</td>
                 <td className="py-4">
-                  {dayjs.unix(business.timestamp).format("DD/MM/YYYY HH:mm")}
+                  {dayjs.unix(business.created_at).format("DD/MM/YYYY HH:mm")}
                 </td>
                 <td className="py-4 flex items-center justify-center">
-                  {business.hasDocument && (
+                  {business.document && (
                     <button
                       type="button"
-                      className=""
+                      onClick={() => handleOpenDocumentModal(business.document)}
+                      className="cursor-pointer"
+                      title={business.document.original_name}
                     >
                       <DocumentDeleteIcon/>
                     </button>
@@ -111,8 +128,8 @@ const PendingBusiness = () => {
                     <button
                       type="button"
                       className=""
-                      onClick={() => handleOpenDeleteModal(business)}
-                      title="Delete Business"
+                      onClick={() => handleOpenRejectModal(business)}
+                      title="Reject Business"
                     >
                       <CrossIcon/>
                     </button>
@@ -136,15 +153,26 @@ const PendingBusiness = () => {
         />
       )}
 
-      {/* Delete Modal */}
-      {isConfirmModalOpen && confirmModalType === "delete" && (
+      {/* Reject Modal */}
+      {isConfirmModalOpen && confirmModalType === "reject" && (
         <DeleteConfirmationModal
           isOpen={isConfirmModalOpen}
           onClose={handleCloseModal}
           onConfirm={handleConfirm}
-          title="Delete Business"
-          message="Are you sure to delete the business?"
-          isLoading={deleteLoading}
+          title="Reject Business"
+          message="Are you sure to reject the business?"
+          isLoading={rejectLoading}
+        />
+      )}
+
+      {/* Document Modal */}
+      {documentModal.isOpen && (
+        <DocumentShow
+          title={documentModal.title}
+          fileUrl={documentModal.fileUrl}
+          isOpen={documentModal.isOpen}
+          onClose={handleCloseDocumentModal}
+          showTrigger={false}
         />
       )}
 
