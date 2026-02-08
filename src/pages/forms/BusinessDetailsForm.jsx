@@ -2,7 +2,7 @@ import BackToPrev from "../../components/shared/back/BackToPrev";
 import DocumentShow from "../../shared/ui/DocumentShow";
 import ReactCountryFlag from "react-country-flag";
 
-function BusinessDetailsForm({ business, isLoading }) {
+function BusinessDetailsForm({ business, isLoading, activeTab }) {
   if (isLoading) {
     return (
       <div className="bg-white p-6 rounded-2xl mb-6">
@@ -25,7 +25,7 @@ function BusinessDetailsForm({ business, isLoading }) {
   return (
 
       <div className="bg-white p-6 rounded-2xl mb-6">
-        <BackToPrev path="/" title="Business Details"></BackToPrev>
+        <BackToPrev path={`/business/${activeTab}`} title="Business Details"></BackToPrev>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-12">
             {/* Name */}
             <div className="flex flex-col gap-1">

@@ -1,7 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import {
-  setPaginatedDataFromApi,
-} from "../../redux-rtk/utils/reduxHelper";
+import { setPaginatedDataFromApi } from "../../redux-rtk/utils/reduxHelper";
 
 const initialState = {
   activeBusinesses: {
@@ -31,6 +29,7 @@ const initialState = {
   selectedBusiness: null,
   isConfirmModalOpen: false,
   confirmModalType: null,
+  activeTab: "active",
 };
 
 const businessSlice = createSlice({
@@ -67,10 +66,10 @@ const businessSlice = createSlice({
 
     approveBusiness: (state, action) => {
       const businessId = action.payload;
-      
+
       // Find the business in pending list
       const businessToApprove = state.pendingBusinesses.dataList.find(
-        (b) => b._id === businessId
+        (b) => b._id === businessId,
       );
 
       if (businessToApprove) {
@@ -81,9 +80,8 @@ const businessSlice = createSlice({
         };
 
         // Remove from pending
-        state.pendingBusinesses.dataList = state.pendingBusinesses.dataList.filter(
-          (b) => b._id !== businessId
-        );
+        state.pendingBusinesses.dataList =
+          state.pendingBusinesses.dataList.filter((b) => b._id !== businessId);
         state.pendingBusinesses.meta.total_items -= 1;
 
         // Add to active
@@ -109,9 +107,8 @@ const businessSlice = createSlice({
       const businessId = action.payload;
 
       // Remove from pending list
-      state.pendingBusinesses.dataList = state.pendingBusinesses.dataList.filter(
-        (b) => b._id !== businessId
-      );
+      state.pendingBusinesses.dataList =
+        state.pendingBusinesses.dataList.filter((b) => b._id !== businessId);
       state.pendingBusinesses.meta.total_items -= 1;
 
       // Update data objects
@@ -137,6 +134,10 @@ const businessSlice = createSlice({
       state.selectedBusiness = null;
       state.confirmModalType = null;
     },
+
+    setActiveTab: (state, action) => {
+      state.activeTab = action.payload;
+    },
   },
 });
 
@@ -149,4 +150,5 @@ export const {
   setSelectedBusiness,
   openConfirmModal,
   closeConfirmModal,
+  setActiveTab,
 } = businessSlice.actions;

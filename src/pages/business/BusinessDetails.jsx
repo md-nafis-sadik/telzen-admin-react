@@ -18,13 +18,14 @@ const BusinessDetails = () => {
     businessSummary,
     isLoading,
     stats,
+    activeTab,
   } = useGetBusinessDetails(Id);
 
   if (isLoading || selectedBusiness) {
     return (
       <>
         <section className="h-full w-full min-h-[95%] px-4 md:px-6 py-6">
-          <BusinessDetailsForm business={selectedBusiness} isLoading={isLoading} />
+          <BusinessDetailsForm business={selectedBusiness} isLoading={isLoading} activeTab={activeTab} />
           {/* Business Info Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             {isLoading ? (

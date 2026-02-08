@@ -1,4 +1,9 @@
-import { CrossIcon, DocumentDeleteIcon, LoadingSpinner, UnblockIcon } from "../../utils/svgs";
+import {
+  CrossIcon,
+  DocumentDeleteIcon,
+  EyeSvgIcon,
+  UnblockIcon,
+} from "../../utils/svgs";
 import { useGetPendingBusinesses } from "../../hooks/features/useBusiness";
 import NotifyContainer from "../../utils/notify";
 import { CustomTable } from "../../shared/custom";
@@ -12,7 +17,11 @@ import { useState } from "react";
 dayjs.extend(utc);
 
 const PendingBusiness = () => {
-  const [documentModal, setDocumentModal] = useState({ isOpen: false, title: "", fileUrl: "" });
+  const [documentModal, setDocumentModal] = useState({
+    isOpen: false,
+    title: "",
+    fileUrl: "",
+  });
   const {
     isLoading,
     isError,
@@ -24,6 +33,7 @@ const PendingBusiness = () => {
     handleOpenRejectModal,
     handleConfirm,
     handleCloseModal,
+    handleViewDetails,
     isConfirmModalOpen,
     selectedBusiness,
     confirmModalType,
@@ -111,12 +121,20 @@ const PendingBusiness = () => {
                       className="cursor-pointer"
                       title={business.document.original_name}
                     >
-                      <DocumentDeleteIcon/>
+                      <DocumentDeleteIcon />
                     </button>
                   )}
                 </td>
                 <td className="py-4">
                   <div className="flex items-center justify-center gap-2">
+                    <button
+                      type="button"
+                      className=""
+                      onClick={() => handleViewDetails(business)}
+                      title="View Details"
+                    >
+                      <EyeSvgIcon />
+                    </button>
                     <button
                       type="button"
                       className=""
@@ -131,7 +149,7 @@ const PendingBusiness = () => {
                       onClick={() => handleOpenRejectModal(business)}
                       title="Reject Business"
                     >
-                      <CrossIcon/>
+                      <CrossIcon />
                     </button>
                   </div>
                 </td>

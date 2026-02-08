@@ -10,6 +10,7 @@ import {
   setSelectedBusiness,
   openConfirmModal,
   closeConfirmModal,
+  setActiveTab,
 } from "../../features/business/businessSlice";
 import {
   useGetActiveBusinessesQuery,
@@ -31,12 +32,13 @@ export const useGetActiveBusinesses = () => {
   const [limit] = useState(10);
   const [updatingBusinesses, setUpdatingBusinesses] = useState({});
 
-  const { data, isLoading, isError, error, refetch } = useGetActiveBusinessesQuery(
-    { page, limit },
-    {
-      refetchOnMountOrArgChange: true,
-    }
-  );
+  const { data, isLoading, isError, error, refetch } =
+    useGetActiveBusinessesQuery(
+      { page, limit },
+      {
+        refetchOnMountOrArgChange: true,
+      },
+    );
 
   const [blockBusiness] = useBlockBusinessMutation();
 
@@ -52,6 +54,7 @@ export const useGetActiveBusinesses = () => {
 
   const handleViewDetails = (business) => {
     dispatch(setSelectedBusiness(business));
+    dispatch(setActiveTab("active"));
     navigate(`/business/${business._id}`);
   };
 
@@ -62,12 +65,13 @@ export const useGetActiveBusinesses = () => {
       successNotify(
         isBlocked
           ? "Business blocked successfully!"
-          : "Business unblocked successfully!"
+          : "Business unblocked successfully!",
       );
       refetch();
     } catch (error) {
       errorNotify(
-        error?.data?.message || "Failed to update business status. Please try again."
+        error?.data?.message ||
+          "Failed to update business status. Please try again.",
       );
     } finally {
       setUpdatingBusinesses((prev) => ({ ...prev, [businessId]: false }));
@@ -89,19 +93,25 @@ export const useGetActiveBusinesses = () => {
 
 // Hook for Pending Businesses
 export const useGetPendingBusinesses = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { pendingBusinesses, isConfirmModalOpen, selectedBusiness, confirmModalType } =
-    useSelector((state) => state.business);
+  const {
+    pendingBusinesses,
+    isConfirmModalOpen,
+    selectedBusiness,
+    confirmModalType,
+  } = useSelector((state) => state.business);
   const { dataList, meta } = pendingBusinesses;
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
 
-  const { data, isLoading, isError, error, refetch } = useGetPendingBusinessesQuery(
-    { page, limit },
-    {
-      refetchOnMountOrArgChange: true,
-    }
-  );
+  const { data, isLoading, isError, error, refetch } =
+    useGetPendingBusinessesQuery(
+      { page, limit },
+      {
+        refetchOnMountOrArgChange: true,
+      },
+    );
 
   useEffect(() => {
     if (data?.data) {
@@ -130,6 +140,12 @@ export const useGetPendingBusinesses = () => {
     dispatch(closeConfirmModal());
   };
 
+  const handleViewDetails = (business) => {
+    dispatch(setSelectedBusiness(business));
+    dispatch(setActiveTab("pending"));
+    navigate(`/business/${business._id}`);
+  };
+
   const handleConfirm = async () => {
     if (!selectedBusiness) return;
 
@@ -150,7 +166,7 @@ export const useGetPendingBusinesses = () => {
     } catch (error) {
       errorNotify(
         error?.data?.message ||
-          `Failed to ${confirmModalType} business. Please try again.`
+          `Failed to ${confirmModalType} business. Please try again.`,
       );
     }
   };
@@ -166,6 +182,7 @@ export const useGetPendingBusinesses = () => {
     handleOpenRejectModal,
     handleConfirm,
     handleCloseModal,
+    handleViewDetails,
     isConfirmModalOpen,
     selectedBusiness,
     confirmModalType,
@@ -185,6 +202,8 @@ export const useGetBusinessDetails = (businessId) => {
   } = useGetSingleBusinessQuery(businessId, {
     skip: !businessId,
   });
+
+  const { activeTab } = useSelector((state) => state.business);
 
   const business = businessData?.data;
   const stats = business?.details?.stats;
@@ -234,5 +253,6 @@ export const useGetBusinessDetails = (businessId) => {
     isLoading,
     isError,
     stats,
+    activeTab,
   };
 };
