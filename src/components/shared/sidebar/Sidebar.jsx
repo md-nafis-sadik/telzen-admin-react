@@ -41,8 +41,9 @@ function Sidebar({ showSidebar, setShowSidebar }) {
       "popular-country",
     ].includes(path);
     const isBusinessOpen = ["business"].includes(path);
+    const isVendorOpen = ["vendors"].includes(path);
 
-    return { packages: isPackagesOpen, business: isBusinessOpen };
+    return { packages: isPackagesOpen, business: isBusinessOpen, vendors: isVendorOpen };
   });
   const activePath = location.pathname.split("/").filter(Boolean)[0] || "/";
   const isPackagesActive = [
@@ -53,6 +54,7 @@ function Sidebar({ showSidebar, setShowSidebar }) {
     "popular-country",
   ].includes(activePath);
   const isBusinessActive = ["business"].includes(activePath);
+  const isVendorActive = ["vendors"].includes(activePath);
 
   const submenuStyle = {
     maxHeight: isSubmenuOpen["packages"] && showSidebar ? "1000px" : "0",
@@ -63,6 +65,13 @@ function Sidebar({ showSidebar, setShowSidebar }) {
 
   const businessSubmenuStyle = {
     maxHeight: isSubmenuOpen["business"] && showSidebar ? "1000px" : "0",
+    transition: "max-height 300ms ease-in-out",
+    overflow: "hidden",
+    willChange: "max-height",
+  };
+
+  const vendorSubmenuStyle = {
+    maxHeight: isSubmenuOpen["vendors"] && showSidebar ? "1000px" : "0",
     transition: "max-height 300ms ease-in-out",
     overflow: "hidden",
     willChange: "max-height",
@@ -272,6 +281,99 @@ function Sidebar({ showSidebar, setShowSidebar }) {
                       : "py-3 pl-6"
                   } flex items-center gap-4 w-full rounded-lg`}
                   onClick={() => dispatch(setActivePath("business"))}
+                >
+                  <span
+                    className={`duration-300 ${showSidebar ? "" : "hidden"}`}
+                  >
+                    Pending
+                  </span>
+                </Link>
+              </div>
+            </div>
+          </li>
+
+          {/* Vendors */}
+          <li>
+            <div
+              className={`${
+                isVendorActive ? "active py-3 pr-4" : "p-4 pl-5"
+              } flex items-center gap-4 w-full rounded-lg cursor-pointer`}
+              onClick={() => {
+                if (!showSidebar) {
+                  setShowSidebar(true);
+                }
+                handleDropdown("vendors");
+              }}
+            >
+              {isVendorActive && (
+                <div className="border-2 rounded-full border-main-500 w-1 h-[24px] bg-main-500"></div>
+              )}
+              {isVendorActive ? (
+                <ActiveBusinessIcon className="shrink-0" />
+              ) : (
+                <InactiveBusinessIcon className="shrink-0" />
+              )}
+
+              <span className={`duration-300 ${showSidebar ? "" : "hidden"}`}>
+                Vendors
+              </span>
+
+              {/* Dropdown icon */}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className={`ml-auto transform transition-transform ${
+                  isSubmenuOpen["vendors"] ? "rotate-180" : ""
+                }`}
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <path
+                  d="M19 9L12 16L5 9"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+
+            {/* Submenu */}
+            <div
+              ref={(ref) => (submenuRef.current["vendors"] = ref)}
+              className="flex flex-col ml-8"
+              style={vendorSubmenuStyle}
+            >
+              {/* Active */}
+              <div>
+                <Link
+                  to="/vendors/active"
+                  className={`${
+                    location.pathname === "/vendors/active"
+                      ? "py-3 pl-6 font-medium text-main-500"
+                      : "py-3 pl-6"
+                  } flex items-center gap-4 w-full rounded-lg`}
+                  onClick={() => dispatch(setActivePath("vendors"))}
+                >
+                  <span
+                    className={`duration-300 ${showSidebar ? "" : "hidden"}`}
+                  >
+                    Active
+                  </span>
+                </Link>
+              </div>
+
+              {/* Pending */}
+              <div>
+                <Link
+                  to="/vendors/pending"
+                  className={`${
+                    location.pathname === "/vendors/pending"
+                      ? "py-3 pl-6 font-medium text-main-500"
+                      : "py-3 pl-6"
+                  } flex items-center gap-4 w-full rounded-lg`}
+                  onClick={() => dispatch(setActivePath("vendors"))}
                 >
                   <span
                     className={`duration-300 ${showSidebar ? "" : "hidden"}`}

@@ -9,7 +9,7 @@ const businessApi = apiSlice.injectEndpoints({
     // Get Active Businesses
     getActiveBusinesses: builder.query({
       query: ({ page = 1, limit = 10 }) => ({
-        url: `/business?page=${page}&limit=${limit}`,
+        url: `/business?page=${page}&limit=${limit}&type=company`,
         method: "GET",
       }),
       async onQueryStarted(args, { queryFulfilled, dispatch }) {
@@ -32,7 +32,7 @@ const businessApi = apiSlice.injectEndpoints({
     // Get Pending Businesses
     getPendingBusinesses: builder.query({
       query: ({ page = 1, limit = 10 }) => ({
-        url: `/business?page=${page}&limit=${limit}&status=pending`,
+        url: `/business?page=${page}&limit=${limit}&type=company&status=pending`,
         method: "GET",
       }),
       async onQueryStarted(args, { queryFulfilled, dispatch }) {

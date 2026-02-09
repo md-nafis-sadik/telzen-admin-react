@@ -1,36 +1,36 @@
-import { useGetBusinessDetails } from "../../hooks/features/useBusiness";
+import { useGetVendorDetails } from "../../hooks/features/useVendor";
 import { useParams } from "react-router-dom";
 import NotifyContainer from "../../utils/notify";
 import { CustomTable } from "../../shared/custom";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import BusinessDetailsForm from "../forms/BusinessDetailsForm";
+import VendorDetailsForm from "../forms/VendorDetailsForm";
 import { getSymbol } from "../../utils/currency";
 import { ErrorUi } from "../../shared/ui";
 dayjs.extend(utc);
 
-const BusinessDetails = () => {
+const VendorDetails = () => {
   const { Id } = useParams();
   const {
-    selectedBusiness,
+    selectedVendor,
     transactionData,
     handleBack,
-    businessSummary,
+    vendorSummary,
     isLoading,
     stats,
     activeTab,
-  } = useGetBusinessDetails(Id);
+  } = useGetVendorDetails(Id);
 
-  if (isLoading || selectedBusiness) {
+  if (isLoading || selectedVendor) {
     return (
       <>
         <section className="h-full w-full min-h-[95%] px-4 md:px-6 py-6">
-          <BusinessDetailsForm
-            business={selectedBusiness}
+          <VendorDetailsForm
+            vendor={selectedVendor}
             isLoading={isLoading}
             activeTab={activeTab}
           />
-          {/* Business Info Cards */}
+          {/* Vendor Info Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             {isLoading ? (
               // Skeleton for loading state
@@ -86,7 +86,7 @@ const BusinessDetails = () => {
                       </div>
                     ))
                   : // Actual content when loaded
-                    businessSummary?.map((item, i) => (
+                    vendorSummary?.map((item, i) => (
                       <div
                         key={i}
                         className={`${item.bgColor} p-5 rounded-xl flex flex-col justify-between h-full`}
@@ -107,27 +107,16 @@ const BusinessDetails = () => {
             <div className="mb-4">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-[20px] font-semibold text-[#101828]">
-                    Sales
+                  <h3 className="text-[18px] font-semibold text-blackHigh">
+                    Sales Transactions
                   </h3>
-                  <p className="text-sm text-[#475467]">
-                    All activity shows here
-                  </p>
                 </div>
-                <button className="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-800 transition-colors">
-                  See All
-                </button>
               </div>
 
               <CustomTable
                 isLoading={isLoading}
                 isError={false}
                 status={200}
-                current_page={1}
-                page_size={10}
-                total_pages={1}
-                total_items={transactionData.length}
-                updatePageMeta={() => {}}
                 columns={[
                   "Order ID",
                   "Date",
@@ -138,32 +127,33 @@ const BusinessDetails = () => {
                   "Amount",
                   "Revenue",
                 ]}
-                dataLength={transactionData.length}
+                dataLength={transactionData?.length || 0}
+                showPagination={false}
               >
-                {transactionData.map((order, index) => (
+                {transactionData?.map((transaction, index) => (
                   <tr
                     className={`bg-white text-blackSemi relative ${
                       index !== transactionData.length - 1
                         ? "after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:border-b after:border-natural"
                         : ""
                     }`}
-                    key={order._id}
+                    key={transaction._id}
                   >
-                    <td className="py-4">{order.uid}</td>
+                    <td className="py-4">{transaction.uid}</td>
                     <td className="py-4">
-                      {dayjs.unix(order.created_at).format("DD/MM/YYYY")}
+                      {dayjs.unix(transaction.created_at).format("DD/MM/YYYY")}
                     </td>
-                    <td className="py-4">{order.package?.name}</td>
-                    <td className="py-4">{order.customer?.name}</td>
-                    <td className="py-4">{order.group?.name || "-"}</td>
-                    <td className="py-4">{order.customer?.email || "-"}</td>
+                    <td className="py-4">{transaction.package?.name}</td>
+                    <td className="py-4">{transaction.customer?.name}</td>
+                    <td className="py-4">{transaction.group?.name || "-"}</td>
+                    <td className="py-4">{transaction.customer?.email || "-"}</td>
                     <td className="py-4">
-                      {getSymbol(order.payment_currency)}
-                      {order.payment_amount}
+                      {getSymbol(transaction.payment_currency)}
+                      {transaction.payment_amount}
                     </td>
                     <td className="py-4">
-                      {getSymbol(order.payment_currency)}
-                      {order.revenue}
+                      {getSymbol(transaction.payment_currency)}
+                      {transaction.revenue}
                     </td>
                   </tr>
                 ))}
@@ -178,9 +168,10 @@ const BusinessDetails = () => {
 
   return (
     <section className="h-full w-full min-h-[95%] px-4 md:px-6 py-6">
-      <ErrorUi title="Business Not Found" />
+      <ErrorUi />
+      <NotifyContainer />
     </section>
   );
 };
 
-export default BusinessDetails;
+export default VendorDetails;

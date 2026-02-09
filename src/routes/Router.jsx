@@ -35,6 +35,9 @@ import UserDetails from "../pages/users/UserDetails";
 import ActiveBusiness from "../pages/business/ActiveBusiness";
 import PendingBusiness from "../pages/business/PendingBusiness";
 import BusinessDetails from "../pages/business/BusinessDetails";
+import ActiveVendor from "../pages/vendors/ActiveVendor";
+import PendingVendor from "../pages/vendors/PendingVendor";
+import VendorDetails from "../pages/vendors/VendorDetails";
 
 export const routes = createBrowserRouter([
   {
@@ -140,6 +143,51 @@ export const routes = createBrowserRouter([
             ]}
           >
             <BusinessDetails />
+          </PrivateRouter>
+        ),
+      },
+      {
+        path: "/vendors/active",
+        element: (
+          <PrivateRouter
+            allowedRoles={[
+              "manager",
+              "sales-manager",
+              "customer-manager",
+              "admin",
+            ]}
+          >
+            <ActiveVendor />
+          </PrivateRouter>
+        ),
+      },
+      {
+        path: "/vendors/pending",
+        element: (
+          <PrivateRouter
+            allowedRoles={[
+              "manager",
+              "sales-manager",
+              "customer-manager",
+              "admin",
+            ]}
+          >
+            <PendingVendor />
+          </PrivateRouter>
+        ),
+      },
+      {
+        path: "/vendors/:Id",
+        element: (
+          <PrivateRouter
+            allowedRoles={[
+              "manager",
+              "sales-manager",
+              "customer-manager",
+              "admin",
+            ]}
+          >
+            <VendorDetails />
           </PrivateRouter>
         ),
       },
