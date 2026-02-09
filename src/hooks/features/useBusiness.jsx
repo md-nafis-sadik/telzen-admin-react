@@ -208,6 +208,7 @@ export const useGetBusinessDetails = (businessId) => {
   const business = businessData?.data;
   const stats = business?.details?.stats;
   const orders = business?.details?.orders || [];
+  const meta = business?.details?.meta || null;
 
   const businessSummary = [
     {
@@ -254,5 +255,6 @@ export const useGetBusinessDetails = (businessId) => {
     isError,
     stats,
     activeTab,
+    meta,
   };
 };

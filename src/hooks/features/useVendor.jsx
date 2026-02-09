@@ -208,6 +208,7 @@ export const useGetVendorDetails = (vendorId) => {
   const vendor = vendorData?.data;
   const stats = vendor?.details?.stats;
   const orders = vendor?.details?.orders || [];
+  const meta = vendor?.details?.meta || null;
 
   const vendorSummary = [
     {
@@ -254,5 +255,6 @@ export const useGetVendorDetails = (vendorId) => {
     isError,
     stats,
     activeTab,
+    meta,
   };
 };

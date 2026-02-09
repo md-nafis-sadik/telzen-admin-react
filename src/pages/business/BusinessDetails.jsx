@@ -19,6 +19,7 @@ const BusinessDetails = () => {
     isLoading,
     stats,
     activeTab,
+    meta,
   } = useGetBusinessDetails(Id);
 
   if (isLoading || selectedBusiness) {
@@ -114,19 +115,19 @@ const BusinessDetails = () => {
                     All activity shows here
                   </p>
                 </div>
-                <button className="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-800 transition-colors">
+                {/* <button className="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-800 transition-colors">
                   See All
-                </button>
+                </button> */}
               </div>
 
               <CustomTable
                 isLoading={isLoading}
                 isError={false}
                 status={200}
-                current_page={1}
-                page_size={10}
-                total_pages={1}
-                total_items={transactionData.length}
+                current_page={meta?.current_page || 1}
+                page_size={meta?.page_size || 10}
+                total_pages={meta?.total_pages || 1}
+                total_items={meta?.total_items || 0}
                 updatePageMeta={() => {}}
                 columns={[
                   "Order ID",
@@ -139,6 +140,7 @@ const BusinessDetails = () => {
                   "Revenue",
                 ]}
                 dataLength={transactionData.length}
+                isPagination={false}
               >
                 {transactionData.map((order, index) => (
                   <tr

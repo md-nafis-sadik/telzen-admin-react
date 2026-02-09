@@ -19,6 +19,7 @@ const VendorDetails = () => {
     isLoading,
     stats,
     activeTab,
+    meta,
   } = useGetVendorDetails(Id);
 
   if (isLoading || selectedVendor) {
@@ -107,16 +108,27 @@ const VendorDetails = () => {
             <div className="mb-4">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-[18px] font-semibold text-blackHigh">
-                    Sales Transactions
+                  <h3 className="text-[20px] font-semibold text-[#101828]">
+                    Sales
                   </h3>
+                  <p className="text-sm text-[#475467]">
+                    All activity shows here
+                  </p>
                 </div>
+                {/* <button className="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-800 transition-colors">
+                  See All
+                </button> */}
               </div>
 
               <CustomTable
                 isLoading={isLoading}
                 isError={false}
                 status={200}
+                current_page={meta?.current_page || 1}
+                page_size={meta?.page_size || 10}
+                total_pages={meta?.total_pages || 1}
+                total_items={meta?.total_items || 0}
+                updatePageMeta={() => {}}
                 columns={[
                   "Order ID",
                   "Date",
@@ -128,7 +140,7 @@ const VendorDetails = () => {
                   "Revenue",
                 ]}
                 dataLength={transactionData?.length || 0}
-                showPagination={false}
+                isPagination={false}
               >
                 {transactionData?.map((transaction, index) => (
                   <tr
@@ -146,7 +158,9 @@ const VendorDetails = () => {
                     <td className="py-4">{transaction.package?.name}</td>
                     <td className="py-4">{transaction.customer?.name}</td>
                     <td className="py-4">{transaction.group?.name || "-"}</td>
-                    <td className="py-4">{transaction.customer?.email || "-"}</td>
+                    <td className="py-4">
+                      {transaction.customer?.email || "-"}
+                    </td>
                     <td className="py-4">
                       {getSymbol(transaction.payment_currency)}
                       {transaction.payment_amount}
