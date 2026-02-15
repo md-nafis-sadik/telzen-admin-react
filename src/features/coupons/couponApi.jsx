@@ -68,8 +68,14 @@ export const couponApi = apiSlice.injectEndpoints({
                 typeof c === "object" ? c._id : c
               ) || [],
             max_usages_limit: couponData.max_usages_limit,
-            minimum_order_amount: couponData.minimum_order_amount,
-            maximum_order_amount: couponData.maximum_order_amount,
+            minimum_order_amount: {
+              USD: couponData.minimum_order_amount?.USD || "",
+              BDT: couponData.minimum_order_amount?.BDT || ""
+            },
+            maximum_order_amount: {
+              USD: couponData.maximum_order_amount?.USD || "",
+              BDT: couponData.maximum_order_amount?.BDT || ""
+            },
           };
 
           dispatch(setEditFormData(formData));

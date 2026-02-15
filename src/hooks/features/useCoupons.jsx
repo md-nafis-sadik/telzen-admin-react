@@ -72,7 +72,7 @@ export const useGetCoupons = () => {
         isInitialRender.current &&
         dataList.length > 0 &&
         debouncedSearch === "",
-    }
+    },
   );
 
   const [couponId, setCouponId] = useState(null);
@@ -149,7 +149,7 @@ export const useGetCoupons = () => {
 
       if (result?.success) {
         dispatch(
-          updateCouponInList({ ...result?.data, _id: result?.data._id })
+          updateCouponInList({ ...result?.data, _id: result?.data._id }),
         );
       } else {
         errorNotify(result?.message || "Failed to update coupon status");
@@ -198,8 +198,8 @@ export const useAddCoupon = () => {
     validity_end_at: dayjs().utc().endOf("day").unix(),
     coverage_countries: [],
     max_usages_limit: 1,
-    minimum_order_amount: "",
-    maximum_order_amount: "",
+    minimum_order_amount: { USD: "", BDT: "" },
+    maximum_order_amount: { USD: "", BDT: "" },
   });
   const [errors, setErrors] = useState({});
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -216,7 +216,7 @@ export const useAddCoupon = () => {
       .sort(
         (a, b) =>
           formData.coverage_countries.includes(b._id) -
-          formData.coverage_countries.includes(a._id)
+          formData.coverage_countries.includes(a._id),
       );
   }, [countries, formData.coverage_countries]);
 
@@ -231,7 +231,7 @@ export const useAddCoupon = () => {
     setFormData((prev) =>
       name === "is_private" && value === true
         ? { ...prev, is_private: true, coverage_countries: [] }
-        : updateNestedValue(prev, name, value)
+        : updateNestedValue(prev, name, value),
     );
 
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
@@ -248,7 +248,7 @@ export const useAddCoupon = () => {
         result.error.issues.map((issue) => [
           issue.path.join("."),
           issue.message,
-        ])
+        ]),
       );
       setErrors(newErrors);
       return false;
@@ -272,14 +272,26 @@ export const useAddCoupon = () => {
           max_usages_limit: Number(formData.max_usages_limit),
         }),
         validity_end_at: formData.validity_end_at,
-        minimum_order_amount:
-          formData.minimum_order_amount === ""
-            ? 0
-            : Number(formData.minimum_order_amount),
-        maximum_order_amount:
-          formData.maximum_order_amount === ""
-            ? 0
-            : Number(formData.maximum_order_amount),
+        minimum_order_amount: {
+          USD:
+            formData.minimum_order_amount.USD === ""
+              ? 0
+              : Number(formData.minimum_order_amount.USD),
+          BDT:
+            formData.minimum_order_amount.BDT === ""
+              ? 0
+              : Number(formData.minimum_order_amount.BDT),
+        },
+        maximum_order_amount: {
+          USD:
+            formData.maximum_order_amount.USD === ""
+              ? 0
+              : Number(formData.maximum_order_amount.USD),
+          BDT:
+            formData.maximum_order_amount.BDT === ""
+              ? 0
+              : Number(formData.maximum_order_amount.BDT),
+        },
       };
 
       const response = await addCoupon({ data: payload }).unwrap();
@@ -298,12 +310,12 @@ export const useAddCoupon = () => {
           error.data.errorMessages.map((err) => [
             err.path.split(".")[0],
             err.message,
-          ])
+          ]),
         );
         setErrors(apiErrors);
       }
       errorNotify(
-        error.data?.message || "Failed to create coupon. Please try again."
+        error.data?.message || "Failed to create coupon. Please try again.",
       );
       setIsSubmitting(false);
     }
@@ -368,7 +380,7 @@ export const useUpdateCoupon = () => {
       .sort(
         (a, b) =>
           formData.coverage_countries.includes(b._id) -
-          formData.coverage_countries.includes(a._id)
+          formData.coverage_countries.includes(a._id),
       );
   }, [countries, formData.coverage_countries]);
 
@@ -406,7 +418,7 @@ export const useUpdateCoupon = () => {
         result.error.issues.map((issue) => [
           issue.path.join("."),
           issue.message,
-        ])
+        ]),
       );
       setErrors(newErrors);
       return false;
@@ -431,14 +443,26 @@ export const useUpdateCoupon = () => {
         is_private: formData.is_private,
         validity_end_at: formData.validity_end_at,
         coverage_countries: formData.coverage_countries,
-        minimum_order_amount:
-          formData.minimum_order_amount === ""
-            ? 0
-            : Number(formData.minimum_order_amount),
-        maximum_order_amount:
-          formData.maximum_order_amount === ""
-            ? 0
-            : Number(formData.maximum_order_amount),
+        minimum_order_amount: {
+          USD:
+            formData.minimum_order_amount.USD === ""
+              ? 0
+              : Number(formData.minimum_order_amount.USD),
+          BDT:
+            formData.minimum_order_amount.BDT === ""
+              ? 0
+              : Number(formData.minimum_order_amount.BDT),
+        },
+        maximum_order_amount: {
+          USD:
+            formData.maximum_order_amount.USD === ""
+              ? 0
+              : Number(formData.maximum_order_amount.USD),
+          BDT:
+            formData.maximum_order_amount.BDT === ""
+              ? 0
+              : Number(formData.maximum_order_amount.BDT),
+        },
         ...(formData.max_usages_limit && {
           max_usages_limit: Number(formData.max_usages_limit),
         }),
@@ -462,12 +486,12 @@ export const useUpdateCoupon = () => {
           error.data.errorMessages.map((err) => [
             err.path.split(".")[0],
             err.message,
-          ])
+          ]),
         );
         setErrors(apiErrors);
       }
       errorNotify(
-        error.data?.message || "An error occurred while updating the coupon"
+        error.data?.message || "An error occurred while updating the coupon",
       );
     } finally {
       setIsSubmitting(false);

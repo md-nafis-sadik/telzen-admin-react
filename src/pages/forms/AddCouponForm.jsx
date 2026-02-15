@@ -74,8 +74,8 @@ function AddCouponForm() {
                     handleChange(
                       "coverage_countries",
                       formData.coverage_countries.filter(
-                        (id) => id !== country._id
-                      )
+                        (id) => id !== country._id,
+                      ),
                     );
                   }}
                   style={{
@@ -180,7 +180,7 @@ function AddCouponForm() {
                 className={`w-full border placeholder:text-disabled ${
                   errors.discount ? "border-red-500" : "border-natural-400"
                 } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-                value={formData.discount.amount}
+                value={formData.discount?.amount || ""}
                 min="0"
                 max="100"
                 onChange={(e) => {
@@ -198,49 +198,97 @@ function AddCouponForm() {
             </div>
 
             <div className="flex flex-col gap-1">
-              <span className="text-black-700">Minimum Order Amount</span>
+              <span className="text-black-700">Minimum Order Amount (USD)</span>
               <input
                 type="number"
-                name="minimum_order_amount"
+                name="minimum_order_amount.USD"
                 placeholder="Enter amount"
                 className={`w-full border placeholder:text-disabled ${
-                  errors.minimum_order_amount
+                  errors.minimum_order_amount?.USD
                     ? "border-red-500"
                     : "border-natural-400"
                 } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-                value={formData.minimum_order_amount}
+                value={formData.minimum_order_amount?.USD || ""}
                 onChange={(e) =>
-                  handleChange("minimum_order_amount", e.target.value)
+                  handleChange("minimum_order_amount.USD", e.target.value)
                 }
                 onWheel={(e) => e.target.blur()}
               />
-              {errors.minimum_order_amount && (
+              {errors.minimum_order_amount?.USD && (
                 <span className="text-red-500 text-sm">
-                  {errors.minimum_order_amount}
+                  {errors.minimum_order_amount.USD}
                 </span>
               )}
             </div>
 
             <div className="flex flex-col gap-1">
-              <span className="text-black-700">Maximum Order Amount</span>
+              <span className="text-black-700">Maximum Order Amount (USD)</span>
               <input
                 type="number"
-                name="maximum_order_amount"
+                name="maximum_order_amount.USD"
                 placeholder="Enter amount"
                 className={`w-full border placeholder:text-disabled ${
-                  errors.maximum_order_amount
+                  errors.maximum_order_amount?.USD
                     ? "border-red-500"
                     : "border-natural-400"
                 } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-                value={formData.maximum_order_amount}
+                value={formData.maximum_order_amount?.USD || ""}
                 onChange={(e) =>
-                  handleChange("maximum_order_amount", e.target.value)
+                  handleChange("maximum_order_amount.USD", e.target.value)
                 }
                 onWheel={(e) => e.target.blur()}
               />
-              {errors.maximum_order_amount && (
+              {errors.maximum_order_amount?.USD && (
                 <span className="text-red-500 text-sm">
-                  {errors.maximum_order_amount}
+                  {errors.maximum_order_amount.USD}
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <span className="text-black-700">Minimum Order Amount (BDT)</span>
+              <input
+                type="number"
+                name="minimum_order_amount.BDT"
+                placeholder="Enter amount"
+                className={`w-full border placeholder:text-disabled ${
+                  errors.minimum_order_amount?.BDT
+                    ? "border-red-500"
+                    : "border-natural-400"
+                } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+                value={formData.minimum_order_amount?.BDT || ""}
+                onChange={(e) =>
+                  handleChange("minimum_order_amount.BDT", e.target.value)
+                }
+                onWheel={(e) => e.target.blur()}
+              />
+              {errors.minimum_order_amount?.BDT && (
+                <span className="text-red-500 text-sm">
+                  {errors.minimum_order_amount.BDT}
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <span className="text-black-700">Maximum Order Amount (BDT)</span>
+              <input
+                type="number"
+                name="maximum_order_amount.BDT"
+                placeholder="Enter amount"
+                className={`w-full border placeholder:text-disabled ${
+                  errors.maximum_order_amount?.BDT
+                    ? "border-red-500"
+                    : "border-natural-400"
+                } text-blackLow rounded-lg outline-none py-3 px-4 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+                value={formData.maximum_order_amount?.BDT || ""}
+                onChange={(e) =>
+                  handleChange("maximum_order_amount.BDT", e.target.value)
+                }
+                onWheel={(e) => e.target.blur()}
+              />
+              {errors.maximum_order_amount?.BDT && (
+                <span className="text-red-500 text-sm">
+                  {errors.maximum_order_amount.BDT}
                 </span>
               )}
             </div>

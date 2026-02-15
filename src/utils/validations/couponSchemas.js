@@ -24,8 +24,8 @@ const BaseCouponSchema = z.object({
         message: "Usage limit must be at least 1",
       }),
   ]),
-  minimum_order_amount: z
-    .union([
+  minimum_order_amount: z.object({
+    USD: z.union([
       z.number().min(0, "Minimum order amount must be at least 0"),
       z
         .string()
@@ -33,10 +33,19 @@ const BaseCouponSchema = z.object({
         .refine((val) => !isNaN(val) && val >= 0, {
           message: "Minimum order amount must be at least 0",
         }),
-    ])
-    .optional(),
-  maximum_order_amount: z
-    .union([
+    ]),
+    BDT: z.union([
+      z.number().min(0, "Minimum order amount must be at least 0"),
+      z
+        .string()
+        .transform((val) => (val === "" ? 0 : Number(val)))
+        .refine((val) => !isNaN(val) && val >= 0, {
+          message: "Minimum order amount must be at least 0",
+        }),
+    ]),
+  }),
+  maximum_order_amount: z.object({
+    USD: z.union([
       z.number().min(0, "Maximum order amount must be at least 0"),
       z
         .string()
@@ -44,8 +53,17 @@ const BaseCouponSchema = z.object({
         .refine((val) => !isNaN(val) && val >= 0, {
           message: "Maximum order amount must be at least 0",
         }),
-    ])
-    .optional(),
+    ]),
+    BDT: z.union([
+      z.number().min(0, "Maximum order amount must be at least 0"),
+      z
+        .string()
+        .transform((val) => (val === "" ? 0 : Number(val)))
+        .refine((val) => !isNaN(val) && val >= 0, {
+          message: "Maximum order amount must be at least 0",
+        }),
+    ]),
+  }),
 });
 
 const validateCoverageCountries = (data) => {

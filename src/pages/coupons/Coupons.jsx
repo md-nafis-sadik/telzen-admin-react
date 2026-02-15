@@ -76,8 +76,10 @@ const Coupon = () => {
               "End Time",
               "Usage",
               "Usage Limit",
-              "Minimum",
-              "Maximum",
+              "Minimum ($)",
+              "Minimum (৳)",
+              "Maximum ($)",
+              "Maximum (৳)",
               "Privacy Type",
               "Status",
               "Action",
@@ -151,12 +153,22 @@ const Coupon = () => {
                 </td>
                 <td>
                   <span className="flex items-center justify-center">
-                    {coupon?.minimum_order_amount || "-"}
+                    {coupon?.minimum_order_amount?.USD || "-"}
                   </span>
                 </td>
                 <td>
                   <span className="flex items-center justify-center">
-                    {coupon?.maximum_order_amount || "-"}
+                    {coupon?.minimum_order_amount?.BDT || "-"}
+                  </span>
+                </td>
+                <td>
+                  <span className="flex items-center justify-center">
+                    {coupon?.maximum_order_amount?.USD || "-"}
+                  </span>
+                </td>
+                <td>
+                  <span className="flex items-center justify-center">
+                    {coupon?.maximum_order_amount?.BDT || "-"}
                   </span>
                 </td>
                 <td>{coupon?.is_private ? "Private" : "Public"}</td>

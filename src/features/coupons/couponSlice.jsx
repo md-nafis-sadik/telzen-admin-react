@@ -21,8 +21,8 @@ const initialState = {
     validity_end_at: null,
     coverage_countries: [],
     max_usages_limit: 1,
-    minimum_order_amount: "",
-    maximum_order_amount: "",
+    minimum_order_amount: { USD: "", BDT: "" },
+    maximum_order_amount: { USD: "", BDT: "" },
   },
   meta: {
     total_items: 1,
