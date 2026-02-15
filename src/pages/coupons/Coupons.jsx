@@ -153,34 +153,22 @@ const Coupon = () => {
                 </td>
                 <td>
                   <span className="flex items-center justify-center">
-                    {typeof coupon?.minimum_order_amount === 'object' && coupon?.minimum_order_amount?.USD !== undefined
-                      ? coupon.minimum_order_amount.USD
-                      : typeof coupon?.minimum_order_amount === 'number'
-                      ? coupon.minimum_order_amount
-                      : "-"}
+                    {coupon?.minimum_order_amount?.USD || "-"}
                   </span>
                 </td>
                 <td>
                   <span className="flex items-center justify-center">
-                    {typeof coupon?.minimum_order_amount === 'object' && coupon?.minimum_order_amount?.BDT !== undefined
-                      ? coupon.minimum_order_amount.BDT
-                      : "-"}
+                    {coupon?.minimum_order_amount?.BDT || "-"}
                   </span>
                 </td>
                 <td>
                   <span className="flex items-center justify-center">
-                    {typeof coupon?.maximum_order_amount === 'object' && coupon?.maximum_order_amount?.USD !== undefined
-                      ? coupon.maximum_order_amount.USD
-                      : typeof coupon?.maximum_order_amount === 'number'
-                      ? coupon.maximum_order_amount
-                      : "-"}
+                    {coupon?.maximum_order_amount?.USD || "-"}
                   </span>
                 </td>
                 <td>
                   <span className="flex items-center justify-center">
-                    {typeof coupon?.maximum_order_amount === 'object' && coupon?.maximum_order_amount?.BDT !== undefined
-                      ? coupon.maximum_order_amount.BDT
-                      : "-"}
+                    {coupon?.maximum_order_amount?.BDT || "-"}
                   </span>
                 </td>
                 <td>{coupon?.is_private ? "Private" : "Public"}</td>
